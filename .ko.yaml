@@ -1,0 +1,15 @@
+defaultBaseImage: chainguard/static:latest
+defaultPlatforms: [all]
+
+builds:
+  - id: "hops"
+    main: "./cmd/hops"
+    env:
+      - CGO_ENABLED=0
+      # - GOPRIVATE=git.act3-ace.com
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w # strip symbols (make the binary smaller)
+      - -X main.version={{.Env.VERSION}}
+      - -extldflags "-static"

@@ -1,0 +1,234 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  ############################################################
+  # Variables used by multiple tasks
+  ############################################################
+  REV:
+    sh: git describe --long --tags --match='v*' --dirty 2>/dev/null || git rev-list -n1 HEAD
+  IMAGE_REPO: reg.github.com/act3-ai/hops
+  ############################################################
+  # Tool versions
+  ############################################################
+  # renovate: datasource=go depName=github.com/elastic/crd-ref-docs
+  CRD_REF_DOCS_VERSION: v0.0.12
+  # renovate: datasource=go depName=github.com/google/ko
+  KO_VERSION: v0.15.2
+  # renovate: datasource=go depName=github.com/golangci/golangci-lint
+  GOLANGCILINT_VERSION: v1.58.1
+  # renovate: datasource=go depName=golang.org/x/vuln/cmd/govulncheck
+  GOVULNCHECK_VERSION: latest
+  # renovate: datasource=go depName=go.abhg.dev/doc2go
+  DOC2GO_VERSION: v0.8.1
+
+tasks:
+  default:
+    desc: "Build from source with -race flag"
+    deps: [generate]
+    env:
+      CGO_ENABLED: 0
+    cmds:
+      - mkdir -p ./bin
+      - go build -race -o bin/hops ./cmd/hops
+    generates:
+      - bin/hops
+
+  build:
+    desc: "Build from source"
+    deps: [generate]
+    env:
+      CGO_ENABLED: 0
+    cmds:
+      - mkdir -p ./bin
+      - go build -o bin/hops ./cmd/hops
+    generates:
+      - bin/hops
+
+  build:prod:
+    desc: "Build from source (stripped/trimmed)"
+    deps: [generate]
+    env:
+      CGO_ENABLED: 0
+    cmds:
+      - mkdir -p ./bin
+      - go build -trimpath -ldflags="-s -w" -o bin/hops ./cmd/hops
+    generates:
+      - bin/hops
+
+  build:linux:
+    desc: "Build from source for linux/amd64"
+    aliases: [build-linux]
+    env:
+      GOOS: linux
+      GOARCH: amd64
+      CGO_ENABLED: 0
+    deps: [generate]
+    cmds:
+      - mkdir -p ./bin
+      - go build -o bin/hops--linux-amd64 ./cmd/hops
+    generates:
+      - bin/hops--linux-amd64
+
+  install:
+    desc: "Install from source with go install"
+    deps: [generate]
+    cmds:
+      - go install ./cmd/hops
+
+  generate:
+    desc: "Run go generate"
+    cmds:
+      - go generate ./...
+    sources:
+      - gen.go
+      - internal/cli/**/*
+      - cmd/hops/**/*
+    generates:
+      - docs/cli/**/*
+
+  lint:
+    desc: "Lint project"
+    deps: [tool:golangci-lint]
+    cmds:
+      - tool/golangci-lint run
+
+  govulncheck:
+    desc: "Check Go package vulnerabilities"
+    deps: [tool:govulncheck]
+    cmds:
+      - tool/govulncheck ./...
+
+  test:
+    desc: "Run unit tests"
+    deps: [generate]
+    aliases: [test-unit]
+    cmds:
+      - go test ./...
+
+  runprof:
+    desc: "Run CPU/memory profiling"
+    deps: [generate]
+    sources:
+      - internal/**/*.go
+    generates:
+      - cpu.prof
+      - mem.prof
+    cmds:
+      - "go test -cpuprofile cpu.prof -memprofile mem.prof -bench=. ./internal/actions -count=10"
+
+  cpuprof:
+    desc: "Run CPU/memory profiling"
+    deps: [runprof]
+    cmds:
+      - "go tool pprof -http=: cpu.prof"
+
+  memprof:
+    desc: "Run CPU/memory profiling"
+    deps: [runprof]
+    cmds:
+      - "go tool pprof -http=: mem.prof"
+
+  clean:
+    desc: Clean test directories
+    cmds:
+      - rm -rf HOPS_CACHE
+      - rm -rf HOMEBREW_CACHE
+      - rm -rf HOMEBREW_PREFIX
+      - direnv reload
+
+  image:build:
+    desc: "Build container image with Docker"
+    deps: [build-linux]
+    cmds:
+      - |
+        docker build \
+        --build-arg HOPS_EXECUTABLE=bin/hops--linux-amd64 \
+        -t {{.IMAGE_REPO}} .
+
+  image:run:
+    desc: "Run latest docker container"
+    cmds:
+      - docker run -it {{.IMAGE_REPO}}:latest
+
+  image:scan:
+    desc: "Scan latest container image with grype"
+    aliases: [grype]
+    cmds:
+      - grype {{.IMAGE_REPO}}:latest
+
+  build:ko:
+    desc: "Build multiplatform distroless image with ko"
+    deps: [tool:ko]
+    env:
+      VERSION: "{{.REV}}"
+      KO_DOCKER_REPO: "{{.IMAGE_REPO}}/distroless"
+    cmds:
+      - tool/ko build -B --image-label version="{{.REV}}" ./cmd/hops
+
+  # crd-ref-docs: Generates markdown documentation for CRDs
+  tool:crd-ref-docs:
+    desc: "Install crd-ref-docs CRD documentation generator"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.CRD_REF_DOCS_VERSION}}"
+          PKG: github.com/elastic/crd-ref-docs
+
+  # ko: builds application images for Go projects
+  tool:ko:
+    desc: "Install ko builder"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.KO_VERSION}}"
+          PKG: github.com/google/ko
+
+  # golangci-lint: lints Go code
+  tool:golangci-lint:
+    desc: "Install golangci-lint linter"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.GOLANGCILINT_VERSION}}"
+          PKG: github.com/golangci/golangci-lint/cmd/golangci-lint
+
+  # govulncheck: checks Go package vulnerabilities
+  tool:govulncheck:
+    desc: "Install govulncheck linter"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.GOVULNCHECK_VERSION}}"
+          PKG: golang.org/x/vuln/cmd/govulncheck
+
+  # doc2go: renders static Go package docs
+  tool:doc2go:
+    desc: "Install doc2go documentation generator"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.DOC2GO_VERSION}}"
+          PKG: go.abhg.dev/doc2go
+
+  # Generalized task for installing Go tools
+  versioned-go-pkg:
+    desc: "Installs a versioned Go tool"
+    internal: true
+    requires:
+      vars:
+        - PKG
+        - VERSION
+    vars:
+      NAME: "{{base .PKG}}"
+      MARKER: tool/.{{.NAME}}@{{.VERSION}}
+      TOOL: tool/{{.NAME}}
+    status:
+      - test -f {{.MARKER}}
+      - test -f {{.TOOL}}
+    cmds:
+      - rm -f tool/.{{.NAME}}@*
+      - mkdir -p tool
+      - GOBIN=$PWD/tool go install {{.PKG}}@{{.VERSION}}
+      - touch {{.MARKER}}

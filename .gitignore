@@ -1,0 +1,28 @@
+# ignore build outputs
+/bin
+/tool
+
+# ignore coverage reports
+/coverage*.*
+/report.*
+/profile.cov
+/*.test
+/cpu.prof
+/mem.prof
+
+## Ignore logfiles
+/log
+
+# Test outputs
+/HOMEBREW_PREFIX
+/HOMEBREW_CACHE
+/HOPS_CACHE
+hops.images.txt
+hops.index.json
+
+formula.json
+cask.json
+internal/apis/formulae.brew.sh/v3/homebrew-1.pem
+
+/codereport*
+*.pdf
