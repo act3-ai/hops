@@ -1,6 +1,6 @@
 # Hops
 
-Hops is an experimental Homebrew Bottle installer written in Go and utilizing the ORAS Go library.
+Hops is an experimental Homebrew Bottle installer written in Go with a focus on performance and mobility.
 
 ## Implementation progress
 
