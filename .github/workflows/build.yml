@@ -7,28 +7,25 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  CGO_ENABLED: 0
-  EXECUTABLE: hops
-  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}
-
-permissions:
-  id-token: write
-  contents: read
-  attestations: write
-
 jobs:
   go-build:
     name: Go build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     env:
       BUILD_ID: hops
-      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}
+      EXECUTABLE: hops
+      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.sha) }}
+      CGO_ENABLED: 0
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
       artifact-path: ${{ steps.build.outputs.artifact-path }}
@@ -54,17 +51,30 @@ jobs:
       # Go build
       - name: Build ${{env.EXECUTABLE}}
         id: build
+        env:
+          EXECUTABLE_PATH: bin/${{env.EXECUTABLE}}
         run: |
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
-            -o /bin/${{env.EXECUTABLE}} \
+            -o ${{env.EXECUTABLE_PATH}} \
             ./cmd/${{env.EXECUTABLE}}
-          echo "artifact-path=/bin/${{env.EXECUTABLE}}" >> $GITHUB_OUTPUT
+          echo "executable-path=${{env.EXECUTABLE_PATH}}" >> $GITHUB_OUTPUT
 
       - uses: actions/attest-build-provenance@v1
         id: attest
         with:
           subject-path: ${{steps.build.outputs.artifact-path}}
+      
+      - name: Create archive
+        id: archive
+        env:
+          ARCHIVE_PATH: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}.tar
+        run: |
+          mkdir -p artifact/bin/
+          mv ${{ steps.build.outputs.executable-path }} artifact/bin/
+          mv ${{ steps.attest.outputs.bundle-path }} artifact/
+          tar -cvf ${{env.ARCHIVE_PATH}} artifact/
+          echo "archive-path=${{env.ARCHIVE_PATH}}" >> $GITHUB_OUTPUT
 
       - name: Upload build artifact
         id: upload
@@ -72,59 +82,60 @@ jobs:
         with:
           name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: |
-            ${{steps.build.outputs.artifact-path}}
-            ${{steps.attest.outputs.bundle-path}}
+            ${{steps.archive.outputs.archive-path}}
 
-  go-build-fips:
-    name: Go build FIPS
-    runs-on: ubuntu-latest
-    env:
-      BUILD_ID: hops-fips
-      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}-fips
-    outputs:
-      artifact-id: ${{ steps.upload.outputs.artifact-id }}
-      artifact-path: ${{ steps.build.outputs.artifact-path }}
-    strategy:
-      matrix:
-        GOOS:
-          - linux
-          # - windows
-          # - darwin
-        GOARCH:
-          - amd64
-          # - arm64
-      fail-fast: true
-    steps:
-      - uses: actions/checkout@v4
-        name: Check out repo
+  # go-build-fips:
+  #   name: Go build FIPS
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     BUILD_ID: hops-fips
+  #     VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.sha) }}-fips
+  #   outputs:
+  #     artifact-id: ${{ steps.upload.outputs.artifact-id }}
+  #     artifact-path: ${{ steps.build.outputs.executable-path }}
+  #   strategy:
+  #     matrix:
+  #       GOOS:
+  #         - linux
+  #         # - windows
+  #         # - darwin
+  #       GOARCH:
+  #         - amd64
+  #         # - arm64
+  #     fail-fast: true
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #       name: Check out repo
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: "1.22"
+  #     - name: Set up Go
+  #       uses: actions/setup-go@v5
+  #       with:
+  #         go-version: "1.22"
 
-      # Go Boring FIPS 140-2 build
-      # See https://kupczynski.info/posts/fips-golang/ for more information
-      - name: Build ${{env.EXECUTABLE}} FIPS
-        id: build
-        run: |
-          env CGO_ENABLED=1 GOEXPERIMENT=boringcrypto \
-          go build \
-            -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}-fips'" \
-            -o /bin/${{env.EXECUTABLE}} \
-            ./cmd/${{env.EXECUTABLE}}
-          echo "artifact-path=/bin/${{env.EXECUTABLE}}" >> $GITHUB_OUTPUT
+  #     # Go Boring FIPS 140-2 build
+  #     # See https://kupczynski.info/posts/fips-golang/ for more information
+  #     - name: Build ${{env.EXECUTABLE}} FIPS
+  #       id: build
+  #       env:
+  #         ARTIFACT_PATH: bin/${{env.EXECUTABLE}}
+  #       run: |
+  #         env CGO_ENABLED=1 GOEXPERIMENT=boringcrypto \
+  #         go build \
+  #           -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}-fips'" \
+  #           -o ${{env.ARTIFACT_PATH}} \
+  #           ./cmd/${{env.EXECUTABLE}}
+  #         echo "artifact-path=${{env.ARTIFACT_PATH}}" >> $GITHUB_OUTPUT
 
-      - uses: actions/attest-build-provenance@v1
-        id: attest
-        with:
-          subject-path: ${{steps.build.outputs.artifact-path}}
+  #     - uses: actions/attest-build-provenance@v1
+  #       id: attest
+  #       with:
+  #         subject-path: ${{steps.build.outputs.artifact-path}}
 
-      - id: upload
-        name: Upload FIPS build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
-          path: |
-            ${{steps.build.outputs.artifact-path}}
-            ${{steps.attest.outputs.bundle-path}}
+  #     - id: upload
+  #       name: Upload FIPS build artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
+  #         path: |
+  #           ${{steps.build.outputs.artifact-path}}
+  #           ${{steps.attest.outputs.bundle-path}}
