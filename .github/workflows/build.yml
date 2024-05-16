@@ -28,7 +28,6 @@ jobs:
       CGO_ENABLED: 0
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
-      artifact-path: ${{ steps.build.outputs.artifact-path }}
     strategy:
       matrix:
         GOOS:
@@ -63,7 +62,7 @@ jobs:
       - uses: actions/attest-build-provenance@v1
         id: attest
         with:
-          subject-path: ${{steps.build.outputs.artifact-path}}
+          subject-path: ${{steps.build.outputs.executable-path}}
       
       - name: Create archive
         id: archive
