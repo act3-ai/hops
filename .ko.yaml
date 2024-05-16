@@ -6,7 +6,6 @@ builds:
     main: "./cmd/hops"
     env:
       - CGO_ENABLED=0
-      # - GOPRIVATE=git.act3-ace.com
     flags:
       - -trimpath
     ldflags:
