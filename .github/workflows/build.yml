@@ -64,7 +64,7 @@ jobs:
       - uses: actions/attest-build-provenance@v1
         id: attest
         with:
-          subject-path: artifacts/${{env.EXECUTABLE}}
+          subject-path: ${{steps.build.outputs.artifact-path}}
 
       - name: Upload build artifact
         id: upload
@@ -72,7 +72,7 @@ jobs:
         with:
           name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: |
-            artifacts/${{env.EXECUTABLE}}
+            ${{steps.build.outputs.artifact-path}}
             ${{steps.attest.outputs.bundle-path}}
 
   go-build-fips:
@@ -118,7 +118,7 @@ jobs:
       - uses: actions/attest-build-provenance@v1
         id: attest
         with:
-          subject-path: artifacts/${{env.EXECUTABLE}}
+          subject-path: ${{steps.build.outputs.artifact-path}}
 
       - id: upload
         name: Upload FIPS build artifact
@@ -126,5 +126,5 @@ jobs:
         with:
           name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: |
-            artifacts/${{env.EXECUTABLE}}
+            ${{steps.build.outputs.artifact-path}}
             ${{steps.attest.outputs.bundle-path}}
