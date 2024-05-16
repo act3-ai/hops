@@ -63,27 +63,7 @@ func (deps *DependencyGraph[T]) Tree(root string) (treeprint.Tree, error) {
 	return tree, nil
 }
 
-func WalkFiltered[T any](ctx context.Context, store Store[T], roots []T, opts *Options) (*DependencyGraph[T], error) {
-	deps := &DependencyGraph[T]{
-		store:         store,
-		opts:          opts,
-		rootKeys:      []string{},
-		dependentKeys: []string{},
-		info:          map[string]T{},
-		trees:         map[string]*treeprint.Node{},
-	}
-
-	for _, f := range roots {
-		_, err := deps.add(ctx, f)
-		if err != nil {
-			return deps, err
-		}
-	}
-
-	return deps, nil
-}
-
-// Walk recursively walks the dependencies of the given formulae until all have been discovered
+// Walk evaluates the dependency graph of all root nodes
 func Walk[T any](ctx context.Context, store Store[T], roots []T, opts *Options) (*DependencyGraph[T], error) {
 	deps := &DependencyGraph[T]{
 		store:         store,

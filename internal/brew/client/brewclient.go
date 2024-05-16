@@ -14,7 +14,7 @@ import (
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	api "github.com/act3-ai/hops/internal/apis/formulae.brew.sh"
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/utils"
+	"github.com/act3-ai/hops/internal/utils/resputil"
 )
 
 // Client represents the Homebrew API index
@@ -120,8 +120,8 @@ func (hi *Client) fetchAll(ctx context.Context) (io.ReadCloser, error) {
 	}
 
 	// Check for a non-success status and handle
-	if !utils.HTTPSuccess(resp) {
-		return resp.Body, utils.HandleHTTPError(resp)
+	if !resputil.HTTPSuccess(resp) {
+		return resp.Body, resputil.HandleHTTPError(resp)
 	}
 
 	return resp.Body, nil

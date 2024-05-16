@@ -128,7 +128,7 @@ Without setting GOMAXPROCS:
 
 ## Listing Images
 
-[big-brewfile](../internal/benchmark/data/big-brewfile):
+[big-brewfile](../test/benchmark/data/big-brewfile):
 
 | Command                                   | Cache | Elapsed | User  | System | CPU%  | Tests |
 | ----------------------------------------- | ----- | ------- | ----- | ------ | ----- | ----- |
@@ -137,7 +137,7 @@ Without setting GOMAXPROCS:
 | New: `hops images --file big-brewfile`    | warm  | 8.02s   | 0.41s | 0.16s  | 6.96% | 28    |
 | 4/9/24: `hops images --file big-brewfile` | cold  | 8.58s   | 0.54s | 0.18s  | 7.92% | 38    |
 
-[asce-tools](../internal/benchmark/data/asce-tools):
+[asce-tools](../test/benchmark/data/asce-tools):
 
 | Command                                | Cache | Elapsed | User  | System | CPU%   | Tests |
 | -------------------------------------- | ----- | ------- | ----- | ------ | ------ | ----- |

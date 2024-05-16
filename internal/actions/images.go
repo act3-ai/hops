@@ -40,7 +40,7 @@ func (action *Images) Run(ctx context.Context, formulae ...string) error {
 			return err
 		}
 
-		formulae = append(formulae, bf.Brew...)
+		formulae = append(formulae, bf.Formula...)
 	}
 
 	slog.Debug("finding images for", slog.Any("formulae", formulae))

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/act3-ai/hops/internal/o"
-	"github.com/act3-ai/hops/internal/symlink"
+	"github.com/act3-ai/hops/internal/prefix"
 )
 
 // Link represents the action and its options
@@ -49,7 +49,8 @@ func (action *Link) Run(ctx context.Context, names ...string) error {
 		} else {
 			o.Hai("Linking " + f.FullName) // ex: Linking cowsay
 		}
-		links, _, err := action.Prefix().Link(f.Name, f.Version(), &symlink.Options{
+		links, _, err := action.Prefix().Link(f.Name, f.Version(), &prefix.LinkOptions{
+			Name:      f.Name,
 			Overwrite: action.Overwrite,
 			DryRun:    action.DryRun,
 		})

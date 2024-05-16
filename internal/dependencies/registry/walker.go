@@ -19,6 +19,7 @@ type registryStore struct {
 	routines iter.Mapper[string, *regbottle.BottleIndex]
 }
 
+// New creates a dependency walker for an OCI registry
 func New(reg bottle.Registry, cache bottle.Registry, plat platform.Platform, maxGoroutines int) dependencies.Store[*regbottle.BottleIndex] {
 	return &registryStore{
 		Registry: reg,

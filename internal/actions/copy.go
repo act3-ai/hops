@@ -23,8 +23,8 @@ import (
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
-	"github.com/act3-ai/hops/internal/utils"
 	"github.com/act3-ai/hops/internal/utils/logutil"
+	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
 type copiedBottle struct {
@@ -67,7 +67,7 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 			return err
 		}
 
-		names = append(names, bf.Brew...)
+		names = append(names, bf.Formula...)
 	}
 
 	o.H1("Copying:\n" + strings.Join(names, " "))
@@ -185,7 +185,7 @@ func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copied
 	for _, f := range copiedBottles {
 		routines.Go(func() error {
 			var err error
-			f.index, err = utils.FetchDecode[ocispec.Index](ctx, f.repo, f.indexDesc)
+			f.index, err = orasutil.FetchDecode[ocispec.Index](ctx, f.repo, f.indexDesc)
 			if err != nil {
 				return fmt.Errorf("loading index: %w", err)
 			}
@@ -273,7 +273,7 @@ func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *v1.I
 }
 
 // pushMetadata pushes metadata for the given manifest
-func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *v1.Info) (ocispec.Descriptor, error) {
+func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *v1.Info) (ocispec.Descriptor, error) { //nolint:unparam
 	l := slog.Default()
 
 	// Remove time-sensitive metadata fields

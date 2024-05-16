@@ -2,21 +2,18 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"strings"
 
-	"github.com/adrg/xdg"
 	"github.com/dustin/go-humanize"
 	"github.com/muesli/termenv"
 	"golang.org/x/term"
 )
 
-// FmtSemver forces a string formatted as a semver version
+// FmtSemver forces a string formatted as a semver version with "v" prefix
 func FmtSemver(s string) string {
 	return "v" + strings.TrimPrefix(s, "v")
 }
@@ -39,36 +36,13 @@ func PrettyBytes(size int64) string {
 	return strings.ReplaceAll(humanize.Bytes(uint64(size)), " ", "")
 }
 
-// ParseRegistryDomain
-func ParseRegistryDomain(rawURL string) string {
-	for _, prefix := range []string{"https://", "http://"} {
-		rawURL = strings.TrimPrefix(rawURL, prefix)
-	}
-	return strings.Replace(rawURL, "/v2/", "/", 1)
-}
-
-// ConfigSearchPath returns the list of locations to look for configuration files
-func ConfigSearchPath(parts ...string) []string {
-	return []string{
-		strings.Join(parts, "-"),
-		filepath.Join(xdg.ConfigHome, filepath.Join(parts...)),
-		filepath.Join("/", "etc", filepath.Join(parts...)),
-	}
-	// TODO we should consider searching $XDG_CONFIG_DIRS as well
-}
-
-// DefaultConfigPath is the path we would save the configuration to if needed.  In a sense it is the preferred configuration path.
-func DefaultConfigPath(parts ...string) string {
-	return filepath.Join(xdg.ConfigHome, filepath.Join(parts...))
-}
-
-// ConfigValidatePath returns the list of paths to validate as configuration files
-func ConfigValidatePath(parts ...string) []string {
-	return []string{
-		strings.Join(parts, "-"),
-		filepath.Join(parts...),
-	}
-}
+// // ParseRegistryDomain
+// func ParseRegistryDomain(rawURL string) string {
+// 	for _, prefix := range []string{"https://", "http://"} {
+// 		rawURL = strings.TrimPrefix(rawURL, prefix)
+// 	}
+// 	return strings.Replace(rawURL, "/v2/", "/", 1)
+// }
 
 // AssertStrings converts a slice of any into a slice of strings
 func AssertStrings(as []any) ([]string, error) {
@@ -112,102 +86,6 @@ func CountDir(dir string) (int, int64, error) {
 		return nil
 	})
 }
-
-// StrOrStrSlice represents the command run for a service
-type StrOrStrSlice []string
-
-// UnmarshalJSON implements json.Unmarshaler
-func (s *StrOrStrSlice) UnmarshalJSON(b []byte) error {
-	var i any
-	err := json.Unmarshal(b, &i)
-	if err != nil {
-		return err
-	}
-
-	switch v := i.(type) {
-	case string:
-		*s = []string{v}
-	case []any:
-		tmp := make([]string, 0, len(v))
-		for _, i := range v {
-			if j, ok := i.(string); ok {
-				tmp = append(tmp, j)
-			} else {
-				return fmt.Errorf("non-string type %T in slice", i)
-			}
-		}
-		*s = tmp
-	// case map[string]any:
-	// 	fmt.Println("map found:" + string(b))
-	default:
-		return fmt.Errorf("cannot unmarshal %s into string or string slice", i)
-	}
-
-	return nil
-}
-
-// // StrOrStrSlice represents the command run for a service
-// type StrOrStrSlice []string
-
-// // UnmarshalJSON implements json.Unmarshaler
-// func (s *StrOrStrSlice) UnmarshalJSON(b []byte) error {
-// 	var i any
-// 	err := json.Unmarshal(b, &i)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	fmt.Println("bytes: " + string(b))
-
-// 	switch v := i.(type) {
-// 	case string:
-// 		*s = []string{v}
-// 	case []any:
-// 		tmp := make([]string, 0, len(v))
-// 		for _, i := range v {
-// 			if j, ok := i.(string); ok {
-// 				tmp = append(tmp, j)
-// 			} else {
-// 				return fmt.Errorf("non-string type %T in slice", i)
-// 			}
-// 		}
-// 		*s = tmp
-// 	// case map[string]any:
-// 	// 	fmt.Println("map found:" + string(b))
-// 	default:
-// 		return fmt.Errorf("cannot unmarshal %s into string or string slice", i)
-// 	}
-
-// 	return nil
-// }
-
-// // UnmarshalYAML implements yaml.Unmarshaler
-// func (s *StrOrStrSlice) UnmarshalYAML(b []byte) error {
-// 	var i any
-// 	err := yaml.Unmarshal(b, &i)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	switch v := i.(type) {
-// 	case string:
-// 		*s = []string{v}
-// 	case []any:
-// 		tmp := make([]string, 0, len(v))
-// 		for _, i := range v {
-// 			if j, ok := i.(string); ok {
-// 				tmp = append(tmp, j)
-// 			} else {
-// 				return fmt.Errorf("%s", "non-string Type in Run slice")
-// 			}
-// 		}
-// 		*s = tmp
-// 	default:
-// 		return fmt.Errorf("unknown Type for Run value")
-// 	}
-
-// 	return nil
-// }
 
 // BytesAreEmptyIsh checks if the provided byte slice is practically empty
 // Can handle cases where a nil pointer or empty struct were marshalled to YAML

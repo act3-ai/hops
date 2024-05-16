@@ -6,15 +6,16 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
+// Prefixes for the OCI platform.os.version field
 const (
-	LinuxVersion      = "Ubuntu 22.04"
-	SonomaVersion     = "macOS 14"
-	VenturaVersion    = "macOS 13"
-	MontereyVersion   = "macOS 12"
-	BigSurVersion     = "macOS 11"
-	CatalinaVersion   = "macOS 10.15"
-	MojaveVersion     = "macOS 10.14"
-	HighSierraVersion = "macOS 10.13"
+	linuxVersion      = "Ubuntu 22.04"
+	sonomaVersion     = "macOS 14"
+	venturaVersion    = "macOS 13"
+	montereyVersion   = "macOS 12"
+	bigSurVersion     = "macOS 11"
+	catalinaVersion   = "macOS 10.15"
+	mojaveVersion     = "macOS 10.14"
+	highSierraVersion = "macOS 10.13"
 )
 
 // Converts platform to OCI platform
@@ -34,12 +35,9 @@ func FromOCI(r *ocispec.Platform) Platform {
 		switch r.Architecture {
 		case "amd64":
 			switch {
-			case matchVersion(LinuxVersion):
+			case matchVersion(linuxVersion):
 				p = X8664Linux
 			default:
-				// slog.Warn("Unsupported Linux OS version",
-				// 	slog.String("want", LinuxVersion),
-				// 	slog.String("got", r.OSVersion))
 				p = X8664Linux // still give it a shot (Homebrew still installs bottles on Ubuntu 18.04/20.04/etc)
 			}
 		default:
@@ -47,19 +45,19 @@ func FromOCI(r *ocispec.Platform) Platform {
 		}
 	case "darwin":
 		switch {
-		case matchVersion(SonomaVersion):
+		case matchVersion(sonomaVersion):
 			p = Sonoma
-		case matchVersion(VenturaVersion):
+		case matchVersion(venturaVersion):
 			p = Ventura
-		case matchVersion(MontereyVersion):
+		case matchVersion(montereyVersion):
 			p = Monterey
-		case matchVersion(BigSurVersion):
+		case matchVersion(bigSurVersion):
 			p = BigSur
-		case matchVersion(CatalinaVersion):
+		case matchVersion(catalinaVersion):
 			p = Catalina
-		case matchVersion(MojaveVersion):
+		case matchVersion(mojaveVersion):
 			p = Mojave
-		case matchVersion(HighSierraVersion):
+		case matchVersion(highSierraVersion):
 			p = HighSierra
 		// Default to Sonoma if OSVersion is empty
 		case r.OSVersion == "":
@@ -88,80 +86,81 @@ func FromOCI(r *ocispec.Platform) Platform {
 	return p
 }
 
-// Converts platform to OCI platform
-func (p Platform) OCIPlatform() *ocispec.Platform {
+// ociPlatform converts a Platform to an OCI platform
+func (p Platform) ociPlatform() *ocispec.Platform { //nolint:unused
 	var r *ocispec.Platform
 	switch p {
 	case Arm64Sonoma:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			// OSVersion:    "",
+			OSVersion:    sonomaVersion,
 		}
 	case Arm64Ventura:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			// OSVersion:    "",
+			OSVersion:    venturaVersion,
 		}
 	case Arm64Monterey:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			// OSVersion:    "",
+			OSVersion:    montereyVersion,
 		}
 	case Arm64BigSur:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			// OSVersion:    "",
+			OSVersion:    bigSurVersion,
 		}
 	case Sonoma:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    sonomaVersion,
 		}
 	case Ventura:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    venturaVersion,
 		}
 	case Monterey:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    montereyVersion,
 		}
 	case BigSur:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    bigSurVersion,
 		}
 	case Catalina:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    catalinaVersion,
 		}
 	case Mojave:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    mojaveVersion,
 		}
 	case HighSierra:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			// OSVersion:    "",
+			OSVersion:    highSierraVersion,
 		}
 	case X8664Linux:
 		r = &ocispec.Platform{
 			OS:           "linux",
 			Architecture: "amd64",
+			OSVersion:    linuxVersion,
 		}
 	case All, Unsupported:
 		return nil
@@ -169,6 +168,7 @@ func (p Platform) OCIPlatform() *ocispec.Platform {
 	return r
 }
 
+// matchOSVersion reports if osVersion matches versionPrefix
 func matchOSVersion(versionPrefix, osVersion string) bool {
 	after, found := strings.CutPrefix(osVersion, versionPrefix)
 	if !found {

@@ -47,7 +47,6 @@
 - `brew untap`
 - `brew tap-info`
 - `brew developer`
-- `brew postgresql-upgrade-database`
 - `brew tap`
 - `brew vendor-install`
 - `brew pyenv-sync`

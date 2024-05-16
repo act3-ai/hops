@@ -1,4 +1,4 @@
-package utils
+package orasutil
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 // FetchRead abstracts the fetch/read/verify flow
-func FetchRead(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor, action func(r io.Reader) error) error {
+func fetchRead(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor, action func(r io.Reader) error) error {
 	rc, err := fetcher.Fetch(ctx, desc)
 	if err != nil {
 		return err
@@ -20,7 +20,6 @@ func FetchRead(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descri
 	defer rc.Close()
 
 	vr := content.NewVerifyReader(rc, desc)
-
 	if err := action(vr); err != nil {
 		return err
 	}
@@ -28,13 +27,13 @@ func FetchRead(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descri
 	return vr.Verify()
 }
 
-// FetchAll safely fetches the content described by the descriptor.
+// FetchDecode safely fetches the content described by the descriptor and decodes JSON into T.
 // The fetched content is verified against the size and the digest.
 func FetchDecode[T any](ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) (*T, error) {
 	obj := new(T)
-	err := FetchRead(ctx, fetcher, desc, func(r io.Reader) error {
+	err := fetchRead(ctx, fetcher, desc, func(r io.Reader) error {
 		decoder := json.NewDecoder(r)
-		decoder.DisallowUnknownFields()
+		// decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(obj); err != nil {
 			return fmt.Errorf("decoding JSON failed: %w", err)
