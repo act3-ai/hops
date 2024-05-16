@@ -18,15 +18,19 @@ import (
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/platform"
-	"github.com/act3-ai/hops/internal/utils"
 	"github.com/act3-ai/hops/internal/utils/logutil"
+	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
 var (
+	// ErrTagNotFound is returned when a tag is not found
 	ErrTagNotFound = fmt.Errorf("tag %w", errdef.ErrNotFound)
-	ErrNoMetadata  = fmt.Errorf("metadata %w", errdef.ErrNotFound)
+
+	// ErrNoMetadata is returned when metadata is not found
+	ErrNoMetadata = fmt.Errorf("metadata %w", errdef.ErrNotFound)
 )
 
+// VersionedBottle represents a version of a Bottle
 type VersionedBottle interface {
 	Fetch(ctx context.Context, repo bottle.Repository, plat platform.Platform) (io.ReadCloser, error)
 	Metadata(ctx context.Context, repo bottle.Repository) (*v1.Info, error)
@@ -95,7 +99,7 @@ func resolvePlatform(ctx context.Context, repo bottle.Repository, bottle *Bottle
 	}
 
 	if bottle.index == nil {
-		index, err := utils.FetchDecode[ocispec.Index](ctx, repo, bottle.Descriptor)
+		index, err := orasutil.FetchDecode[ocispec.Index](ctx, repo, bottle.Descriptor)
 		if err != nil {
 			return nil, fmt.Errorf("[%s] fetching index: %w", repo.Name(), err)
 		}
@@ -132,7 +136,7 @@ func resolveBottle(ctx context.Context, repo bottle.Repository, desc *bottleMani
 	}
 
 	if desc.manifest == nil {
-		manifest, err := utils.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
+		manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("[%s] fetching manifest: %w", repo.Name(), err)
 		}
@@ -258,7 +262,7 @@ func resolvePlatformMetadata(ctx context.Context, repo bottle.Repository, desc *
 // resolveMetadataConfig resolves metadata config
 func resolveMetadataConfig(ctx context.Context, repo bottle.Repository, desc *metadataManifest) (*metadataConfig, error) {
 	if desc.manifest == nil {
-		manifest, err := utils.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
+		manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
 		if err != nil {
 			return nil, fmt.Errorf("[%s] fetching manifest: %w", repo.Name(), err)
 		}
@@ -272,7 +276,7 @@ func resolveMetadataConfig(ctx context.Context, repo bottle.Repository, desc *me
 // fetchMetadataConfig fetches the metadata config
 func fetchMetadataConfig(ctx context.Context, repo bottle.Repository, desc *metadataConfig) (*v1.Info, error) {
 	if desc.config == nil {
-		config, err := utils.FetchDecode[v1.Info](ctx, repo, desc.Descriptor)
+		config, err := orasutil.FetchDecode[v1.Info](ctx, repo, desc.Descriptor)
 		if err != nil {
 			desc.config = &v1.Info{}
 			return nil, fmt.Errorf("[%s] fetching metadata from config: %w", repo.Name(), err)
@@ -347,10 +351,12 @@ var copyOptions = oras.ExtendedCopyGraphOptions{
 	},
 }
 
+// IterOptions configures iteration
 type IterOptions struct {
 	MaxGoroutines int
 }
 
+// List
 func List(ctx context.Context, reg bottle.SearchableRegistry, opts *IterOptions) ([]*v1.Info, error) {
 	repos, err := reg.Repositories(ctx)
 	if err != nil {
@@ -381,7 +387,8 @@ func List(ctx context.Context, reg bottle.SearchableRegistry, opts *IterOptions)
 	})
 }
 
-func CopyAllMetadata(ctx context.Context, srcReg, dst bottle.SearchableRegistry, opts *IterOptions) ([]*BottleIndex, error) {
+// CopyAllMetadata copies all metadata artifacts from srcReg to dstReg
+func CopyAllMetadata(ctx context.Context, srcReg, dstReg bottle.SearchableRegistry, opts *IterOptions) ([]*BottleIndex, error) {
 	srcRepos, err := srcReg.Repositories(ctx)
 	if err != nil {
 		return nil, err
@@ -397,7 +404,7 @@ func CopyAllMetadata(ctx context.Context, srcReg, dst bottle.SearchableRegistry,
 			return nil, err
 		}
 
-		dstRepo, err := dst.Repository(ctx, *repop)
+		dstRepo, err := dstReg.Repository(ctx, *repop)
 		if err != nil {
 			return nil, err
 		}

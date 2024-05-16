@@ -1,4 +1,4 @@
-package utils
+package resputil
 
 import (
 	"encoding/json"

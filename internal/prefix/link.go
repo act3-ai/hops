@@ -11,7 +11,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 
-	"github.com/act3-ai/hops/internal/symlink"
+	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
 // LinkedFiles finds all files in the prefix that link into the given kegs
@@ -87,12 +87,15 @@ func (p Prefix) BrokenLinks() ([]string, error) {
 	return broken, nil
 }
 
+// LinkOptions configure the link step
+type LinkOptions symlink.Options
+
 // Link links a keg from the Cellar into the prefix
 // https://github.com/Homebrew/brew/blob/ea2892f8ee58494623fc3c15cc8ce81b9124e6e6/Library/Homebrew/keg.rb
 //
 // TODO: make sure etc and var directories are installed correctly:
 // https://github.com/Homebrew/brew/blob/caff1359de1ae7ac198fa7081d905d2a535af3a1/Library/Homebrew/formula.rb#L1339
-func (p Prefix) Link(name, version string, opts *symlink.Options) (int, int, error) {
+func (p Prefix) Link(name, version string, opts *LinkOptions) (int, int, error) {
 	links, files := 0, 0
 
 	if !opts.DryRun {
@@ -106,7 +109,7 @@ func (p Prefix) Link(name, version string, opts *symlink.Options) (int, int, err
 		}
 	}
 
-	err := p.OptLink(name, version, opts)
+	err := p.OptLink(name, version, (*symlink.Options)(opts))
 	if err != nil {
 		return links, files, err
 	}
@@ -126,14 +129,14 @@ func (p Prefix) Link(name, version string, opts *symlink.Options) (int, int, err
 	// }
 
 	for _, ld := range linkedDirectories {
-		l, err := p.linkDir(kegPath, ld.path, ld.modeFunc, opts)
+		l, err := p.linkDir(kegPath, ld.path, ld.modeFunc, (*symlink.Options)(opts))
 		if err != nil {
 			return links, files, err
 		}
 		links += l
 	}
 
-	err = symlink.Relative(kegPath, filepath.Join(p.LinkedKegRecords(), name), opts)
+	err = symlink.Relative(kegPath, filepath.Join(p.LinkedKegRecords(), name), (*symlink.Options)(opts))
 	if err != nil {
 		return links, files, err
 	}

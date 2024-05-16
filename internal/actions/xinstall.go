@@ -27,7 +27,6 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/pretty"
-	"github.com/act3-ai/hops/internal/symlink"
 )
 
 /*
@@ -337,7 +336,7 @@ func (action *XInstall) run(ctx context.Context, store bottle.Repository, b *reg
 	if !f.KegOnly || action.Force {
 		slog.Info("Linking " + f.Name) // ex: Linking cowsay
 
-		lnopts := &symlink.Options{
+		lnopts := &prefix.LinkOptions{
 			Name:      f.Name,
 			Overwrite: action.Overwrite,
 			DryRun:    action.DryRun,

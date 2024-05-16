@@ -7,7 +7,7 @@ import (
 	"oras.land/oras-go/v2/content"
 
 	"github.com/act3-ai/hops/internal/platform"
-	"github.com/act3-ai/hops/internal/utils"
+	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
 // successorsForPlatform creates a platform-specific function to list successors used by Hops
@@ -20,7 +20,7 @@ func successorsForPlatform(plat platform.Platform) func(ctx context.Context, fet
 		switch desc.MediaType {
 		case ocispec.MediaTypeImageIndex,
 			"application/vnd.docker.distribution.manifest.list.v2+json":
-			index, err := utils.FetchDecode[ocispec.Index](ctx, fetcher, desc)
+			index, err := orasutil.FetchDecode[ocispec.Index](ctx, fetcher, desc)
 			if err != nil {
 				return nil, err
 			}
@@ -37,7 +37,7 @@ func successorsForPlatform(plat platform.Platform) func(ctx context.Context, fet
 			return nodes, nil
 		case ocispec.MediaTypeImageManifest,
 			"application/vnd.docker.distribution.manifest.v2+json":
-			manifest, err := utils.FetchDecode[ocispec.Manifest](ctx, fetcher, desc)
+			manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, fetcher, desc)
 			if err != nil {
 				return nil, err
 			}
@@ -73,7 +73,7 @@ func metadataSuccessorsForPlatform(plat platform.Platform) func(ctx context.Cont
 		switch desc.MediaType {
 		case "application/vnd.docker.distribution.manifest.v2+json",
 			ocispec.MediaTypeImageManifest:
-			manifest, err := utils.FetchDecode[ocispec.Manifest](ctx, fetcher, desc)
+			manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, fetcher, desc)
 			if err != nil {
 				return nil, err
 			}
@@ -92,7 +92,7 @@ func metadataSuccessorsForPlatform(plat platform.Platform) func(ctx context.Cont
 			return nodes, nil
 		case ocispec.MediaTypeImageIndex,
 			"application/vnd.docker.distribution.manifest.list.v2+json":
-			index, err := utils.FetchDecode[ocispec.Index](ctx, fetcher, desc)
+			index, err := orasutil.FetchDecode[ocispec.Index](ctx, fetcher, desc)
 			if err != nil {
 				return nil, err
 			}
@@ -117,7 +117,7 @@ func metadataSuccessors(ctx context.Context, fetcher content.Fetcher, desc ocisp
 	switch desc.MediaType {
 	case "application/vnd.docker.distribution.manifest.v2+json",
 		ocispec.MediaTypeImageManifest:
-		manifest, err := utils.FetchDecode[ocispec.Manifest](ctx, fetcher, desc)
+		manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, fetcher, desc)
 		if err != nil {
 			return nil, err
 		}
@@ -134,7 +134,7 @@ func metadataSuccessors(ctx context.Context, fetcher content.Fetcher, desc ocisp
 		return nodes, nil
 	case ocispec.MediaTypeImageIndex,
 		"application/vnd.docker.distribution.manifest.list.v2+json":
-		index, err := utils.FetchDecode[ocispec.Index](ctx, fetcher, desc)
+		index, err := orasutil.FetchDecode[ocispec.Index](ctx, fetcher, desc)
 		if err != nil {
 			return nil, err
 		}

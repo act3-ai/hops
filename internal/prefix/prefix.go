@@ -18,9 +18,9 @@ import (
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/prefix/keg"
 	"github.com/act3-ai/hops/internal/prefix/rack"
-	"github.com/act3-ai/hops/internal/symlink"
 	"github.com/act3-ai/hops/internal/utils"
 	"github.com/act3-ai/hops/internal/utils/logutil"
+	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
 // NewErrNoSuchKeg creates an error when a keg is not found

@@ -21,8 +21,8 @@ import (
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
+	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/pretty"
-	"github.com/act3-ai/hops/internal/symlink"
 )
 
 // Install represents the action and its options
@@ -203,7 +203,7 @@ func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *for
 	if !f.KegOnly || action.Force {
 		slog.Info("Linking " + b.Name) // ex: Linking cowsay
 
-		lnopts := &symlink.Options{
+		lnopts := &prefix.LinkOptions{
 			Name:      b.Name,
 			Overwrite: action.Overwrite,
 			DryRun:    action.DryRun,

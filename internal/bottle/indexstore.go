@@ -17,8 +17,8 @@ import (
 	"oras.land/oras-go/v2/registry/remote"
 
 	"github.com/act3-ai/hops/internal/o"
-	"github.com/act3-ai/hops/internal/symlink"
-	"github.com/act3-ai/hops/internal/utils"
+	"github.com/act3-ai/hops/internal/utils/resputil"
+	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
 // IndexStore downloads bottles with an HTTP client.
@@ -32,7 +32,7 @@ import (
 //   - BOTTLE_NAME: f.Name
 //   - BOTTLE_VERSION: f.Version()
 //
-// Does not support HOMEBREW_ARTIFACT_DOMAIN.
+// TODO: Does not support HOMEBREW_ARTIFACT_DOMAIN
 type IndexStore struct {
 	headers http.Header   // for GitHub Packages auth
 	HTTP    *http.Client  // client for HTTP requests
@@ -204,8 +204,8 @@ func downloadBottleHTTP(ctx context.Context, client http.Client, header http.Hea
 	defer resp.Body.Close()
 
 	// Check for a non-success status and handle
-	if !utils.HTTPSuccess(resp) {
-		return utils.HandleHTTPError(resp)
+	if !resputil.HTTPSuccess(resp) {
+		return resputil.HandleHTTPError(resp)
 	}
 
 	// Copy the response body to the provided writer

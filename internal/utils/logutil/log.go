@@ -16,6 +16,7 @@ func ErrAttr(err error) slog.Attr {
 	return slog.Any(ErrKey, err)
 }
 
+// OCIPlatformValue formats an OCI platform for logging
 func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	if plat == nil {
 		return slog.String("platform", "nil")
@@ -23,6 +24,14 @@ func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	return slog.Attr{
 		Key:   "platform",
 		Value: slog.GroupValue(ociPlatformAttrs(*plat)...),
+	}
+}
+
+// Descriptor formats an OCI descriptor for logging
+func Descriptor(desc ocispec.Descriptor) slog.Attr {
+	return slog.Attr{
+		Key:   "desc",
+		Value: slog.GroupValue(descriptorValues(desc)...),
 	}
 }
 
@@ -46,30 +55,30 @@ func descriptorValues(desc ocispec.Descriptor) []slog.Attr {
 	return attrs
 }
 
-func Descriptor(desc ocispec.Descriptor) slog.Attr {
-	return slog.Attr{
-		Key:   "desc",
-		Value: slog.GroupValue(descriptorValues(desc)...),
-	}
-}
-
-// // Custom log levels for higher-level debug prints
-// // Double the normal debug level
-// Debug2 = log.DebugLevel * 2
-// // Triple the normal debug level
-// Debug3 = log.DebugLevel * 3
-
+// WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions
 func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOptions) oras.CopyGraphOptions {
+	onCopySkipped := opts.OnCopySkipped
 	opts.OnCopySkipped = func(ctx context.Context, desc ocispec.Descriptor) error {
 		logger.Log(ctx, level, "Skipped artifact", Descriptor(desc))
+		if onCopySkipped != nil {
+			return onCopySkipped(ctx, desc)
+		}
 		return nil
 	}
+	postCopy := opts.PostCopy
 	opts.PostCopy = func(ctx context.Context, desc ocispec.Descriptor) error {
 		logger.Log(ctx, level, "Copied artifact", Descriptor(desc))
+		if postCopy != nil {
+			return postCopy(ctx, desc)
+		}
 		return nil
 	}
+	onMounted := opts.OnMounted
 	opts.OnMounted = func(ctx context.Context, desc ocispec.Descriptor) error {
 		logger.Log(ctx, level, "Mounted artifact", Descriptor(desc))
+		if onMounted != nil {
+			return onMounted(ctx, desc)
+		}
 		return nil
 	}
 	return *opts

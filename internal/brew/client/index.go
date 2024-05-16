@@ -80,6 +80,7 @@ func (index *APIIndex) SearchFunc(match func(*formula.Formula) bool) []*formula.
 	return hits
 }
 
+// Aliases returns the map of aliases
 func (index *APIIndex) Aliases() map[string]string {
 	return maps.Clone(index.aliases)
 }

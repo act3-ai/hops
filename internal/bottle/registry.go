@@ -20,31 +20,42 @@ import (
 )
 
 const (
-	AnnotationMetadataV1      = "formulae.brew.sh/v1"
+	// AnnotationMetadataVersion is the annotation key used to describe the metadata version
 	AnnotationMetadataVersion = "formulae.brew.sh/version"
+
+	// MetadataVersionV1 is the value of the "formulae.brew.sh/version" annotation for the v1 API
+	MetadataVersionV1 = "v1"
+
+	// MetadataVersionV2 is the value of the "formulae.brew.sh/version" annotation for the v2 API
+	MetadataVersionV2 = "v2"
+
+	// MetadataVersionV3 is the value of the "formulae.brew.sh/version" annotation for the v3 API
+	MetadataVersionV3 = "v3"
 )
 
-// Registry represents a registry of bottles
+// Registry is a source of Bottles
 type Registry interface {
 	Repository(ctx context.Context, name string) (Repository, error)
 }
 
-// SearchableRegistry is a registry supporting search capability
+// SearchableRegistry is a source supporting search
 type SearchableRegistry interface {
 	Registry
 	RepositoryLister
 }
 
+// MetadataRegistry is a source of metadata
 type MetadataRegistry interface {
 	Metadata(ctx context.Context, name string) (*v1.Info, error)
 	PlatformMetadata(ctx context.Context, name string, plat platform.Platform) (*v1.Info, error)
 }
 
-// RepositoryLister lists bottle repositories
+// RepositoryLister lists Bottle repositories
 type RepositoryLister interface {
 	Repositories(ctx context.Context) ([]string, error)
 }
 
+// Fetcher is unused
 type Fetcher interface {
 	Fetch(ctx context.Context, name string, plat platform.Platform) (io.ReadCloser, error)
 	Metadata(ctx context.Context, name string) (*v1.Info, error)

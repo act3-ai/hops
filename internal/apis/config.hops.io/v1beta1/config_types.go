@@ -12,8 +12,8 @@ import (
 
 	"github.com/adrg/xdg"
 
+	"github.com/act3-ai/hops/internal/apis/apiutil"
 	"github.com/act3-ai/hops/internal/o"
-	"github.com/act3-ai/hops/internal/utils"
 	"github.com/act3-ai/hops/internal/utils/env"
 )
 
@@ -23,13 +23,13 @@ var (
 	configurationFileParts = []string{"hops", "config.yaml"}
 
 	// ConfigurationMatchFiles is a list of patterns used to match a config file for schema validation
-	ConfigurationMatchFiles = utils.ConfigValidatePath(configurationFileParts...)
+	ConfigurationMatchFiles = apiutil.ConfigDocumentedPath(configurationFileParts...)
 
 	// ConfigurationFile is the default config file location
-	ConfigurationFile = utils.DefaultConfigPath(configurationFileParts...)
+	ConfigurationFile = apiutil.DefaultConfigPath(configurationFileParts...)
 
 	// ConfigurationSearchFiles is the possible config file locations in descending priority order
-	ConfigurationSearchFiles = utils.ConfigSearchPath(configurationFileParts...)
+	ConfigurationSearchFiles = apiutil.ConfigActualPaths(configurationFileParts...)
 
 	// UnevaluatedConfigurationSearchFiles are used for display
 	UnevaluatedSearchFiles = []string{
@@ -55,12 +55,13 @@ type Configuration struct {
 	// Configures Hops' usage of Homebrew's sources.
 	Homebrew HomebrewAPIConfig `json:"homebrew,omitempty" yaml:"homebrew,omitempty"`
 
-	// Registry sets the registry used for bottles
+	// Registry configures a Hops-compatible registry for Bottles
 	Registry RegistryConfig `json:"registry,omitempty" yaml:"registry,omitempty"`
 }
 
+// RegistryConfig configures a Hops-compatible registry for Bottles
 type RegistryConfig struct {
-	// Prefix sets a Hops-compatible registry for bottles
+	// Prefix is the prefix for all Bottle repositories
 	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
 
 	// CAFile sets the server certificate authority file for the remote registry
@@ -91,19 +92,6 @@ type RegistryConfig struct {
 
 	// Resolve sets customized DNS for registry, formatted in host:port:address[:address_port]
 	// Resolve string `json:"resolve,omitempty" yaml:"resolve,omitempty"`
-
-	/*
-		oras flags:
-		      --ca-file string                             server certificate authority file for the remote registry
-		  -H, --header stringArray                         add custom headers to requests
-		      --insecure                                   allow connections to SSL registry without certs
-		      --oci-layout                                 set target as an OCI image layout
-		  -p, --password string                            registry password or identity token
-		      --plain-http                                 allow insecure connections to registry without SSL check
-		      --registry-config path                       path of the authentication file for registry
-		      --resolve host:port:address[:address_port]   customized DNS for registry, formatted in host:port:address[:address_port]
-		  -u, --username string                            registry username
-	*/
 }
 
 // AutoUpdateConfig configures auto-updates for a formula index.
@@ -112,6 +100,7 @@ type AutoUpdateConfig struct {
 	Secs     *int `json:"secs,omitempty" yaml:"secs,omitempty"`
 }
 
+// DefaultAutoUpdateSecs is the default auto-update seconds value
 const DefaultAutoUpdateSecs = 86400
 
 // HomebrewAPIConfig configures Hops' usage of the Homebrew API.
