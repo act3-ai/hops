@@ -17,7 +17,7 @@ Homebrew OCI Package Sipper
 
 Hops is an experimental client for installing Homebrew bottles.
 
-> [CAUTION]: Hops is not recommended for full use yet. Package management is a complex task 
+> [CAUTION]: Hops is a experimental software. Package management is a complex task 
 >            and there are serious risks with modifying your packages.
 
 ## Options
