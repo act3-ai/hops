@@ -18,7 +18,8 @@ env:
   VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}
 
 jobs:
-  build:
+  go-build:
+    name: Go build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -29,6 +30,7 @@ jobs:
         GOARCH:
           - amd64
           - arm64
+      fail-fast: true
     steps:
       - uses: actions/checkout@v4
         name: Check out repo
@@ -38,9 +40,30 @@ jobs:
         with:
           go-version: "1.22"
 
-      - name: Build
+      # Go build
+      - name: Build ${{env.EXECUTABLE}}
         run: |
-          go build -trimpath \
-            -ldflags="-s -w -X 'main.version=${{ github.ref_type }}'" \
+          go build \
+            -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
             -o artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}} \
             ./cmd/${{env.EXECUTABLE}}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}
+
+      # Go Boring FIPS 140-2 build
+      # See https://kupczynski.info/posts/fips-golang/ for more information
+      - name: Build ${{env.EXECUTABLE}} FIPS
+        run: |
+          env CGO_ENABLED=1 GOEXPERIMENT=boringcrypto \
+          go build \
+            -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}-fips'" \
+            -o artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}-fips \
+            ./cmd/${{env.EXECUTABLE}}
+
+      - name: Upload FIPS build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}-fips
