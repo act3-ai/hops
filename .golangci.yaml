@@ -5,8 +5,6 @@ linters:
     - errname
     - errorlint
     - exhaustive
-    # - gci
-    # - gochecknoglobals
     - gochecknoinits
     - gocritic
     - gofmt
@@ -26,6 +24,7 @@ linters:
     - tenv
     - thelper
     - typecheck
+    - unparam
     - unused
     - usestdlibvars
 
@@ -41,18 +40,20 @@ linters-settings:
         alias: hopsv1
 
   sloglint:
-    kv-only: false
-    no-mixed-args: true
-    context-only: false
-    static-msg: false
+    # Enforce using attributes only (overrides no-mixed-args, incompatible with kv-only).
+    # Default: false
     attr-only: true
-    no-raw-keys: false
-    args-on-sep-lines: false
+    # Enforce using static values for log messages.
+    # Default: false
+    # static-msg: true
+    # Enforce a single key naming convention.
+    # Values: snake, kebab, camel, pascal
+    # Default: ""
+    key-naming-case: camel
 
   staticcheck:
-    # Select the Go version to target. The default is '1.13'.
-    go: "1.22"
-    # https://staticcheck.io/docs/options#checks
+    # SAxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
+    # Default: ["*"]
     checks: ["all"]
 
   revive:
@@ -60,17 +61,11 @@ linters-settings:
     severity: warning
     rules:
       - name: atomic
-      # - name: line-length-limit
-      #   severity: warning
-      #   arguments: [120]
       - name: unhandled-error
         arguments:
           - "fmt.Printf"
           - "fmt.Println"
           - "fmt.Print"
-          # - "fmt.Fprintf"
-          # - "fmt.Fprintln"
-          # - "fmt.Fprint"
       - name: blank-imports
       - name: context-as-argument
       - name: context-keys-type
@@ -78,7 +73,7 @@ linters-settings:
       - name: error-return
       - name: error-strings
       - name: error-naming
-      # - name: exported
+      - name: exported
       - name: if-return
       - name: increment-decrement
       - name: var-naming
@@ -102,11 +97,11 @@ linters-settings:
         arguments: [30]
       - name: use-any
 
-  # goimports:
-  #   # Put imports beginning with prefix after 3rd-party packages.
-  #   # It's a comma-separated list of prefixes.
-  #   # Default: ""
-  #   local-prefixes: git.act3-ace.com
+  goimports:
+    # Put imports beginning with prefix after 3rd-party packages.
+    # It's a comma-separated list of prefixes.
+    # Default: ""
+    local-prefixes: gitlab.com/act3-ai,github.com/act3-ai
 
 issues:
   # uncomment to enable more linting
