@@ -13,6 +13,14 @@ See the [implementation tracker](./docs/implementation.md) for the latest progre
 - **Phase 3**: Implement search functionality using alternative registries
 - **Phase 4**: Implement an extended version of Homebrew Bottles to allow Hops to be used on more platforms than Homebrew
 
+## Get Started
+
+The Hops CLI is currently only installable using the Go toolchain:
+
+```sh
+go install github.com/act3-ai/hops/cmd/hops@latest
+```
+
 ## Documentation
 
 The documentation for Hops is organized as follows:
