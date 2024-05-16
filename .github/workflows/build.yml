@@ -21,6 +21,9 @@ jobs:
   go-build:
     name: Go build
     runs-on: ubuntu-latest
+    env:
+      BUILD_ID: hops
+      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
     strategy:
@@ -60,7 +63,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.EXECUTABLE}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
+          name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: |
             artifacts/${{env.EXECUTABLE}}
             ${{steps.attest.outputs.bundle-path}}
@@ -68,6 +71,9 @@ jobs:
   go-build-fips:
     name: Go build FIPS
     runs-on: ubuntu-latest
+    env:
+      BUILD_ID: hops-fips
+      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}-fips
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
     strategy:
@@ -108,7 +114,7 @@ jobs:
         name: Upload FIPS build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.EXECUTABLE}}-fips--${{matrix.GOOS}}--${{matrix.GOARCH}}
+          name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: |
             artifacts/${{env.EXECUTABLE}}
             ${{steps.attest.outputs.bundle-path}}
