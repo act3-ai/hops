@@ -31,6 +31,7 @@ jobs:
       VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-path: ${{ steps.build.outputs.artifact-path }}
     strategy:
       matrix:
         GOOS:
@@ -56,8 +57,9 @@ jobs:
         run: |
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
-            -o artifacts/${{env.EXECUTABLE}} \
+            -o /bin/${{env.EXECUTABLE}} \
             ./cmd/${{env.EXECUTABLE}}
+          echo "artifact-path=/bin/${{env.EXECUTABLE}}" >> $GITHUB_OUTPUT
 
       - uses: actions/attest-build-provenance@v1
         id: attest
@@ -81,6 +83,7 @@ jobs:
       VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}-fips
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      artifact-path: ${{ steps.build.outputs.artifact-path }}
     strategy:
       matrix:
         GOOS:
@@ -103,12 +106,14 @@ jobs:
       # Go Boring FIPS 140-2 build
       # See https://kupczynski.info/posts/fips-golang/ for more information
       - name: Build ${{env.EXECUTABLE}} FIPS
+        id: build
         run: |
           env CGO_ENABLED=1 GOEXPERIMENT=boringcrypto \
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}-fips'" \
-            -o artifacts/${{env.EXECUTABLE}} \
+            -o /bin/${{env.EXECUTABLE}} \
             ./cmd/${{env.EXECUTABLE}}
+          echo "artifact-path=/bin/${{env.EXECUTABLE}}" >> $GITHUB_OUTPUT
 
       - uses: actions/attest-build-provenance@v1
         id: attest
