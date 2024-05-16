@@ -8,9 +8,8 @@ on:
       - "*"
 
 permissions:
-  contents: write
-  # packages: write
-  # issues: write
+  contents: write # upload archives to GitHub release
+  packages: write # push images and packages to ghcr.io
 
 jobs:
   goreleaser:
