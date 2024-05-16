@@ -17,6 +17,11 @@ env:
   EXECUTABLE: hops
   VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.run_number) }}
 
+permissions:
+  id-token: write
+  contents: read
+  attestations: write
+
 jobs:
   go-build:
     name: Go build
