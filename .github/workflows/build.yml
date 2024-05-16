@@ -61,11 +61,11 @@ jobs:
       matrix:
         GOOS:
           - linux
-          - windows
-          - darwin
+          # - windows
+          # - darwin
         GOARCH:
           - amd64
-          - arm64
+          # - arm64
       fail-fast: true
     steps:
       - uses: actions/checkout@v4
