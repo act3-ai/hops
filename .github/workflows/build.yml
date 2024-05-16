@@ -54,6 +54,28 @@ jobs:
           name: ${{env.EXECUTABLE}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}
 
+  go-build-fips:
+    name: Go build FIPS
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        GOOS:
+          - linux
+          - windows
+          - darwin
+        GOARCH:
+          - amd64
+          - arm64
+      fail-fast: true
+    steps:
+      - uses: actions/checkout@v4
+        name: Check out repo
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
       # Go Boring FIPS 140-2 build
       # See https://kupczynski.info/posts/fips-golang/ for more information
       - name: Build ${{env.EXECUTABLE}} FIPS
