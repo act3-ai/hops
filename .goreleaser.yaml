@@ -1,0 +1,99 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 1
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  - id: hops
+    main: ./cmd/hops
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - "-s -w -X main.version={{.Version}}"
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+  - id: hops-fips
+    main: ./cmd/hops
+    env:
+      - CGO_ENABLED=1
+      - GOEXPERIMENT=boringcrypto
+    flags:
+      - -trimpath
+    ldflags:
+      - "-s -w -X main.version={{.Version}}+FIPS"
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+archives:
+  - format: tar.gz
+    # this name template makes the OS and Arch compatible with the results of `uname`.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        format: zip
+
+kos:
+  - id: hops
+    build: hops
+    base_image: cgr.dev/chainguard/static
+    labels:
+      commit-ref: "$CI_COMMIT_REF_NAME"
+      commit-sha: "$CI_COMMIT_SHA"
+      pipeline-url: "$CI_PIPELINE_URL"
+      org.opencontainers.image.title: "hops"
+    repository: ghcr.io/act3-ai/hops/distroless
+    platforms:
+      - all
+    tags:
+      - "{{if not .Prerelease}}latest{{end}}"
+      - "{{if not .Prerelease}}stable{{end}}"
+      - "{{.Tag}}"
+    creation_time: "{{.CommitTimestamp}}"
+    ko_data_creation_time: "{{.CommitTimestamp}}"
+    sbom: spdx
+    base_import_paths: true
+
+report_sizes: true
+
+release:
+  prerelease: auto
+  extra_files:
+    - glob: ./path/to/file.txt
+    - glob: ./glob/**/to/**/file/**/*
+    - glob: ./glob/foo/to/bar/file/foobar/override_from_previous
+    - glob: ./single_file.txt
+      name_template: file.txt # note that this only works if glob matches 1 file only
+  include_meta: true
+
+changelog:
+  use: github-native
