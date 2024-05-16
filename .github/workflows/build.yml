@@ -51,6 +51,7 @@ jobs:
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
+          name: ${{env.EXECUTABLE}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}
 
       # Go Boring FIPS 140-2 build
@@ -60,10 +61,11 @@ jobs:
           env CGO_ENABLED=1 GOEXPERIMENT=boringcrypto \
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}-fips'" \
-            -o artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}-fips \
+            -o artifacts/${{env.EXECUTABLE}}-fips/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}} \
             ./cmd/${{env.EXECUTABLE}}
 
       - name: Upload FIPS build artifact
         uses: actions/upload-artifact@v4
         with:
-          path: artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}-fips
+          name: ${{env.EXECUTABLE}}-fips--${{matrix.GOOS}}--${{matrix.GOARCH}}
+          path: artifacts/${{env.EXECUTABLE}}-fips/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}
