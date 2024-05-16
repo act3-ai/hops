@@ -21,6 +21,8 @@ jobs:
   go-build:
     name: Go build
     runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
     strategy:
       matrix:
         GOOS:
@@ -42,21 +44,32 @@ jobs:
 
       # Go build
       - name: Build ${{env.EXECUTABLE}}
+        id: build
         run: |
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
-            -o artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}} \
+            -o artifacts/${{env.EXECUTABLE}} \
             ./cmd/${{env.EXECUTABLE}}
 
+      - uses: actions/attest-build-provenance@v1
+        id: attest
+        with:
+          subject-path: artifacts/${{env.EXECUTABLE}}
+
       - name: Upload build artifact
+        id: upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.EXECUTABLE}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
-          path: artifacts/${{env.EXECUTABLE}}/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}
+          path: |
+            artifacts/${{env.EXECUTABLE}}
+            ${{steps.attest.outputs.bundle-path}}
 
   go-build-fips:
     name: Go build FIPS
     runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
     strategy:
       matrix:
         GOOS:
@@ -83,11 +96,19 @@ jobs:
           env CGO_ENABLED=1 GOEXPERIMENT=boringcrypto \
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}-fips'" \
-            -o artifacts/${{env.EXECUTABLE}}-fips/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}} \
+            -o artifacts/${{env.EXECUTABLE}} \
             ./cmd/${{env.EXECUTABLE}}
 
-      - name: Upload FIPS build artifact
+      - uses: actions/attest-build-provenance@v1
+        id: attest
+        with:
+          subject-path: artifacts/${{env.EXECUTABLE}}
+
+      - id: upload
+        name: Upload FIPS build artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{env.EXECUTABLE}}-fips--${{matrix.GOOS}}--${{matrix.GOARCH}}
-          path: artifacts/${{env.EXECUTABLE}}-fips/${{matrix.GOOS}}/${{matrix.GOARCH}}/bin/${{env.EXECUTABLE}}
+          path: |
+            artifacts/${{env.EXECUTABLE}}
+            ${{steps.attest.outputs.bundle-path}}
