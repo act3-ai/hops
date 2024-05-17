@@ -20,7 +20,6 @@ import (
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
 	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -118,7 +117,7 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 
 		copiedBottles[i] = &copiedBottle{
 			repo: dst,
-			info: &f.Info,
+			info: f,
 		}
 	}
 
@@ -132,7 +131,7 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*formula.Formula, error) {
+func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*v1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {

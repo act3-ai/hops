@@ -22,7 +22,6 @@ import (
 	"github.com/act3-ai/hops/internal/brew"
 	"github.com/act3-ai/hops/internal/dependencies"
 	regwalker "github.com/act3-ai/hops/internal/dependencies/registry"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
@@ -91,11 +90,11 @@ func (action *XInstall) Run(ctx context.Context, names ...string) error {
 	}
 
 	kegs := []string{}
-	installed := []*formula.Formula{}
+	installed := []*v1.Info{}
 	for _, f := range formulae {
 		if f != nil {
 			kegs = append(kegs, action.Prefix().KegPath(f.Name, f.Version()))
-			installed = append(installed, formula.New(f))
+			installed = append(installed, f)
 		}
 	}
 
@@ -179,12 +178,12 @@ func regbottleInstalled(p prefix.Prefix, plat platform.Platform, cache bottle.Re
 		if err != nil {
 			return false, err
 		}
-		return formulaInstalled(p)(ctx, formula.New(&v1.Info{PlatformInfo: *info}))
+		return formulaInstalled(p)(ctx, &v1.Info{PlatformInfo: *info})
 	}
 }
 
-func formulaInstalled(p prefix.Prefix) func(ctx context.Context, f *formula.Formula) (bool, error) {
-	return func(_ context.Context, f *formula.Formula) (bool, error) {
+func formulaInstalled(p prefix.Prefix) func(ctx context.Context, f *v1.Info) (bool, error) {
+	return func(_ context.Context, f *v1.Info) (bool, error) {
 		notInstalled, err := p.FormulaOutdated(f)
 		if err != nil {
 			return false, err
@@ -283,7 +282,7 @@ func (action *XInstall) run(ctx context.Context, store bottle.Repository, b *reg
 		return nil, err
 	}
 
-	f := formula.New(&v1.Info{PlatformInfo: *info})
+	f := &v1.Info{PlatformInfo: *info}
 	outdated, err := action.Prefix().FormulaOutdated(f)
 	if err != nil {
 		return nil, err
@@ -348,7 +347,7 @@ func (action *XInstall) run(ctx context.Context, store bottle.Repository, b *reg
 		}
 	}
 
-	return &f.Info, nil
+	return f, nil
 }
 
 func parseArg(arg string) (name, version string) {

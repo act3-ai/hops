@@ -14,6 +14,7 @@ import (
 
 	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/brew"
 	brewclient "github.com/act3-ai/hops/internal/brew/client"
@@ -202,8 +203,8 @@ func (action *Hops) Config() *hopsv1.Configuration {
 }
 
 // FetchAll finds all formula from the index, using a concurrent iterator if the list of names is large
-func (action *Hops) FetchAll(log func(string), index formula.Index, names ...string) ([]*formula.Formula, error) {
-	find := func(name string) (*formula.Formula, error) {
+func (action *Hops) FetchAll(log func(string), index formula.Index, names ...string) ([]*v1.Info, error) {
+	find := func(name string) (*v1.Info, error) {
 		log("Fetching " + o.StyleGreen(name))
 		f := index.Find(name)
 		if f == nil {
@@ -212,7 +213,7 @@ func (action *Hops) FetchAll(log func(string), index formula.Index, names ...str
 		return f, nil
 	}
 
-	formulae := make([]*formula.Formula, len(names))
+	formulae := make([]*v1.Info, len(names))
 	var err error
 	for i, n := range names {
 		formulae[i], err = find(n)

@@ -12,7 +12,7 @@ import (
 
 	"github.com/MakeNowJust/heredoc/v2"
 
-	"github.com/act3-ai/hops/internal/formula"
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
 )
 
@@ -71,7 +71,7 @@ func (action *Search) Run(ctx context.Context, terms ...string) error {
 			}
 		}
 	} else {
-		fhits := index.SearchFunc(func(f *formula.Formula) bool {
+		fhits := index.SearchFunc(func(f *v1.Info) bool {
 			for _, match := range matchFuncs {
 				// Check against descriptions
 				if match(f.Desc) {

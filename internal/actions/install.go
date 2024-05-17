@@ -83,9 +83,9 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 		brew.Cache)
 
 	// Use an iterator to start concurrent installs of each bottle
-	m := iter.Mapper[*formula.Formula, string]{MaxGoroutines: action.MaxGoroutines()}
+	m := iter.Mapper[*v1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
 	results, err := m.MapErr(installs,
-		func(f **formula.Formula) (string, error) {
+		func(f **v1.Info) (string, error) {
 			return action.run(ctx, store, *f)
 		})
 	if err != nil {
@@ -115,7 +115,7 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 }
 
 // resolveInstalls resolves the list of formulae that will be installed
-func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*formula.Formula, error) {
+func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*v1.Info, error) {
 	index := action.Index()
 	err := formula.AutoUpdate(ctx, index, &action.Config().Homebrew.AutoUpdate)
 	if err != nil {
@@ -164,7 +164,7 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*
 }
 
 // run is the meat
-func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *formula.Formula) (string, error) {
+func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *v1.Info) (string, error) {
 	outdated, err := action.Prefix().FormulaOutdated(f)
 	if err != nil {
 		return "", err
