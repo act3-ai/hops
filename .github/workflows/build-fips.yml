@@ -36,4 +36,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         name: Check out repo
-      - uses: ./.github/workflows/build.yml
+      - run: |
+          set -x
+          ls /home/runner/work/hops
+          ls /home/runner/work/hops/hops
+          ls ${{ github.workspace }}/.github/workflows/
+      - uses: /.github/workflows/build.yml
