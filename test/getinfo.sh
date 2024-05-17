@@ -17,17 +17,19 @@ fi
 datadir="HOPS_CACHE/data"
 mkdir -p "$datadir"
 
-info="${datadir}/${formula}.info.json"
+brewinfo="${datadir}/${formula}.brew-info.json"
+info="${datadir}/${formula}.curl-info.json"
 
-brew info --json "$formula" >"$info"
+brew info --json "$formula" >"$brewinfo"
+curl -o "$info" "https://formulae.brew.sh/api/formula/$formula.json"
 
-version="$(jq -r '.[0].versions.stable' "$info")"
+version="$(jq -r '.versions.stable' "$info")"
 if [[ -z "${version}" ]]; then
 	echo "empty stable version"
 	exit 1
 fi
 
-revision="$(jq -r '.[0].bottle.stable.rebuild' "$info")"
+revision="$(jq -r '.bottle.stable.rebuild' "$info")"
 if [[ "${revision}" != "0" ]]; then
 	version="${version}-${revision}"
 fi
