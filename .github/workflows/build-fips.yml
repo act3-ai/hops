@@ -35,12 +35,4 @@ jobs:
           - amd64
           # - arm64
       fail-fast: true
-    steps:
-      - uses: actions/checkout@v4
-        name: Check out repo
-      - run: |
-          set -x
-          ls /home/runner/work/hops
-          ls /home/runner/work/hops/hops
-          ls ${{ github.workspace }}/.github/workflows/
-      - uses: ./build.yml
+    uses: ./.github/workflows/build.yml"
