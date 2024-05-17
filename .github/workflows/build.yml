@@ -15,10 +15,10 @@ jobs:
   go-build:
     name: Go build
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      attestations: write
+    # permissions:
+    #   id-token: write
+    #   contents: read
+    #   attestations: write
     env:
       BUILD_ID: hops
       EXECUTABLE: hops
@@ -57,20 +57,20 @@ jobs:
             ./cmd/${{env.EXECUTABLE}}
           echo "executable-path=${{env.EXECUTABLE_PATH}}" >> $GITHUB_OUTPUT
 
-      - uses: actions/attest-build-provenance@v1
-        id: attest
-        with:
-          subject-path: ${{steps.build.outputs.executable-path}}
+      # - uses: actions/attest-build-provenance@v1
+      #   id: attest
+      #   with:
+      #     subject-path: ${{steps.build.outputs.executable-path}}
 
       - name: Create archive
         id: archive
         env:
           ARCHIVE_DIR: ${{env.BUILD_ID}}/${{env.VERSION}}
           ARCHIVE_PATH: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}.tar
+        # mv ${{ steps.attest.outputs.bundle-path }} ${{env.ARCHIVE_DIR}}/
         run: |
           mkdir -p ${{env.ARCHIVE_DIR}}/bin/
           mv ${{ steps.build.outputs.executable-path }} ${{env.ARCHIVE_DIR}}/bin/
-          mv ${{ steps.attest.outputs.bundle-path }} ${{env.ARCHIVE_DIR}}/
           tar -czvf ${{env.ARCHIVE_PATH}} ${{env.ARCHIVE_DIR}}/
           echo "archive-path=${{env.ARCHIVE_PATH}}" >> $GITHUB_OUTPUT
 
