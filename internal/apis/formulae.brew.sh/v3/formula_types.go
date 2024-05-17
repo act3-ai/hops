@@ -67,7 +67,6 @@ type Bottle struct {
 // BottleFile defines a bottle.files entry
 type BottleFile struct {
 	Cellar string `json:"cellar"`
-	URL    string `json:"url"`
 	Sha256 string `json:"sha256"`
 }
 
@@ -76,8 +75,8 @@ type Dependencies map[string]*DependencyConfig
 
 // DependencyConfig provides additional context for a dependency
 type DependencyConfig struct {
-	Tags          []string `json:"tags,omitempty"`
-	UsesFromMacOS *MacOSBounds
+	Tags          []string     `json:"tags,omitempty"`
+	UsesFromMacOS *MacOSBounds `json:"uses_from_macos,omitempty"`
 }
 
 // MacOSBounds constrains a macOS dependency
