@@ -22,7 +22,7 @@ jobs:
     env:
       BUILD_ID: hops
       EXECUTABLE: hops
-      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('{0}-{1}', github.workflow, github.sha) }}
+      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('ci-{0}', github.sha) }}
       CGO_ENABLED: 0
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
