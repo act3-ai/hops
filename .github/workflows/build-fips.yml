@@ -43,4 +43,4 @@ jobs:
           ls /home/runner/work/hops
           ls /home/runner/work/hops/hops
           ls ${{ github.workspace }}/.github/workflows/
-      - uses: ./.github/workflows/build.yml
+      - uses: ./build.yml
