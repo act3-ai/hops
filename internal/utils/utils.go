@@ -36,14 +36,6 @@ func PrettyBytes(size int64) string {
 	return strings.ReplaceAll(humanize.Bytes(uint64(size)), " ", "")
 }
 
-// // ParseRegistryDomain
-// func ParseRegistryDomain(rawURL string) string {
-// 	for _, prefix := range []string{"https://", "http://"} {
-// 		rawURL = strings.TrimPrefix(rawURL, prefix)
-// 	}
-// 	return strings.Replace(rawURL, "/v2/", "/", 1)
-// }
-
 // AssertStrings converts a slice of any into a slice of strings
 func AssertStrings(as []any) ([]string, error) {
 	ss := make([]string, 0, len(as))

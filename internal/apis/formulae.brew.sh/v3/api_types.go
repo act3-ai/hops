@@ -1,13 +1,5 @@
 package v3
 
-import (
-	"encoding/json"
-	"fmt"
-
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	v2 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v2"
-)
-
 // This uses a JSON Web Signature:
 //
 // Standard: https://openid.net/specs/draft-jones-json-web-signature-04.html
@@ -22,16 +14,13 @@ import (
 //
 // TODO: use the signature to verify Homebrew's API responses
 
-// CaskJWS represents the cached API data
-type CaskJWS struct {
-	Payload    FormulaJWS  `json:"payload"`
-	Signatures []Signature `json:"signatures"`
-}
+// Response represents the v3 API's response format
+type Response struct {
+	// Payload is the requested tap's information
+	Payload Tap `json:"payload"`
 
-// FormulaJWS represents the cached API data
-type FormulaJWS struct {
-	Payload    FormulaPayload `json:"payload"`
-	Signatures []Signature    `json:"signatures"`
+	// Signatures is a list of JSON Web Signatures that can be used to verify the payload
+	Signatures []Signature `json:"signatures"`
 }
 
 // Signature represents the signature field
@@ -39,68 +28,4 @@ type Signature struct {
 	Protected string            `json:"protected"`
 	Header    map[string]string `json:"header"`
 	Signature string            `json:"signature"`
-}
-
-// FormulaPayload represents the embedded JSON payload field
-type FormulaPayload v1.Index
-
-// UnmarshalJSON implements json.Unmarshaler
-func (payload *FormulaPayload) UnmarshalJSON(b []byte) error {
-	var data string
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return fmt.Errorf("parsing payload string: %w", err)
-	}
-
-	var index v1.Index
-	err = json.Unmarshal([]byte(data), &index)
-	if err != nil {
-		return fmt.Errorf("parsing payload data: %w", err)
-	}
-
-	*payload = FormulaPayload(index)
-
-	return nil
-}
-
-// MarshalJSON implements json.Marshaler
-func (payload *FormulaPayload) MarshalJSON() ([]byte, error) {
-	b, err := json.Marshal(v1.Index(*payload))
-	if err != nil {
-		return nil, err
-	}
-	// Marshal these bytes as a string (embedding the data as escaped JSON)
-	return json.Marshal(string(b))
-}
-
-// CaskPayload represents the embedded JSON payload field
-type CaskPayload []*v2.Cask
-
-// UnmarshalJSON implements json.Unmarshaler
-func (payload *CaskPayload) UnmarshalJSON(b []byte) error {
-	var data string
-	err := json.Unmarshal(b, &data)
-	if err != nil {
-		return fmt.Errorf("parsing payload string: %w", err)
-	}
-
-	var index []*v2.Cask
-	err = json.Unmarshal([]byte(data), &index)
-	if err != nil {
-		return fmt.Errorf("parsing payload: %w", err)
-	}
-
-	*payload = CaskPayload(index)
-
-	return nil
-}
-
-// MarshalJSON implements json.Marshaler
-func (payload *CaskPayload) MarshalJSON() ([]byte, error) {
-	b, err := json.Marshal([]*v2.Cask(*payload))
-	if err != nil {
-		return nil, err
-	}
-	// Marshal these bytes as a string (embedding the data as escaped JSON)
-	return json.Marshal(string(b))
 }
