@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  go-lint:
+  lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
@@ -24,6 +24,8 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.58
+      - name: hadolint
+        uses: hadolint/hadolint-action@v3.1.0
 
   go-build:
     name: Go build
