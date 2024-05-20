@@ -165,10 +165,9 @@ type HeadDependencies struct {
 // Versions represents the available versions
 type Versions struct {
 	Others map[string]any `json:",inline"`
-	// TODO: remove pointer
-	Stable *string `json:"stable"`
-	Head   *string `json:"head"`
-	Bottle bool    `json:"bottle"`
+	Stable string         `json:"stable"`
+	Head   *string        `json:"head"`
+	Bottle bool           `json:"bottle"`
 }
 
 const (
@@ -249,11 +248,11 @@ func (info *Info) String() string {
 // the "revision" field is set in the formula, which signals the
 // formula was updated without changing the version being installed
 func (info *PlatformInfo) Version() string {
-	if info.Versions.Stable == nil {
-		return "HEAD"
-	}
+	// if info.Versions.Stable == nil {
+	// 	return "HEAD"
+	// }
 
-	tag := *info.Versions.Stable
+	tag := info.Versions.Stable
 	if info.Revision != 0 {
 		tag += fmt.Sprintf("_%d", info.Revision)
 	}
@@ -281,10 +280,10 @@ func (info *PlatformInfo) ManifestTag(key string) (string, error) {
 
 	version := ""
 	if key == Stable {
-		if info.Versions.Stable == nil {
+		if info.Versions.Stable == "" {
 			return "", fmt.Errorf("formula %s does not have a %s version", info.Name, key)
 		}
-		version = *info.Versions.Stable
+		version = info.Versions.Stable
 	}
 
 	return brewfmt.Tag(version, info.Revision, bottle.Rebuild), nil

@@ -15,6 +15,9 @@ import (
 
 // FmtSemver forces a string formatted as a semver version with "v" prefix
 func FmtSemver(s string) string {
+	if s == "" {
+		return ""
+	}
 	return "v" + strings.TrimPrefix(s, "v")
 }
 

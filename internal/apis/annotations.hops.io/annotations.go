@@ -15,3 +15,7 @@ const (
 	// MediaTypeBottleArchiveLayer is the mediaType used for bottle files stored in OCI
 	MediaTypeBottleArchiveLayer = ocispec.MediaTypeImageLayerGzip // application/vnd.oci.image.layer.v1.tar+gzip
 )
+
+// const (
+// 	AnnotationHomebrewAPIVersion = "sh.brew.formulae.api.version"
+// )

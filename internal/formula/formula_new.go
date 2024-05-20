@@ -1,3 +1,4 @@
+//nolint:all
 package formula
 
 import (
@@ -6,19 +7,78 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
+type formulary interface {
+	Fetch(name string) (Formula, error)
+}
+
+type concurrentFormulary interface {
+	FetchAll(names []string) (Formulae, error)
+}
+
+// Formulae is a list of Formulae
+type Formulae []Formula
+
+// Formula represents a Homebrew Formula
+type Formula interface {
+	Name() string
+	// Metadata() Metadata
+	Version() Version
+	Bottle(platform.Platform)
+}
+
 // formula represents a formula
 type formula struct {
-	metadata
+	Metadata
 
-	Download   Download
-	Version    Version
+	name       string
+	desc       string
+	license    string
+	homepage   string
+	download   Download
+	version    version
 	RubySource RubySource
 	Link       Link
 
 	platforms map[platform.Platform]platformConfig
 }
 
-type metadata struct {
+// FromV1 creates a formula from v1 API input
+func FromV1(input *v1.Info) Formula {
+	f := &formula{
+		name:     input.Name,
+		desc:     input.Desc,
+		license:  input.License,
+		homepage: input.Homepage,
+		download: Download{
+			// URL: ,
+		},
+		version: version{
+			version: input.Versions.Stable,
+		},
+	}
+
+	// if bottles, ok := input.Bottle[v1.Stable]; ok && bottles != nil {
+	// 	f.platforms = make(map[platform.Platform]platformConfig, len(bottles.Files))
+
+	// 	// for p, bf := range bottles.Files {
+	// 	// }
+	// }
+
+	return f
+}
+
+func (f *formula) Name() string {
+	return f.name
+}
+
+func (f *formula) Version() Version {
+	return &f.version
+}
+
+func (f *formula) Bottle(plat platform.Platform) {
+}
+
+type Metadata struct {
 	Name     string
 	Desc     string
 	License  string
@@ -39,10 +99,22 @@ type RubySource struct {
 	Sha256 string
 }
 
-type Version struct {
-	Upstream string
-	Revision int
-	Rebuild  int
+type version struct {
+	version  string
+	revision int
+	rebuild  int
+}
+
+func (v *version) Upstream() string {
+	return v.version
+}
+
+func (v *version) Revision() int {
+	return v.revision
+}
+
+func (v *version) Rebuild() int {
+	return v.rebuild
 }
 
 type Link struct {
@@ -81,7 +153,6 @@ type conflict struct {
 }
 
 type bottle struct {
-	rebuild int
 	rootURL string
 	cellar  string
 	url     string
@@ -91,13 +162,13 @@ type bottle struct {
 func newFormula(info *v1.Info) *formula {
 	stableURL := info.URLs[v1.Stable]
 	return &formula{
-		metadata: metadata{
+		Metadata: Metadata{
 			Name:     info.Name,
 			Desc:     info.Desc,
 			License:  info.License,
 			Homepage: info.Homepage,
 		},
-		Download: Download{
+		download: Download{
 			URL:      stableURL.URL,
 			Revision: stableURL.Revision,
 			Tag:      stableURL.Tag,

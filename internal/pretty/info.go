@@ -42,8 +42,8 @@ func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 	}
 
 	versions := []string{}
-	if f.Versions.Stable != nil {
-		stable := *f.Versions.Stable
+	if f.Versions.Stable != "" {
+		stable := f.Versions.Stable
 		if f.Versions.Bottle {
 			stable += " (bottled)"
 		}

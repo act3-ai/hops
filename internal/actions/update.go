@@ -9,6 +9,7 @@ import (
 
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils"
 )
 
 // Update represents the action and its options
@@ -72,26 +73,15 @@ func (action *Update) Run(ctx context.Context) error {
 
 // IsNewerThan reports if n is newer than o by comparing their versions
 func IsNewerThan(n *v1.Info, o *v1.Info) bool {
-	var oldVersion string
-	var newVersion string
-
-	if o.Versions.Stable != nil {
-		oldVersion = "v" + strings.TrimPrefix(*o.Versions.Stable, "v")
-	} else {
-		oldVersion = ""
-	}
-
-	if n.Versions.Stable != nil {
-		newVersion = "v" + strings.TrimPrefix(*n.Versions.Stable, "v")
-	} else {
-		newVersion = ""
-	}
-
-	return semver.Compare(newVersion, oldVersion) > 0
+	return semver.Compare(
+		utils.FmtSemver(n.Versions.Stable),
+		utils.FmtSemver(o.Versions.Stable),
+	) > 0
 }
 
 func versionCompare(n, o string) int {
-	n = "v" + strings.TrimPrefix(n, "v")
-	o = "v" + strings.TrimPrefix(o, "v")
-	return semver.Compare(n, o)
+	return semver.Compare(
+		utils.FmtSemver(n),
+		utils.FmtSemver(o),
+	)
 }
