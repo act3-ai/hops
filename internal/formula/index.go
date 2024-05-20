@@ -5,15 +5,15 @@ import (
 	"fmt"
 
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 )
 
 // Index defines a formula index
 type Index interface {
-	Find(name string) *v1.Info                           // finds a formula
-	List() v1.Index                                      // lists all formulae
-	ListNames() []string                                 // lists all formula names
-	SearchFunc(func(matchFunc *v1.Info) bool) []*v1.Info // searches for a list of hits defined by the matchFunc
+	Find(name string) *brewv1.Info                               // finds a formula
+	List() brewv1.Index                                          // lists all formulae
+	ListNames() []string                                         // lists all formula names
+	SearchFunc(func(matchFunc *brewv1.Info) bool) []*brewv1.Info // searches for a list of hits defined by the matchFunc
 }
 
 // CachedIndex represents a cached formula index

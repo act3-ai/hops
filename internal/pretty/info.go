@@ -8,7 +8,7 @@ import (
 
 	"github.com/dustin/go-humanize"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/apis/receipt.brew.sh"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
@@ -17,7 +17,7 @@ import (
 )
 
 // Info prints the formula information in pretty format
-func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
+func Info(f *brewv1.Info, p prefix.Prefix, plat platform.Platform) {
 	// Collect information in advance for readability
 	var isInstalled bool
 	var files int
@@ -119,7 +119,7 @@ func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 }
 
 // Deps prints dependency information
-func Deps(f *v1.PlatformInfo, p prefix.Prefix) {
+func Deps(f *brewv1.PlatformInfo, p prefix.Prefix) {
 	// deps := f.DirectDependencies(plat)
 	lines := []string{}
 	// if len(deps.Build) > 0 {

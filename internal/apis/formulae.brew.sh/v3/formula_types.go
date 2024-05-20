@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils"
 )
@@ -28,7 +28,7 @@ type Formula struct {
 	RubySourceSHA256   string                             `json:"ruby_source_sha256"`
 	LinkOverwrite      []string                           `json:"link_overwrite,omitempty"`
 	Revision           int                                `json:"revision,omitempty"`
-	KegOnlyReason      v1.KegOnlyConfig                   `json:"keg_only_reason,omitempty"`
+	KegOnlyReason      brewv1.KegOnlyConfig               `json:"keg_only_reason,omitempty"`
 	PourBottleOnlyIf   string                             `json:"pour_bottle_only_if,omitempty"`
 	Caveats            string                             `json:"caveats,omitempty"`
 	Service            Service                            `json:"service,omitempty"`

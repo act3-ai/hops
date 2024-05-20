@@ -288,3 +288,12 @@ func (info *PlatformInfo) ManifestTag(key string) (string, error) {
 
 	return brewfmt.Tag(version, info.Revision, bottle.Rebuild), nil
 }
+
+// Names returns the names of the listed formulae
+func Names(formulae []*Info) []string {
+	names := make([]string, len(formulae))
+	for i, f := range formulae {
+		names[i] = f.Name
+	}
+	return names
+}

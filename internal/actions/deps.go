@@ -6,10 +6,9 @@ import (
 	"slices"
 	"strings"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/dependencies"
 	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -29,7 +28,7 @@ func (action *Deps) Run(ctx context.Context, names ...string) error {
 		return err
 	}
 
-	dependents := formula.Names(deps.Dependents())
+	dependents := brewv1.Names(deps.Dependents())
 	slices.Sort(dependents) // this messes up the ordering, but we do not care
 	fmt.Println(strings.Join(dependents, "\n"))
 
@@ -55,7 +54,7 @@ func (action *Deps) Tree(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Deps) eval(ctx context.Context, names []string) (*dependencies.DependencyGraph[*v1.Info], error) {
+func (action *Deps) eval(ctx context.Context, names []string) (*dependencies.DependencyGraph[*brewv1.Info], error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {

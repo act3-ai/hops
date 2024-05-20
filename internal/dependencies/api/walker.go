@@ -4,7 +4,7 @@ import (
 	"context"
 	"slices"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/brew"
 	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/formula"
@@ -18,7 +18,7 @@ type preloadedAPIStore struct {
 }
 
 // New creates a dependency graph evaluator that uses the entire Homebrew API contents and is keyed by name
-func New(index formula.Index, plat platform.Platform) dependencies.Store[*v1.Info] {
+func New(index formula.Index, plat platform.Platform) dependencies.Store[*brewv1.Info] {
 	return &preloadedAPIStore{
 		index: index,
 		plat:  plat,
@@ -26,18 +26,18 @@ func New(index formula.Index, plat platform.Platform) dependencies.Store[*v1.Inf
 }
 
 // Key creates cache keys
-func (store *preloadedAPIStore) Key(f *v1.Info) string {
+func (store *preloadedAPIStore) Key(f *brewv1.Info) string {
 	return f.Name
 }
 
 // DirectDependencies evaluates the direct dependencies of a node
-func (store *preloadedAPIStore) DirectDependencies(_ context.Context, f *v1.Info, opts *dependencies.Options) ([]*v1.Info, error) {
+func (store *preloadedAPIStore) DirectDependencies(_ context.Context, f *brewv1.Info, opts *dependencies.Options) ([]*brewv1.Info, error) {
 	deps, err := directDependencies(f, store.plat, opts)
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]*v1.Info, 0, len(deps))
+	result := make([]*brewv1.Info, 0, len(deps))
 	for _, dep := range deps {
 		depinfo := store.index.Find(dep)
 		if depinfo == nil {
@@ -50,7 +50,7 @@ func (store *preloadedAPIStore) DirectDependencies(_ context.Context, f *v1.Info
 }
 
 // directDependencies
-func directDependencies(f *v1.Info, plat platform.Platform, opts *dependencies.Options) ([]string, error) {
+func directDependencies(f *brewv1.Info, plat platform.Platform, opts *dependencies.Options) ([]string, error) {
 	var deps []string
 
 	// Return all possible dependencies

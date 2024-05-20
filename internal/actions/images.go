@@ -11,7 +11,7 @@ import (
 
 	"github.com/sourcegraph/conc/iter"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
@@ -80,7 +80,7 @@ func (action *Images) Run(ctx context.Context, formulae ...string) error {
 	return nil
 }
 
-func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*v1.Info, error) {
+func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*brewv1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {
@@ -111,7 +111,7 @@ func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*v1.I
 }
 
 // listImages lists the images for each formula in the index
-func (action *Images) listImages(ctx context.Context, formulae []*v1.Info) ([]string, error) {
+func (action *Images) listImages(ctx context.Context, formulae []*brewv1.Info) ([]string, error) {
 	// Print no-resolve warning
 	if action.NoResolve || action.NoVerify {
 		o.Poo("Skipping tag resolution")
@@ -127,14 +127,14 @@ func (action *Images) listImages(ctx context.Context, formulae []*v1.Info) ([]st
 		return nil, err
 	}
 
-	mapper := iter.Mapper[*v1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
-	return mapper.MapErr(formulae, func(f **v1.Info) (string, error) {
+	mapper := iter.Mapper[*brewv1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
+	return mapper.MapErr(formulae, func(f **brewv1.Info) (string, error) {
 		return action.resolve(ctx, reg, *f)
 	})
 }
 
-func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f *v1.Info) (string, error) {
-	m, err := bottle.Manifest(f, v1.Stable)
+func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f *brewv1.Info) (string, error) {
+	m, err := bottle.Manifest(f, brewv1.Stable)
 	if err != nil {
 		return "", fmt.Errorf("computing bottle manifest: %w", err)
 	}

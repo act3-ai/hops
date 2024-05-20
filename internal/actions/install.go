@@ -14,7 +14,7 @@ import (
 	"github.com/sourcegraph/conc/iter"
 	"oras.land/oras-go/v2/registry/remote/retry"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/dependencies"
 	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
@@ -83,9 +83,9 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 		brew.Cache)
 
 	// Use an iterator to start concurrent installs of each bottle
-	m := iter.Mapper[*v1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
+	m := iter.Mapper[*brewv1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
 	results, err := m.MapErr(installs,
-		func(f **v1.Info) (string, error) {
+		func(f **brewv1.Info) (string, error) {
 			return action.run(ctx, store, *f)
 		})
 	if err != nil {
@@ -115,7 +115,7 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 }
 
 // resolveInstalls resolves the list of formulae that will be installed
-func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*v1.Info, error) {
+func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*brewv1.Info, error) {
 	index := action.Index()
 	err := formula.AutoUpdate(ctx, index, &action.Config().Homebrew.AutoUpdate)
 	if err != nil {
@@ -149,10 +149,10 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*
 		return nil, err
 	}
 
-	printFormulae(formula.Names(roots), action.DryRun)
+	printFormulae(brewv1.Names(roots), action.DryRun)
 
 	dependents := graph.Dependents()
-	printDeps(formula.Names(dependents), action.DryRun, action.IgnoreDependencies)
+	printDeps(brewv1.Names(dependents), action.DryRun, action.IgnoreDependencies)
 
 	// Only install dependencies
 	if action.OnlyDependencies {
@@ -164,7 +164,7 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*
 }
 
 // run is the meat
-func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *v1.Info) (string, error) {
+func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *brewv1.Info) (string, error) {
 	outdated, err := action.Prefix().FormulaOutdated(f)
 	if err != nil {
 		return "", err
@@ -175,7 +175,7 @@ func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *v1.
 		return "", nil
 	}
 
-	b, err := bottle.FromFormula(f, v1.Stable, action.platform)
+	b, err := bottle.FromFormula(f, brewv1.Stable, action.platform)
 	if err != nil {
 		return "", err
 	}

@@ -13,7 +13,7 @@ import (
 
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	api "github.com/act3-ai/hops/internal/apis/formulae.brew.sh"
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/utils/resputil"
 )
 
@@ -41,7 +41,7 @@ func New(client *http.Client, cache, apiDomain string) *Client {
 // Load implements Loader
 func (hi *Client) Load(ctx context.Context) error {
 	parseIndex := func(r io.Reader) error {
-		data := v1.Index{}
+		data := brewv1.Index{}
 
 		jd := json.NewDecoder(r)
 		jd.DisallowUnknownFields()

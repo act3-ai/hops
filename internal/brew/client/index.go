@@ -4,22 +4,22 @@ import (
 	"maps"
 	"slices"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 )
 
 // APIIndex represents a formula index from the Homebrew API
 type APIIndex struct {
-	mapped  map[string]*v1.Info // full contents indexed by name
-	names   []string            // ordered names
-	aliases map[string]string   // map of aliases to real names
+	mapped  map[string]*brewv1.Info // full contents indexed by name
+	names   []string                // ordered names
+	aliases map[string]string       // map of aliases to real names
 	// oldnames map[string]string   // map of old names to real names
 }
 
 // NewAPIIndex creates a new Index for a Homebrew API source
-func NewAPIIndex(index v1.Index) *APIIndex {
+func NewAPIIndex(index brewv1.Index) *APIIndex {
 	a := &APIIndex{
 		// Contents: v1.Index{},
-		mapped:  make(map[string]*v1.Info, len(index)),
+		mapped:  make(map[string]*brewv1.Info, len(index)),
 		names:   make([]string, len(index)),
 		aliases: map[string]string{},
 	}
@@ -37,7 +37,7 @@ func NewAPIIndex(index v1.Index) *APIIndex {
 }
 
 // Find finds a formula
-func (index *APIIndex) Find(name string) *v1.Info {
+func (index *APIIndex) Find(name string) *brewv1.Info {
 	// Look up the name
 	f, ok := index.mapped[name]
 	if ok {
@@ -54,8 +54,8 @@ func (index *APIIndex) Find(name string) *v1.Info {
 }
 
 // List produces the contents of the index
-func (index *APIIndex) List() v1.Index {
-	list := make(v1.Index, len(index.names))
+func (index *APIIndex) List() brewv1.Index {
+	list := make(brewv1.Index, len(index.names))
 	for i, name := range index.names {
 		list[i] = index.mapped[name]
 	}
@@ -68,8 +68,8 @@ func (index *APIIndex) ListNames() []string {
 }
 
 // SearchFunc searches the index and returns all formulae hits from the match function
-func (index *APIIndex) SearchFunc(match func(*v1.Info) bool) []*v1.Info {
-	hits := []*v1.Info{}
+func (index *APIIndex) SearchFunc(match func(*brewv1.Info) bool) []*brewv1.Info {
+	hits := []*brewv1.Info{}
 	for _, name := range index.names {
 		f := index.mapped[name]
 		if match(f) {

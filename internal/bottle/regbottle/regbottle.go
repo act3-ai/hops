@@ -15,7 +15,7 @@ import (
 	"oras.land/oras-go/v2/registry"
 
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -33,8 +33,8 @@ var (
 // VersionedBottle represents a version of a Bottle
 type VersionedBottle interface {
 	Fetch(ctx context.Context, repo bottle.Repository, plat platform.Platform) (io.ReadCloser, error)
-	Metadata(ctx context.Context, repo bottle.Repository) (*v1.Info, error)
-	PlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (*v1.Info, error)
+	Metadata(ctx context.Context, repo bottle.Repository) (*brewv1.Info, error)
+	PlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (*brewv1.Info, error)
 }
 
 // VersionMap maps bottle names to versions
@@ -72,8 +72,8 @@ type metadataManifest struct {
 
 // metadataManifest represents a bottle metadata config
 type metadataConfig struct {
-	ocispec.Descriptor          // descriptor of the config
-	config             *v1.Info // content of the config
+	ocispec.Descriptor              // descriptor of the config
+	config             *brewv1.Info // content of the config
 }
 
 // ResolveVersion resolves a bottle version
@@ -159,7 +159,7 @@ func resolveBottle(ctx context.Context, repo bottle.Repository, desc *bottleMani
 }
 
 // GeneralMetadata returns the full metadata for the bottle
-func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo bottle.Repository) (*v1.Info, error) {
+func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo bottle.Repository) (*brewv1.Info, error) {
 	mdman, err := resolveFullMetadata(ctx, repo, btl)
 	if err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ func (btl *BottleIndex) ResolvePlatformMetadata(ctx context.Context, repo bottle
 }
 
 // PlatformMetadata returns platform-specific metadata for a bottle
-func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (*v1.PlatformInfo, error) {
+func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (*brewv1.PlatformInfo, error) {
 	pman, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
 		return nil, err
@@ -274,11 +274,11 @@ func resolveMetadataConfig(ctx context.Context, repo bottle.Repository, desc *me
 }
 
 // fetchMetadataConfig fetches the metadata config
-func fetchMetadataConfig(ctx context.Context, repo bottle.Repository, desc *metadataConfig) (*v1.Info, error) {
+func fetchMetadataConfig(ctx context.Context, repo bottle.Repository, desc *metadataConfig) (*brewv1.Info, error) {
 	if desc.config == nil {
-		config, err := orasutil.FetchDecode[v1.Info](ctx, repo, desc.Descriptor)
+		config, err := orasutil.FetchDecode[brewv1.Info](ctx, repo, desc.Descriptor)
 		if err != nil {
-			desc.config = &v1.Info{}
+			desc.config = &brewv1.Info{}
 			return nil, fmt.Errorf("[%s] fetching metadata from config: %w", repo.Name(), err)
 		}
 		desc.config = config
@@ -357,17 +357,17 @@ type IterOptions struct {
 }
 
 // List
-func List(ctx context.Context, reg bottle.SearchableRegistry, opts *IterOptions) ([]*v1.Info, error) {
+func List(ctx context.Context, reg bottle.SearchableRegistry, opts *IterOptions) ([]*brewv1.Info, error) {
 	repos, err := reg.Repositories(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	fetchers := iter.Mapper[string, *v1.Info]{
+	fetchers := iter.Mapper[string, *brewv1.Info]{
 		MaxGoroutines: opts.MaxGoroutines,
 	}
 
-	return fetchers.MapErr(repos, func(repop *string) (*v1.Info, error) {
+	return fetchers.MapErr(repos, func(repop *string) (*brewv1.Info, error) {
 		repo, err := reg.Repository(ctx, *repop)
 		if err != nil {
 			return nil, err

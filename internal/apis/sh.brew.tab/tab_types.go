@@ -1,7 +1,7 @@
 package tab
 
 import (
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 )
 
 const (
@@ -13,14 +13,14 @@ const (
 //
 // This annotation is added to each bottle manifest
 type Tab struct {
-	HomebrewVersion     string                  `json:"homebrew_version"`
-	ChangedFiles        []string                `json:"changed_files"`
-	SourceModifiedTime  uint                    `json:"source_modified_time"`
-	StdLib              string                  `json:"stdlib,omitempty"`
-	Compiler            string                  `json:"compiler"`
-	RuntimeDependencies []*v1.RuntimeDependency `json:"runtime_dependencies"`
-	Arch                string                  `json:"arch"`
-	BuiltOn             BuiltOn                 `json:"built_on"`
+	HomebrewVersion     string                      `json:"homebrew_version"`
+	ChangedFiles        []string                    `json:"changed_files"`
+	SourceModifiedTime  uint                        `json:"source_modified_time"`
+	StdLib              string                      `json:"stdlib,omitempty"`
+	Compiler            string                      `json:"compiler"`
+	RuntimeDependencies []*brewv1.RuntimeDependency `json:"runtime_dependencies"`
+	Arch                string                      `json:"arch"`
+	BuiltOn             BuiltOn                     `json:"built_on"`
 }
 
 // BuiltOn stores build information

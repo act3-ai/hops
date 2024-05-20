@@ -15,7 +15,7 @@ import (
 	"oras.land/oras-go/v2/errdef"
 
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
@@ -28,7 +28,7 @@ import (
 
 type copiedBottle struct {
 	repo      oras.GraphTarget
-	info      *v1.Info
+	info      *brewv1.Info
 	indexDesc ocispec.Descriptor
 	index     *ocispec.Index
 }
@@ -131,7 +131,7 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*v1.Info, error) {
+func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*brewv1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {
@@ -200,8 +200,8 @@ func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copied
 	for _, f := range copiedBottles {
 		// IMPORTANT
 		// Remove time-sensitive metadata fields
-		f.info.Installed = []v1.InstalledInfo{} // empty "installed" list
-		f.info.TapGitHead = ""                  // remove "tap_git_head" which changes even when formula metadata does not
+		f.info.Installed = []brewv1.InstalledInfo{} // empty "installed" list
+		f.info.TapGitHead = ""                      // remove "tap_git_head" which changes even when formula metadata does not
 
 		// Push metadata for the bottle index
 		routines.Go(func() error {
@@ -254,8 +254,8 @@ func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copied
 	return nil
 }
 
-func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *v1.Info) (ocispec.Descriptor, error) {
-	tag, err := f.ManifestTag(v1.Stable)
+func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *brewv1.Info) (ocispec.Descriptor, error) {
+	tag, err := f.ManifestTag(brewv1.Stable)
 	if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("resolving tag: %w", err)
 	}
@@ -308,7 +308,7 @@ func platformMetadatManifestOptions(name, version string, plat platform.Platform
 }
 
 // pushMetadata pushes metadata for the given manifest
-func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *v1.Info) (ocispec.Descriptor, error) { //nolint:unparam
+func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *brewv1.Info) (ocispec.Descriptor, error) { //nolint:unparam
 	l := slog.Default()
 
 	var manifestOptions oras.PackManifestOptions

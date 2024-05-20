@@ -16,7 +16,7 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sourcegraph/conc/iter"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/bottle/regbottle"
 	"github.com/act3-ai/hops/internal/brew"
@@ -72,10 +72,10 @@ func (action *XInstall) Run(ctx context.Context, names ...string) error {
 	}
 
 	// Maps from descriptors of bottles already downloaded to the kegs they were poured into
-	mapper := iter.Mapper[*regbottle.BottleIndex, *v1.Info]{MaxGoroutines: action.Hops.MaxGoroutines()}
+	mapper := iter.Mapper[*regbottle.BottleIndex, *brewv1.Info]{MaxGoroutines: action.Hops.MaxGoroutines()}
 
 	formulae, err := mapper.MapErr(installs,
-		func(bp **regbottle.BottleIndex) (*v1.Info, error) {
+		func(bp **regbottle.BottleIndex) (*brewv1.Info, error) {
 			b := *bp
 
 			cache, err := cacheReg.Repository(ctx, b.RepositoryName)
@@ -90,7 +90,7 @@ func (action *XInstall) Run(ctx context.Context, names ...string) error {
 	}
 
 	kegs := []string{}
-	installed := []*v1.Info{}
+	installed := []*brewv1.Info{}
 	for _, f := range formulae {
 		if f != nil {
 			kegs = append(kegs, action.Prefix().KegPath(f.Name, f.Version()))
@@ -178,12 +178,12 @@ func regbottleInstalled(p prefix.Prefix, plat platform.Platform, cache bottle.Re
 		if err != nil {
 			return false, err
 		}
-		return formulaInstalled(p)(ctx, &v1.Info{PlatformInfo: *info})
+		return formulaInstalled(p)(ctx, &brewv1.Info{PlatformInfo: *info})
 	}
 }
 
-func formulaInstalled(p prefix.Prefix) func(ctx context.Context, f *v1.Info) (bool, error) {
-	return func(_ context.Context, f *v1.Info) (bool, error) {
+func formulaInstalled(p prefix.Prefix) func(ctx context.Context, f *brewv1.Info) (bool, error) {
+	return func(_ context.Context, f *brewv1.Info) (bool, error) {
 		notInstalled, err := p.FormulaOutdated(f)
 		if err != nil {
 			return false, err
@@ -276,13 +276,13 @@ func fetchBottle(ctx context.Context, srcReg bottle.Registry, dstReg bottle.Regi
 	return btl, nil
 }
 
-func (action *XInstall) run(ctx context.Context, store bottle.Repository, b *regbottle.BottleIndex) (*v1.Info, error) {
+func (action *XInstall) run(ctx context.Context, store bottle.Repository, b *regbottle.BottleIndex) (*brewv1.Info, error) {
 	info, err := b.PlatformMetadata(ctx, store, action.platform)
 	if err != nil {
 		return nil, err
 	}
 
-	f := &v1.Info{PlatformInfo: *info}
+	f := &brewv1.Info{PlatformInfo: *info}
 	outdated, err := action.Prefix().FormulaOutdated(f)
 	if err != nil {
 		return nil, err
@@ -293,7 +293,7 @@ func (action *XInstall) run(ctx context.Context, store bottle.Repository, b *reg
 		return nil, nil
 	}
 
-	btl, err := bottle.FromFormula(f, v1.Stable, action.platform)
+	btl, err := bottle.FromFormula(f, brewv1.Stable, action.platform)
 	if err != nil {
 		return nil, err
 	}

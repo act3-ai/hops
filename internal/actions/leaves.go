@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"slices"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -55,7 +55,7 @@ func (action *Leaves) Run(ctx context.Context) error {
 	return nil
 }
 
-func (action *Leaves) resolveInstalled(ctx context.Context) ([]*v1.Info, error) {
+func (action *Leaves) resolveInstalled(ctx context.Context) ([]*brewv1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/xlab/treeprint"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/brew"
 )
 
@@ -145,7 +145,7 @@ func (opts *Options) clone() *Options {
 }
 
 // ForOptions computes direct dependencies according to opts
-func ForOptions(info *v1.PlatformInfo, opts *Options) []string {
+func ForOptions(info *brewv1.PlatformInfo, opts *Options) []string {
 	deps := slices.Clone(info.Dependencies)
 
 	if !opts.SkipRecommended {
@@ -175,7 +175,7 @@ type CategorizedDependencies struct {
 }
 
 // ToCategorized converts direct dependencies to a categorized struct
-func ToCategorized(info *v1.PlatformInfo) *CategorizedDependencies {
+func ToCategorized(info *brewv1.PlatformInfo) *CategorizedDependencies {
 	return &CategorizedDependencies{
 		Required:    slices.Clone(info.Dependencies),
 		Build:       slices.Clone(info.BuildDependencies),
