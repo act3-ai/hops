@@ -15,7 +15,7 @@ import (
 	"github.com/sourcegraph/conc/iter"
 	"golang.org/x/mod/semver"
 
-	"github.com/act3-ai/hops/internal/formula"
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/prefix/keg"
 	"github.com/act3-ai/hops/internal/prefix/rack"
 	"github.com/act3-ai/hops/internal/utils"
@@ -222,7 +222,7 @@ func isPycFile(path string) bool {
 // libtoolExtensions = []string{".la", ".lai"}
 
 // AnyInstalled reports if any versions of the given formula are installed
-func (p Prefix) AnyInstalled(f *formula.Formula) bool {
+func (p Prefix) AnyInstalled(f *v1.Info) bool {
 	prefix, err := p.InstalledKegs(f)
 	if err != nil {
 		slog.Warn("checking installed prefixes", logutil.ErrAttr(err))
@@ -231,7 +231,7 @@ func (p Prefix) AnyInstalled(f *formula.Formula) bool {
 }
 
 // InstalledKegs returns all currently installed prefix directories.
-func (p Prefix) InstalledKegs(f *formula.Formula) ([]keg.Keg, error) {
+func (p Prefix) InstalledKegs(f *v1.Info) ([]keg.Keg, error) {
 	return p.InstalledKegsByName(f.PossibleNames()...)
 }
 
@@ -281,7 +281,7 @@ func (p Prefix) InstalledKegsByName(names ...string) ([]keg.Keg, error) {
 }
 
 // FormulaOutdated reports whether the formula is outdated
-func (p Prefix) FormulaOutdated(f *formula.Formula) (bool, error) {
+func (p Prefix) FormulaOutdated(f *v1.Info) (bool, error) {
 	installedPrefixes, err := p.InstalledKegs(f)
 	if err != nil {
 		return true, err

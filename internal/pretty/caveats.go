@@ -5,13 +5,13 @@ import (
 	"os"
 	"strings"
 
-	"github.com/act3-ai/hops/internal/formula"
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/prefix"
 )
 
 // Caveats prints formula caveats
-func Caveats(f *formula.Formula, p prefix.Prefix) string {
+func Caveats(f *v1.Info, p prefix.Prefix) string {
 	lines := []string{}
 
 	if f.Caveats != nil {

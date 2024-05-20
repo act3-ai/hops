@@ -11,7 +11,6 @@ import (
 
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform"
 )
 
@@ -34,7 +33,7 @@ type Bottle struct {
 }
 
 // FromFormula initializes a Bottle from a formula
-func FromFormula(f *formula.Formula, key string, plat platform.Platform) (*Bottle, error) {
+func FromFormula(f *v1.Info, key string, plat platform.Platform) (*Bottle, error) {
 	bottle := f.Bottle[key]
 	if bottle == nil {
 		return nil, fmt.Errorf("formula %s does not have a %s bottle", f.Name, key)
@@ -69,7 +68,7 @@ func FromFormula(f *formula.Formula, key string, plat platform.Platform) (*Bottl
 
 // Manifest loads the first bottle defined in the formula
 // Not for installation use
-func Manifest(f *formula.Formula, key string) (string, error) {
+func Manifest(f *v1.Info, key string) (string, error) {
 	bottle := f.Bottle[key]
 	if bottle == nil {
 		return "", fmt.Errorf("formula %s does not have a %s bottle", f.Name, key)

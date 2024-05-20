@@ -10,10 +10,10 @@ import (
 
 // Index defines a formula index
 type Index interface {
-	Find(name string) *Formula                           // finds a formula
+	Find(name string) *v1.Info                           // finds a formula
 	List() v1.Index                                      // lists all formulae
 	ListNames() []string                                 // lists all formula names
-	SearchFunc(func(matchFunc *Formula) bool) []*Formula // searches for a list of hits defined by the matchFunc
+	SearchFunc(func(matchFunc *v1.Info) bool) []*v1.Info // searches for a list of hits defined by the matchFunc
 }
 
 // CachedIndex represents a cached formula index

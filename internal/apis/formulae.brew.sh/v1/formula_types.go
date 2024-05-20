@@ -20,71 +20,68 @@ type Info struct {
 
 // Info represents Homebrew API information for a formula
 type PlatformInfo struct {
-	Name                    string                 `json:"name"`
-	FullName                string                 `json:"full_name"`
-	Tap                     string                 `json:"tap"`
-	OldName                 string                 `json:"oldname"`
-	OldNames                []string               `json:"oldnames"`
-	Aliases                 []string               `json:"aliases"`
-	VersionedFormulae       []string               `json:"versioned_formulae"`
-	Desc                    string                 `json:"desc"`
-	License                 string                 `json:"license"`
-	Homepage                string                 `json:"homepage"`
-	Versions                Versions               `json:"versions"`
-	URLs                    map[string]*FormulaURL `json:"urls"`
-	Revision                int                    `json:"revision"`
-	VersionScheme           int                    `json:"version_scheme"`
-	Bottle                  map[string]*Bottle     `json:"bottle"`
-	PourBottleOnlyIf        *PourBottleCondition   `json:"pour_bottle_only_if"`
-	KegOnly                 bool                   `json:"keg_only"`
-	KegOnlyReason           KegOnlyConfig          `json:"keg_only_reason"`
-	Options                 []any                  `json:"options"`
-	BuildDependencies       []string               `json:"build_dependencies"`
-	Dependencies            []string               `json:"dependencies"`
-	TestDependencies        []string               `json:"test_dependencies"`
-	RecommendedDependencies []string               `json:"recommended_dependencies"`
-	OptionalDependencies    []string               `json:"optional_dependencies"`
-	UsesFromMacOS           []any                  `json:"uses_from_macos"`
-	UsesFromMacOSBounds     []*MacOSBounds         `json:"uses_from_macos_bounds"`
-	Requirements            []*Requirement         `json:"requirements"`
-	ConflictsWith           []string               `json:"conflicts_with"`
-	ConflictsWithReasons    []string               `json:"conflicts_with_reasons"`
-	LinkOverwrite           []string               `json:"link_overwrite"`
-	Caveats                 *string                `json:"caveats"`
-	Installed               []InstalledInfo        `json:"installed"`
-	LinkedKeg               string                 `json:"linked_keg"`
-	Pinned                  bool                   `json:"pinned"`
-	Outdated                bool                   `json:"outdated"`
-	Deprecated              bool                   `json:"deprecated"`
-	DeprecationDate         *string                `json:"deprecation_date"`
-	DeprecationReason       *string                `json:"deprecation_reason"`
-	Disabled                bool                   `json:"disabled"`
-	DisabledDate            *string                `json:"disable_date"`
-	DisabledReason          *string                `json:"disable_reason"`
-	PostInstallDefined      bool                   `json:"post_install_defined"`
-	Service                 *Service               `json:"service"`
-	TapGitHead              string                 `json:"tap_git_head"`
-	RubySourcePath          string                 `json:"ruby_source_path"`
-	RubySourceChecksum      map[string]string      `json:"ruby_source_checksum"`
-	HeadDependencies        *HeadDependencies      `json:"head_dependencies,omitempty"`
+	Name                    string                `json:"name"`
+	FullName                string                `json:"full_name"`
+	Tap                     string                `json:"tap"`
+	OldName                 string                `json:"oldname"`
+	OldNames                []string              `json:"oldnames"`
+	Aliases                 []string              `json:"aliases"`
+	VersionedFormulae       []string              `json:"versioned_formulae"`
+	Desc                    string                `json:"desc"`
+	License                 string                `json:"license"`
+	Homepage                string                `json:"homepage"`
+	Versions                Versions              `json:"versions"`
+	URLs                    map[string]FormulaURL `json:"urls"`
+	Revision                int                   `json:"revision"`
+	VersionScheme           int                   `json:"version_scheme"`
+	Bottle                  map[string]*Bottle    `json:"bottle"`
+	PourBottleOnlyIf        *string               `json:"pour_bottle_only_if"`
+	KegOnly                 bool                  `json:"keg_only"`
+	KegOnlyReason           KegOnlyConfig         `json:"keg_only_reason"`
+	Options                 []any                 `json:"options"`
+	BuildDependencies       []string              `json:"build_dependencies"`
+	Dependencies            []string              `json:"dependencies"`
+	TestDependencies        []string              `json:"test_dependencies"`
+	RecommendedDependencies []string              `json:"recommended_dependencies"`
+	OptionalDependencies    []string              `json:"optional_dependencies"`
+	UsesFromMacOS           []any                 `json:"uses_from_macos"`
+	UsesFromMacOSBounds     []*MacOSBounds        `json:"uses_from_macos_bounds"`
+	Requirements            []*Requirement        `json:"requirements"`
+	ConflictsWith           []string              `json:"conflicts_with"`
+	ConflictsWithReasons    []string              `json:"conflicts_with_reasons"`
+	LinkOverwrite           []string              `json:"link_overwrite"`
+	Caveats                 *string               `json:"caveats"`
+	Installed               []InstalledInfo       `json:"installed"`
+	LinkedKeg               string                `json:"linked_keg"`
+	Pinned                  bool                  `json:"pinned"`
+	Outdated                bool                  `json:"outdated"`
+	Deprecated              bool                  `json:"deprecated"`
+	DeprecationDate         *string               `json:"deprecation_date"`
+	DeprecationReason       *string               `json:"deprecation_reason"`
+	Disabled                bool                  `json:"disabled"`
+	DisabledDate            *string               `json:"disable_date"`
+	DisabledReason          *string               `json:"disable_reason"`
+	PostInstallDefined      bool                  `json:"post_install_defined"`
+	Service                 *Service              `json:"service"`
+	TapGitHead              string                `json:"tap_git_head"`
+	RubySourcePath          string                `json:"ruby_source_path"`
+	RubySourceChecksum      map[string]string     `json:"ruby_source_checksum"`
+	HeadDependencies        *HeadDependencies     `json:"head_dependencies,omitempty"`
 }
 
-// PourBottleCondition represents a condition from the pour_bottle_only_if field
-type PourBottleCondition string
-
 const (
-	PourBottleConditionDefaultPrefix PourBottleCondition = "default_prefix" // pour bottle condition requiring the default prefix
-	PourBottleConditionCLTInstalled  PourBottleCondition = "clt_installed"  // pour bottle condition requiring the macOS command line tools
+	PourBottleConditionDefaultPrefix = "default_prefix" // pour bottle condition requiring the default prefix
+	PourBottleConditionCLTInstalled  = "clt_installed"  // pour bottle condition requiring the macOS command line tools
 )
 
 // FormulaURL represents the urls block
 type FormulaURL struct {
-	URL      string  `json:"url"`
-	Tag      *string `json:"tag"`
-	Branch   *string `json:"branch"`
-	Revision *string `json:"revision"`
-	Using    *string `json:"using"`
-	Checksum *string `json:"checksum"`
+	URL      string `json:"url"`
+	Branch   string `json:"branch,omitempty"`
+	Tag      string `json:"tag,omitempty"`
+	Revision string `json:"revision,omitempty"`
+	Using    string `json:"using,omitempty"`
+	Checksum string `json:"checksum,omitempty"`
 }
 
 // InstalledInfo represents the installed block
@@ -168,9 +165,10 @@ type HeadDependencies struct {
 // Versions represents the available versions
 type Versions struct {
 	Others map[string]any `json:",inline"`
-	Stable *string        `json:"stable"`
-	Head   *string        `json:"head"`
-	Bottle bool           `json:"bottle"`
+	// TODO: remove pointer
+	Stable *string `json:"stable"`
+	Head   *string `json:"head"`
+	Bottle bool    `json:"bottle"`
 }
 
 const (

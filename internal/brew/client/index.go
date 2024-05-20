@@ -5,7 +5,6 @@ import (
 	"slices"
 
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/formula"
 )
 
 // APIIndex represents a formula index from the Homebrew API
@@ -38,11 +37,11 @@ func NewAPIIndex(index v1.Index) *APIIndex {
 }
 
 // Find finds a formula
-func (index *APIIndex) Find(name string) *formula.Formula {
+func (index *APIIndex) Find(name string) *v1.Info {
 	// Look up the name
 	f, ok := index.mapped[name]
 	if ok {
-		return formula.New(f)
+		return f
 	}
 
 	// Look up as alias
@@ -69,10 +68,10 @@ func (index *APIIndex) ListNames() []string {
 }
 
 // SearchFunc searches the index and returns all formulae hits from the match function
-func (index *APIIndex) SearchFunc(match func(*formula.Formula) bool) []*formula.Formula {
-	hits := []*formula.Formula{}
+func (index *APIIndex) SearchFunc(match func(*v1.Info) bool) []*v1.Info {
+	hits := []*v1.Info{}
 	for _, name := range index.names {
-		f := formula.New(index.mapped[name])
+		f := index.mapped[name]
 		if match(f) {
 			hits = append(hits, f)
 		}

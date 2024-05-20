@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/dependencies"
 	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
 	"github.com/act3-ai/hops/internal/formula"
@@ -54,7 +55,7 @@ func (action *Deps) Tree(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Deps) eval(ctx context.Context, names []string) (*dependencies.DependencyGraph[*formula.Formula], error) {
+func (action *Deps) eval(ctx context.Context, names []string) (*dependencies.DependencyGraph[*v1.Info], error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {

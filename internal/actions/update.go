@@ -8,7 +8,6 @@ import (
 	"golang.org/x/mod/semver"
 
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 )
 
@@ -72,7 +71,7 @@ func (action *Update) Run(ctx context.Context) error {
 }
 
 // IsNewerThan reports if n is newer than o by comparing their versions
-func IsNewerThan(n *v1.Info, o *formula.Formula) bool {
+func IsNewerThan(n *v1.Info, o *v1.Info) bool {
 	var oldVersion string
 	var newVersion string
 

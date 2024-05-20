@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/act3-ai/hops/internal/formula"
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -33,7 +33,7 @@ func (action *Leaves) Run(ctx context.Context) error {
 	// This will create a list of every formula that is depended on by another installed formula
 	// Once all
 	for _, f := range formulae {
-		platinfo, err := f.Info.ForPlatform(plat)
+		platinfo, err := f.ForPlatform(plat)
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,7 @@ func (action *Leaves) Run(ctx context.Context) error {
 	return nil
 }
 
-func (action *Leaves) resolveInstalled(ctx context.Context) ([]*formula.Formula, error) {
+func (action *Leaves) resolveInstalled(ctx context.Context) ([]*v1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {

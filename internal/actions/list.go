@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/act3-ai/hops/internal/formula"
+	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/prefix/keg"
 )
@@ -97,7 +97,7 @@ func multiple(kegs []keg.Keg) {
 	}
 }
 
-func (action *Hops) resolveNames(ctx context.Context, log func(string), names ...string) ([]*formula.Formula, error) {
+func (action *Hops) resolveNames(ctx context.Context, log func(string), names ...string) ([]*v1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {

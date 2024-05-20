@@ -8,7 +8,10 @@ vars:
   ############################################################
   REV:
     sh: git describe --long --tags --match='v*' --dirty 2>/dev/null || git rev-list -n1 HEAD
-  IMAGE_REPO: reg.github.com/act3-ai/hops
+  IMAGE_REPO: ghcr.com/act3-ai/hops
+  # Use port 5001 because the default podman machine uses port 5000
+  TEST_REGISTRY_PORT: 5001
+  TEST_REGISTRY_NAME: testreg
   ############################################################
   # Tool versions
   ############################################################
@@ -166,6 +169,20 @@ tasks:
       KO_DOCKER_REPO: "{{.IMAGE_REPO}}/distroless"
     cmds:
       - tool/ko build -B --image-label version="{{.REV}}" ./cmd/hops
+  
+  startreg:
+    desc: Start a local registry for testing purposes
+    cmds:
+      - podman run --name {{.TEST_REGISTRY_NAME}} --rm -d -p {{.TEST_REGISTRY_PORT}}:5000 registry:2
+      - |
+        echo "# To use the test registry, run the following:"
+        echo "export HOPS_REGISTRY=localhost:{{.TEST_REGISTRY_PORT}}"
+        echo "export HOPS_REGISTRY_PLAIN_HTTP=true"
+  
+  stopreg:
+    desc: Start a local registry for testing purposes
+    cmds:
+      - podman stop {{.TEST_REGISTRY_NAME}}
 
   # crd-ref-docs: Generates markdown documentation for CRDs
   tool:crd-ref-docs:

@@ -16,7 +16,6 @@ import (
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
 	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -81,7 +80,7 @@ func (action *Images) Run(ctx context.Context, formulae ...string) error {
 	return nil
 }
 
-func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*formula.Formula, error) {
+func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*v1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {
@@ -112,7 +111,7 @@ func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*form
 }
 
 // listImages lists the images for each formula in the index
-func (action *Images) listImages(ctx context.Context, formulae []*formula.Formula) ([]string, error) {
+func (action *Images) listImages(ctx context.Context, formulae []*v1.Info) ([]string, error) {
 	// Print no-resolve warning
 	if action.NoResolve || action.NoVerify {
 		o.Poo("Skipping tag resolution")
@@ -128,13 +127,13 @@ func (action *Images) listImages(ctx context.Context, formulae []*formula.Formul
 		return nil, err
 	}
 
-	mapper := iter.Mapper[*formula.Formula, string]{MaxGoroutines: action.MaxGoroutines()}
-	return mapper.MapErr(formulae, func(f **formula.Formula) (string, error) {
+	mapper := iter.Mapper[*v1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
+	return mapper.MapErr(formulae, func(f **v1.Info) (string, error) {
 		return action.resolve(ctx, reg, *f)
 	})
 }
 
-func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f *formula.Formula) (string, error) {
+func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f *v1.Info) (string, error) {
 	m, err := bottle.Manifest(f, v1.Stable)
 	if err != nil {
 		return "", fmt.Errorf("computing bottle manifest: %w", err)

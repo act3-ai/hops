@@ -10,7 +10,6 @@ import (
 
 	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/apis/receipt.brew.sh"
-	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
@@ -18,7 +17,7 @@ import (
 )
 
 // Info prints the formula information in pretty format
-func Info(f *formula.Formula, p prefix.Prefix, plat platform.Platform) {
+func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 	// Collect information in advance for readability
 	var isInstalled bool
 	var files int
