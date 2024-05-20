@@ -2,7 +2,9 @@ name: Build
 
 on:
   push:
-    branches: ["main"]
+    branches: 
+      - "main"
+      - "release/*"
   pull_request:
     branches: ["main"]
   workflow_call:
@@ -68,6 +70,9 @@ jobs:
             -o ${{env.EXECUTABLE_PATH}} \
             ./cmd/${{env.EXECUTABLE}}
           echo "executable-path=${{env.EXECUTABLE_PATH}}" >> $GITHUB_OUTPUT
+      - uses: oras-project/setup-oras@v1
+      - run: |
+          oras manifest push --media-type 
 
       # - uses: actions/attest-build-provenance@v1
       #   id: attest
