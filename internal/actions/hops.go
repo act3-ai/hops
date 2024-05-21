@@ -155,7 +155,7 @@ func (action *Hops) AuthClient() *auth.Client {
 }
 
 // Returns the auth headers for HTTP requests
-func (action *Hops) AuthHeaders() http.Header {
+func (action *Hops) authHeaders() http.Header {
 	header := http.Header{}
 	// Add the GitHub Packages auth header from Homebrew config
 	header.Add("Authorization",
@@ -210,8 +210,8 @@ func (action *Hops) Config() *hopsv1.Configuration {
 
 var errNoRegistryConfig = errors.New("no registry configured")
 
-// Registry produces the Hops registry from options
-func (action *Hops) Registry() (bottle.Registry, error) {
+// registry produces the Hops registry from options
+func (action *Hops) registry() (bottle.Registry, error) {
 	switch {
 	case action.Config().Registry.Prefix == "":
 		return nil, errNoRegistryConfig
@@ -243,7 +243,7 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 				return nil, err
 			}
 			bottleStore := brewformulary.NewBottleStore(
-				action.AuthHeaders(),
+				action.authHeaders(),
 				retry.DefaultClient,
 				action.Homebrew().Cache,
 				action.MaxGoroutines(),
@@ -253,7 +253,7 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 		// Hops-style Formulary
 		default:
 			slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix))
-			reg, err := action.Registry()
+			reg, err := action.registry()
 			if err != nil {
 				return nil, err
 			}

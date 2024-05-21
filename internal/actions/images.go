@@ -117,7 +117,7 @@ func (action *Images) listImages(ctx context.Context, formulae []formula.Platfor
 		o.Poo("Skipping tag verification")
 	}
 
-	reg, err := action.Registry()
+	reg, err := action.registry()
 	if err != nil {
 		return nil, err
 	}
