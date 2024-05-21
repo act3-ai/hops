@@ -97,9 +97,6 @@ func (action *Images) findDeps(ctx context.Context, args []string) ([]formula.Pl
 	if err != nil {
 		return nil, err
 	}
-	if err != nil {
-		return nil, err
-	}
 
 	dependents := graph.Dependents()
 	fmt.Printf("Found %d dependencies\n", len(dependents))
@@ -127,11 +124,11 @@ func (action *Images) listImages(ctx context.Context, formulae []formula.Platfor
 
 	mapper := iter.Mapper[formula.PlatformFormula, string]{MaxGoroutines: action.MaxGoroutines()}
 	return mapper.MapErr(formulae, func(f *formula.PlatformFormula) (string, error) {
-		return action.resolve(ctx, reg, action.Config().Registry.Prefix, *f)
+		return action.resolve(ctx, reg, *f)
 	})
 }
 
-func (action *Images) resolve(ctx context.Context, reg bottle.Registry, regprefix string, f formula.Formula) (string, error) {
+func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f formula.Formula) (string, error) {
 	image := strings.TrimSuffix(action.Config().Registry.Prefix, "/") + "/" + brewfmt.Repo(f.Name()) + ":" + formula.Tag(f.Version())
 
 	if action.NoVerify {

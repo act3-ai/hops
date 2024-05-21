@@ -24,7 +24,7 @@ func copyCmd(hops *actions.Hops) *cobra.Command {
 			Copy bottles and dependencies from one registry to another. Adds a referring manifest containing all metadata available for the bottle.`),
 		ValidArgsFunction: formulaNames(hops),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return action.Run(cmd.Context(), args...)
+			return action.Run(cmd.Context(), args)
 		},
 	}
 
@@ -43,7 +43,7 @@ func copyCmd(hops *actions.Hops) *cobra.Command {
 	}
 
 	// Dependency resolution flags
-	withDependencyFlags(cmd, &action.DependencyOptions)
+	newWithDependencyFlags(cmd, &action.DependencyOptions)
 
 	return cmd
 }

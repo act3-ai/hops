@@ -17,9 +17,10 @@ import (
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
+	"github.com/act3-ai/hops/internal/brew"
 	"github.com/act3-ai/hops/internal/brewfile"
-	"github.com/act3-ai/hops/internal/dependencies"
-	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
+	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/dependencies"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -36,7 +37,8 @@ type copiedBottle struct {
 // Copy represents the action and its options
 type Copy struct {
 	*Hops
-	DependencyOptions dependencies.Options
+	// DependencyOptions dependencies.Options
+	DependencyOptions formula.DependencyTags
 
 	File string // path to a Brewfile specifying formulae dependencies
 
@@ -50,7 +52,7 @@ type Copy struct {
 }
 
 // Run runs the action
-func (action *Copy) Run(ctx context.Context, names ...string) error {
+func (action *Copy) Run(ctx context.Context, args []string) error {
 	if action.To == "" {
 		return errors.New("empty destination registry")
 	}
@@ -66,15 +68,15 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 			return err
 		}
 
-		names = append(names, bf.Formula...)
+		args = append(args, bf.Formula...)
 	}
 
-	o.H1("Copying:\n" + strings.Join(names, " "))
+	o.H1("Copying:\n" + strings.Join(args, " "))
 
-	slog.Debug("copying bottles", slog.Any("names", names))
+	slog.Debug("copying bottles", slog.Any("names", args))
 
 	// Resolve all formulae
-	formulae, err := action.resolve(ctx, names...)
+	formulae, err := action.resolve(ctx, args)
 	if err != nil {
 		return err
 	}
@@ -131,20 +133,42 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*brewv1.Info, error) {
+func (action *Copy) resolve(ctx context.Context, args []string) ([]*brewv1.Info, error) {
 	index := action.Index()
 	err := index.Load(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	all, err := action.FetchAll(o.H1, index, formulae...)
+	// all, err := action.FetchAll(o.H1, index, formulae...)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// o.H1("Fetching dependencies...")
+	// deps, err := dependencies.Walk(ctx, apiwalker.New(index, platform.All), all, &action.DependencyOptions)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// dependents := deps.Dependents()
+	// fmt.Printf("Found %d dependencies\n", len(dependents))
+
+	// // Combine root formulae with their dependencies in this list
+	// all = append(all, dependents...)
+
+	all, err := action.fetchFromArgs(ctx, args, platform.All)
+	if err != nil {
+		return nil, err
+	}
+
+	store, err := action.FormulaClient(ctx, args)
 	if err != nil {
 		return nil, err
 	}
 
 	o.H1("Fetching dependencies...")
-	deps, err := dependencies.Walk(ctx, apiwalker.New(index, platform.All), all, &action.DependencyOptions)
+	deps, err := dependencies.WalkAll(ctx, store, all, &action.DependencyOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +178,16 @@ func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*brewv1.
 
 	// Combine root formulae with their dependencies in this list
 	all = append(all, dependents...)
-	return all, nil
+	metadata := make([]*brewv1.Info, 0, len(all))
+	for _, f := range all {
+		md := index.Find(f.Name())
+		if md == nil {
+			return nil, brew.NewErrFormulaNotFound(f.Name())
+		}
+		metadata = append(metadata, md)
+	}
+
+	return metadata, nil
 }
 
 func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copiedBottles []*copiedBottle) error { //nolint:revive
