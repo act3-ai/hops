@@ -10,11 +10,11 @@ import (
 
 	"github.com/sourcegraph/conc/iter"
 
-	"github.com/act3-ai/hops/internal/bottle"
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/brewfile"
+	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/formula/dependencies"
+	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -128,7 +128,7 @@ func (action *Images) listImages(ctx context.Context, formulae []formula.Platfor
 	})
 }
 
-func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f formula.Formula) (string, error) {
+func (action *Images) resolve(ctx context.Context, reg hopsreg.Registry, f formula.Formula) (string, error) {
 	image := strings.TrimSuffix(action.Config().Registry.Prefix, "/") + "/" + brewfmt.Repo(f.Name()) + ":" + formula.Tag(f.Version())
 
 	if action.NoVerify {

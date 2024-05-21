@@ -34,7 +34,7 @@ package brewformulary
 // 	panic("not implemented")
 // 	// data := f.index.Find(name)
 // 	// if data == nil {
-// 	// 	return nil, brew.NewErrFormulaNotFound(name)
+// 	// 	return nil, errdef.NewErrFormulaNotFound(name)
 // 	// }
 // 	// return formula.FromV1(data), nil
 // }

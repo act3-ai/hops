@@ -16,7 +16,7 @@ import (
 
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/bottle"
+	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
 	"github.com/act3-ai/hops/internal/utils/orasutil"
@@ -32,22 +32,13 @@ var (
 
 // VersionedBottle represents a version of a Bottle
 type VersionedBottle interface {
-	Fetch(ctx context.Context, repo bottle.Repository, plat platform.Platform) (io.ReadCloser, error)
-	Metadata(ctx context.Context, repo bottle.Repository) (*brewv1.Info, error)
-	PlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (*brewv1.Info, error)
+	Fetch(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (io.ReadCloser, error)
+	Metadata(ctx context.Context, repo hopsreg.Repository) (*brewv1.Info, error)
+	PlatformMetadata(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (*brewv1.Info, error)
 }
-
-// VersionMap maps bottle names to versions
-// type VersionMap map[string]string
-
-// type PlatformVersionedBottle interface {
-// 	Fetch(ctx context.Context, repo bottle.Repository) (io.ReadCloser, error)
-// 	Metadata(ctx context.Context, repo bottle.Repository) (*v1.PlatformInfo, error)
-// }
 
 // BottleIndex represents a versioned bottle
 type BottleIndex struct {
-	RepositoryName     string                                // name
 	ocispec.Descriptor                                       // descriptor of the index
 	index              *ocispec.Index                        // content of the bottle index
 	metadata           *metadataManifest                     // descriptor of the metadata manifest, if found
@@ -77,23 +68,22 @@ type metadataConfig struct {
 }
 
 // ResolveVersion resolves a bottle version
-func ResolveVersion(ctx context.Context, repo bottle.Repository, version string) (*BottleIndex, error) {
+func ResolveVersion(ctx context.Context, repo hopsreg.Repository, version string) (*BottleIndex, error) {
 	d, err := repo.Resolve(ctx, version)
 	if errors.Is(err, errdef.ErrNotFound) {
-		return nil, fmt.Errorf("[%s] resolving version %q: %w", repo.Name(), version, ErrTagNotFound)
+		return nil, fmt.Errorf("resolving version %q: %w", version, ErrTagNotFound)
 	} else if err != nil {
-		return nil, fmt.Errorf("[%s] resolving version %q: %w", repo.Name(), version, err)
+		return nil, fmt.Errorf("resolving version %q: %w", version, err)
 	}
 
 	return &BottleIndex{
-		RepositoryName: repo.Name(),
-		Descriptor:     d,
-		platforms:      map[platform.Platform]*bottleManifest{},
+		Descriptor: d,
+		platforms:  map[platform.Platform]*bottleManifest{},
 	}, nil
 }
 
 // resolvePlatform resolves the bottle manifest for a platform
-func resolvePlatform(ctx context.Context, repo bottle.Repository, bottle *BottleIndex, plat platform.Platform) (*bottleManifest, error) {
+func resolvePlatform(ctx context.Context, repo hopsreg.Repository, bottle *BottleIndex, plat platform.Platform) (*bottleManifest, error) {
 	if p, ok := bottle.platforms[plat]; ok {
 		return p, nil
 	}
@@ -101,14 +91,14 @@ func resolvePlatform(ctx context.Context, repo bottle.Repository, bottle *Bottle
 	if bottle.index == nil {
 		index, err := orasutil.FetchDecode[ocispec.Index](ctx, repo, bottle.Descriptor)
 		if err != nil {
-			return nil, fmt.Errorf("[%s] fetching index: %w", repo.Name(), err)
+			return nil, fmt.Errorf("fetching index: %w", err)
 		}
 		bottle.index = index
 	}
 
 	sel := platform.SelectManifestIndex(bottle.index, plat)
 	if sel < 0 {
-		return nil, fmt.Errorf("[%s] selecting platform: no manifest for platform %s", repo.Name(), plat)
+		return nil, fmt.Errorf("selecting platform: no manifest for platform %s", plat)
 	}
 
 	// Return selected manifest
@@ -120,7 +110,7 @@ func resolvePlatform(ctx context.Context, repo bottle.Repository, bottle *Bottle
 }
 
 // ResolveBottle resolves the bottle artifact from a platform manifest
-func (btl *BottleIndex) ResolveBottle(ctx context.Context, repo bottle.Repository, plat platform.Platform) (ocispec.Descriptor, error) {
+func (btl *BottleIndex) ResolveBottle(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (ocispec.Descriptor, error) {
 	bottleManifest, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
 		return ocispec.Descriptor{}, err
@@ -130,7 +120,7 @@ func (btl *BottleIndex) ResolveBottle(ctx context.Context, repo bottle.Repositor
 }
 
 // resolveBottle resolves the bottle artifact from a platform manifest
-func resolveBottle(ctx context.Context, repo bottle.Repository, desc *bottleManifest) (ocispec.Descriptor, error) {
+func resolveBottle(ctx context.Context, repo hopsreg.Repository, desc *bottleManifest) (ocispec.Descriptor, error) {
 	if desc.bottle != nil {
 		return *desc.bottle, nil
 	}
@@ -138,13 +128,13 @@ func resolveBottle(ctx context.Context, repo bottle.Repository, desc *bottleMani
 	if desc.manifest == nil {
 		manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
 		if err != nil {
-			return ocispec.Descriptor{}, fmt.Errorf("[%s] fetching manifest: %w", repo.Name(), err)
+			return ocispec.Descriptor{}, fmt.Errorf("fetching manifest: %w", err)
 		}
 		desc.manifest = manifest
 	}
 
 	if len(desc.manifest.Layers) == 0 {
-		return ocispec.Descriptor{}, fmt.Errorf("[%s] %s: manifest has no layers", repo.Name(), desc.Descriptor.Digest.Encoded())
+		return ocispec.Descriptor{}, fmt.Errorf("%s: manifest has no layers", desc.Descriptor.Digest.Encoded())
 	}
 
 	for _, l := range desc.manifest.Layers {
@@ -155,11 +145,11 @@ func resolveBottle(ctx context.Context, repo bottle.Repository, desc *bottleMani
 		}
 	}
 
-	return ocispec.Descriptor{}, fmt.Errorf("[%s] %s: manifest has no layers with mediaType %s", repo.Name(), desc.Descriptor.Digest.Encoded(), hopsspec.MediaTypeBottleArchiveLayer)
+	return ocispec.Descriptor{}, fmt.Errorf("%s: manifest has no layers with mediaType %s", desc.Descriptor.Digest.Encoded(), hopsspec.MediaTypeBottleArchiveLayer)
 }
 
 // GeneralMetadata returns the full metadata for the bottle
-func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo bottle.Repository) (*brewv1.Info, error) {
+func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo hopsreg.Repository) (*brewv1.Info, error) {
 	mdman, err := resolveFullMetadata(ctx, repo, btl)
 	if err != nil {
 		return nil, err
@@ -174,7 +164,7 @@ func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo bottle.Reposit
 }
 
 // ResolvePlatformMetadata resolves the platform-specific metadata for a bottle
-func (btl *BottleIndex) ResolvePlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (ocispec.Descriptor, error) {
+func (btl *BottleIndex) ResolvePlatformMetadata(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (ocispec.Descriptor, error) {
 	pman, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
 		return ocispec.Descriptor{}, err
@@ -189,7 +179,7 @@ func (btl *BottleIndex) ResolvePlatformMetadata(ctx context.Context, repo bottle
 }
 
 // PlatformMetadata returns platform-specific metadata for a bottle
-func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo bottle.Repository, plat platform.Platform) (*brewv1.PlatformInfo, error) {
+func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (*brewv1.PlatformInfo, error) {
 	pman, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
 		return nil, err
@@ -215,14 +205,14 @@ func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo bottle.Reposi
 		for p := range info.Variations {
 			keys = append(keys, p.String())
 		}
-		return nil, fmt.Errorf("[%s] platform metadata cannot contain variations: contains variations %v", repo.Name(), keys)
+		return nil, fmt.Errorf("platform metadata cannot contain variations: contains variations %v", keys)
 	}
 
 	return &info.PlatformInfo, nil
 }
 
 // resolveFullMetadata resolves the bottle metadata manifest for a platform
-func resolveFullMetadata(ctx context.Context, repo bottle.Repository, desc *BottleIndex) (*metadataManifest, error) {
+func resolveFullMetadata(ctx context.Context, repo hopsreg.Repository, desc *BottleIndex) (*metadataManifest, error) {
 	if desc.metadata != nil {
 		return desc.metadata, nil
 	}
@@ -233,7 +223,7 @@ func resolveFullMetadata(ctx context.Context, repo bottle.Repository, desc *Bott
 	}
 
 	if len(referrers) == 0 {
-		return nil, fmt.Errorf("[%s] fetching general metadata: %w", repo.Name(), ErrNoMetadata)
+		return nil, fmt.Errorf("fetching general metadata: %w", ErrNoMetadata)
 	}
 
 	desc.metadata = &metadataManifest{Descriptor: referrers[0]}
@@ -241,7 +231,7 @@ func resolveFullMetadata(ctx context.Context, repo bottle.Repository, desc *Bott
 }
 
 // resolvePlatformMetadata resolves the bottle metadata manifest for a platform
-func resolvePlatformMetadata(ctx context.Context, repo bottle.Repository, desc *bottleManifest) (*metadataManifest, error) {
+func resolvePlatformMetadata(ctx context.Context, repo hopsreg.Repository, desc *bottleManifest) (*metadataManifest, error) {
 	if desc.metadata != nil {
 		return desc.metadata, nil
 	}
@@ -252,7 +242,7 @@ func resolvePlatformMetadata(ctx context.Context, repo bottle.Repository, desc *
 	}
 
 	if len(referrers) == 0 {
-		return nil, fmt.Errorf("[%s] fetching platform metadata: %w", repo.Name(), ErrNoMetadata)
+		return nil, fmt.Errorf("fetching platform metadata: %w", ErrNoMetadata)
 	}
 
 	desc.metadata = &metadataManifest{Descriptor: referrers[0]}
@@ -260,11 +250,11 @@ func resolvePlatformMetadata(ctx context.Context, repo bottle.Repository, desc *
 }
 
 // resolveMetadataConfig resolves metadata config
-func resolveMetadataConfig(ctx context.Context, repo bottle.Repository, desc *metadataManifest) (*metadataConfig, error) {
+func resolveMetadataConfig(ctx context.Context, repo hopsreg.Repository, desc *metadataManifest) (*metadataConfig, error) {
 	if desc.manifest == nil {
 		manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
 		if err != nil {
-			return nil, fmt.Errorf("[%s] fetching manifest: %w", repo.Name(), err)
+			return nil, fmt.Errorf("fetching manifest: %w", err)
 		}
 		desc.manifest = manifest
 	}
@@ -274,12 +264,12 @@ func resolveMetadataConfig(ctx context.Context, repo bottle.Repository, desc *me
 }
 
 // fetchMetadataConfig fetches the metadata config
-func fetchMetadataConfig(ctx context.Context, repo bottle.Repository, desc *metadataConfig) (*brewv1.Info, error) {
+func fetchMetadataConfig(ctx context.Context, repo hopsreg.Repository, desc *metadataConfig) (*brewv1.Info, error) {
 	if desc.config == nil {
 		config, err := orasutil.FetchDecode[brewv1.Info](ctx, repo, desc.Descriptor)
 		if err != nil {
 			desc.config = &brewv1.Info{}
-			return nil, fmt.Errorf("[%s] fetching metadata from config: %w", repo.Name(), err)
+			return nil, fmt.Errorf("fetching metadata from config: %w", err)
 		}
 		desc.config = config
 	}
@@ -288,19 +278,19 @@ func fetchMetadataConfig(ctx context.Context, repo bottle.Repository, desc *meta
 }
 
 // CopyGeneralMetadata copies all bottle metadata artifacts
-func CopyGeneralMetadata(ctx context.Context, src, dst bottle.Repository, btl *BottleIndex) error {
+func CopyGeneralMetadata(ctx context.Context, src, dst hopsreg.Repository, btl *BottleIndex) error {
 	opts := copyOptions
 	opts.FindSuccessors = metadataSuccessors
 
 	if err := oras.ExtendedCopyGraph(ctx, src, dst, btl.Descriptor, opts); err != nil {
-		return fmt.Errorf("[%s] copying metadata: %w", src.Name(), err)
+		return fmt.Errorf("copying metadata: %w", err)
 	}
 
 	return nil
 }
 
 // CopyPlatformMetadata copies all bottle artifacts for a given platform
-func CopyPlatformMetadata(ctx context.Context, src, dst bottle.Repository, btl *BottleIndex, plat platform.Platform) error {
+func CopyPlatformMetadata(ctx context.Context, src, dst hopsreg.Repository, btl *BottleIndex, plat platform.Platform) error {
 	opts := copyOptions
 	opts.FindSuccessors = metadataSuccessorsForPlatform(plat)
 
@@ -310,14 +300,14 @@ func CopyPlatformMetadata(ctx context.Context, src, dst bottle.Repository, btl *
 	}
 
 	if err := oras.ExtendedCopyGraph(ctx, src, dst, manifest.Descriptor, opts); err != nil {
-		return fmt.Errorf("[%s] copying metadata for platform %s: %w", src.Name(), plat, err)
+		return fmt.Errorf("copying metadata for platform %s: %w", plat, err)
 	}
 
 	return nil
 }
 
 // CopyTargetPlatform copies all bottle artifacts for a given platform
-func CopyTargetPlatform(ctx context.Context, src, dst bottle.Repository, btl *BottleIndex, plat platform.Platform) error {
+func CopyTargetPlatform(ctx context.Context, src, dst hopsreg.Repository, btl *BottleIndex, plat platform.Platform) error {
 	opts := copyOptions
 	opts.FindSuccessors = successorsForPlatform(plat)
 
@@ -327,17 +317,17 @@ func CopyTargetPlatform(ctx context.Context, src, dst bottle.Repository, btl *Bo
 	}
 
 	if err := oras.ExtendedCopyGraph(ctx, src, dst, manifest.Descriptor, opts); err != nil {
-		return fmt.Errorf("[%s] copying bottle for platform %s: %w", src.Name(), plat, err)
+		return fmt.Errorf("copying bottle for platform %s: %w", plat, err)
 	}
 
 	return nil
 }
 
 // Copy copies all bottle artifacts
-func Copy(ctx context.Context, src, dst bottle.Repository, btl *BottleIndex) error {
+func Copy(ctx context.Context, src, dst hopsreg.Repository, btl *BottleIndex) error {
 	opts := copyOptions
 	if err := oras.ExtendedCopyGraph(ctx, src, dst, btl.Descriptor, opts); err != nil {
-		return fmt.Errorf("[%s] copying bottles: %w", src.Name(), err)
+		return fmt.Errorf("copying bottles: %w", err)
 	}
 	return nil
 }
@@ -357,7 +347,7 @@ type IterOptions struct {
 }
 
 // List
-func List(ctx context.Context, reg bottle.SearchableRegistry, opts *IterOptions) ([]*brewv1.Info, error) {
+func List(ctx context.Context, reg hopsreg.SearchableRegistry, opts *IterOptions) ([]*brewv1.Info, error) {
 	repos, err := reg.Repositories(ctx)
 	if err != nil {
 		return nil, err
@@ -388,7 +378,7 @@ func List(ctx context.Context, reg bottle.SearchableRegistry, opts *IterOptions)
 }
 
 // CopyAllMetadata copies all metadata artifacts from srcReg to dstReg
-func CopyAllMetadata(ctx context.Context, srcReg, dstReg bottle.SearchableRegistry, opts *IterOptions) ([]*BottleIndex, error) {
+func CopyAllMetadata(ctx context.Context, srcReg, dstReg hopsreg.SearchableRegistry, opts *IterOptions) ([]*BottleIndex, error) {
 	srcRepos, err := srcReg.Repositories(ctx)
 	if err != nil {
 		return nil, err

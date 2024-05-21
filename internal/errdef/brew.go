@@ -1,4 +1,4 @@
-package brew
+package errdef
 
 import (
 	"errors"

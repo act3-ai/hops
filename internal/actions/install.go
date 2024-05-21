@@ -14,9 +14,9 @@ import (
 	"github.com/sourcegraph/conc/iter"
 
 	"github.com/act3-ai/hops/internal/bottle"
-	"github.com/act3-ai/hops/internal/brew"
+	"github.com/act3-ai/hops/internal/dependencies"
+	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/formula/dependencies"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
@@ -130,7 +130,7 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 			%s
 			To reinstall %s, run:
 			  hops reinstall %s`,
-			brew.NewErrFormulaUpToDate(f.Name(), version).Error(),
+			errdef.NewErrFormulaUpToDate(f.Name(), version).Error(),
 			version,
 			f.Name()))
 	}

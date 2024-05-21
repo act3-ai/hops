@@ -12,16 +12,16 @@ import (
 	"github.com/sourcegraph/conc/pool"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
-	"oras.land/oras-go/v2/errdef"
+	oraserr "oras.land/oras-go/v2/errdef"
 
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/bottle"
-	"github.com/act3-ai/hops/internal/brew"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/brewfile"
+	"github.com/act3-ai/hops/internal/dependencies"
+	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/formula/brewformulary"
-	"github.com/act3-ai/hops/internal/formula/dependencies"
+	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -85,21 +85,21 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 	auth := action.Hops.AuthClient()
 
 	// Initialize source and destination registries
-	var srcReg bottle.Registry
+	var srcReg hopsreg.Registry
 	if action.FromOCILayout {
-		srcReg = bottle.NewLocal(action.From)
+		srcReg = hopsreg.NewLocal(action.From)
 	} else {
-		srcReg, err = bottle.NewRegistry(action.From, auth, action.FromPlainHTTP)
+		srcReg, err = hopsreg.NewRegistry(action.From, auth, action.FromPlainHTTP)
 		if err != nil {
 			return fmt.Errorf("initializing source registry: %w", err)
 		}
 	}
 
-	var dstReg bottle.Registry
+	var dstReg hopsreg.Registry
 	if action.ToOCILayout {
-		dstReg = bottle.NewLocal(action.To)
+		dstReg = hopsreg.NewLocal(action.To)
 	} else {
-		dstReg, err = bottle.NewRegistry(action.To, auth, action.ToPlainHTTP)
+		dstReg, err = hopsreg.NewRegistry(action.To, auth, action.ToPlainHTTP)
 		if err != nil {
 			return fmt.Errorf("initializing destination registry: %w", err)
 		}
@@ -186,7 +186,7 @@ func (action *Copy) resolve(ctx context.Context, args []string) ([]*brewv1.Info,
 	for _, f := range all {
 		md := index.Find(f.Name())
 		if md == nil {
-			return nil, brew.NewErrFormulaNotFound(f.Name())
+			return nil, errdef.NewErrFormulaNotFound(f.Name())
 		}
 		metadata = append(metadata, md)
 	}
@@ -404,7 +404,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 
 func mustPushMetadataBlob(ctx context.Context, dst oras.Target, mediaType string, metadata []byte) (ocispec.Descriptor, error) {
 	d, err := oras.PushBytes(ctx, dst, mediaType, metadata)
-	if errors.Is(err, errdef.ErrAlreadyExists) {
+	if errors.Is(err, oraserr.ErrAlreadyExists) {
 		d = content.NewDescriptorFromBytes(mediaType, metadata)
 	} else if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("pushing metadata blob: %w", err)

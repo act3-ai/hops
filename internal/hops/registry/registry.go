@@ -1,4 +1,4 @@
-package bottle
+package hopsreg
 
 import (
 	"context"
@@ -65,7 +65,6 @@ type Fetcher interface {
 // Repository represents the minimum interface for a bottle repository
 type Repository interface {
 	oras.GraphTarget
-	Name() string
 }
 
 // Remote defines a registry of bottles
@@ -138,10 +137,10 @@ func (r *Remote) Repository(ctx context.Context, name string) (Repository, error
 	return r.repository(ctx, name)
 }
 
-// Name produces the name of the bottle stored
-func (store *remoteRepository) Name() string {
-	return store.name
-}
+// // Name produces the name of the bottle stored
+// func (store *remoteRepository) Name() string {
+// 	return store.name
+// }
 
 // Local represents a collection of OCI-layout bottle dirs
 type Local struct {
@@ -197,10 +196,10 @@ type OCILayoutStore struct {
 	name string
 }
 
-// Name produces the name of the bottle stored
-func (store *OCILayoutStore) Name() string {
-	return store.name
-}
+// // Name produces the name of the bottle stored
+// func (store *OCILayoutStore) Name() string {
+// 	return store.name
+// }
 
 // ListTags lists the tags available in a repository, only if the repository supports listing tags
 func ListTags(ctx context.Context, repo Repository) ([]string, error) {

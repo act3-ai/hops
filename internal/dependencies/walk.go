@@ -7,7 +7,7 @@ import (
 
 	"github.com/xlab/treeprint"
 
-	"github.com/act3-ai/hops/internal/brew"
+	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -42,7 +42,7 @@ func (deps *DependencyGraph) Roots() []formula.PlatformFormula {
 func (deps *DependencyGraph) Tree(root string) (treeprint.Tree, error) {
 	tree, ok := deps.trees[root]
 	if !ok {
-		return nil, brew.NewErrFormulaNotFound(root)
+		return nil, errdef.NewErrFormulaNotFound(root)
 	}
 	return tree, nil
 }

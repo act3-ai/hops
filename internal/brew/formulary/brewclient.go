@@ -1,4 +1,4 @@
-package brewclient
+package brewformulary
 
 import (
 	"context"
@@ -14,8 +14,36 @@ import (
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	api "github.com/act3-ai/hops/internal/apis/formulae.brew.sh"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	"github.com/act3-ai/hops/internal/errdef"
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/utils/resputil"
 )
+
+// NewFormulary creates a pre-loaded formulary
+func NewFormulary(index Index) (formula.Formulary, error) {
+	return NewPreloaded(index)
+}
+
+// NewPreloaded creates a pre-loaded formulary
+func NewPreloaded(index Index) (*Preloaded, error) {
+	return &Preloaded{
+		index: index,
+	}, nil
+}
+
+// Preloaded is a formulary with the full contents of the Homebrew API
+type Preloaded struct {
+	index Index
+}
+
+// Fetch implements formula.Formulary.
+func (f *Preloaded) Fetch(_ context.Context, name string) (formula.MultiPlatformFormula, error) {
+	data := f.index.Find(name)
+	if data == nil {
+		return nil, errdef.NewErrFormulaNotFound(name)
+	}
+	return formula.FromV1(data), nil
+}
 
 // Client represents the Homebrew API index
 type Client struct {

@@ -1,4 +1,4 @@
-package brewclient
+package brewformulary
 
 import (
 	"maps"

@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/formula/dependencies"
 	"github.com/act3-ai/hops/internal/platform"
 )
 

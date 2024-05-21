@@ -17,11 +17,12 @@ import (
 
 	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
-	"github.com/act3-ai/hops/internal/bottle"
-	brewclient "github.com/act3-ai/hops/internal/brew/client"
+	"github.com/act3-ai/hops/internal/brew"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
+	brewreg "github.com/act3-ai/hops/internal/brew/registry"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/formula/brewformulary"
-	"github.com/act3-ai/hops/internal/formula/hopsreg"
+	hops "github.com/act3-ai/hops/internal/hops"
+	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
@@ -125,8 +126,8 @@ func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuratio
 }
 
 // Index returns the index
-func (action *Hops) Index() brewclient.CachedIndex {
-	return brewclient.New(
+func (action *Hops) Index() brewformulary.CachedIndex {
+	return brewformulary.New(
 		http.DefaultClient,
 		action.Homebrew().Cache,
 		action.Config().Homebrew.Domain)
@@ -211,14 +212,14 @@ func (action *Hops) Config() *hopsv1.Configuration {
 var errNoRegistryConfig = errors.New("no registry configured")
 
 // registry produces the Hops registry from options
-func (action *Hops) registry() (bottle.Registry, error) {
+func (action *Hops) registry() (hopsreg.Registry, error) {
 	switch {
 	case action.Config().Registry.Prefix == "":
 		return nil, errNoRegistryConfig
 	case action.Config().Registry.OCILayout:
-		return bottle.NewLocal(action.Config().Registry.Prefix), nil
+		return hopsreg.NewLocal(action.Config().Registry.Prefix), nil
 	default:
-		return bottle.NewRegistry(
+		return hopsreg.NewRegistry(
 			action.Config().Registry.Prefix,
 			action.AuthClient(),
 			action.Config().Registry.PlainHTTP,
@@ -242,14 +243,14 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 			if err != nil {
 				return nil, err
 			}
-			bottleStore := brewformulary.NewBottleStore(
+			bottleStore := brewreg.NewBottleStore(
 				action.authHeaders(),
 				retry.DefaultClient,
 				action.Homebrew().Cache,
 				action.MaxGoroutines(),
 				action.Homebrew().ArtifactDomain,
 			)
-			action.client = brewformulary.NewHomebrewClient(*formulaStore, *bottleStore)
+			action.client = brew.NewHomebrewClient(*formulaStore, *bottleStore)
 		// Hops-style Formulary
 		default:
 			slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix))
@@ -264,7 +265,7 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 				alternateTags[name] = version
 			}
 
-			action.client, err = hopsreg.NewHopsFormulary(
+			action.client, err = hops.NewHopsFormulary(
 				reg, action.bottleCache(),
 				alternateTags, action.MaxGoroutines())
 			if err != nil {
@@ -276,9 +277,9 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 }
 
 // bottleCache initializes an OCI layout cache for bottles
-func (action *Hops) bottleCache() bottle.Registry {
+func (action *Hops) bottleCache() hopsreg.Registry {
 	// Initialize OCI layout cache
-	return bottle.NewLocal(filepath.Join(action.Config().Cache, "oci"))
+	return hopsreg.NewLocal(filepath.Join(action.Config().Cache, "oci"))
 }
 
 func parseArgs(args []string) (names, versions []string) { //nolint:unparam
