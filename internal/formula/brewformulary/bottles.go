@@ -1,4 +1,4 @@
-package bottle
+package brewformulary
 
 import (
 	"context"
@@ -11,17 +11,16 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
-	"oras.land/oras-go/v2/content"
-	"oras.land/oras-go/v2/registry/remote"
+	"github.com/sourcegraph/conc/iter"
 
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/utils/resputil"
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
-// IndexStore downloads bottles with an HTTP client.
+// BottleStore downloads bottles with an HTTP client.
 //
 // URLs are constructed as:
 //
@@ -33,37 +32,90 @@ import (
 //   - BOTTLE_VERSION: f.Version()
 //
 // TODO: Does not support HOMEBREW_ARTIFACT_DOMAIN
-type IndexStore struct {
-	headers http.Header   // for GitHub Packages auth
-	HTTP    *http.Client  // client for HTTP requests
-	OCI     remote.Client // client for OCI requests
-	cache   string        // cache directory
+type BottleStore struct {
+	headers http.Header  // for GitHub Packages auth
+	HTTP    *http.Client // client for HTTP requests
+	// OCI           remote.Client // client for OCI requests
+	cache          string // cache directory
+	maxGoroutines  int
+	artifactDomain string
 }
 
-// NewIndexStore creates a new store
-func NewIndexStore(headers http.Header, client *http.Client, regClient remote.Client, cache string) *IndexStore {
-	return &IndexStore{
+// NewBottleRegistry creates a new BottleRegistry
+func NewBottleRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) formula.ConcurrentBottleRegistry {
+	return NewBottleStore(headers, client, cache, maxGoroutines, artifactDomain)
+}
+
+// NewBottleStore creates a new store
+func NewBottleStore(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) *BottleStore {
+	return &BottleStore{
 		headers: headers,
 		HTTP:    client,
-		OCI:     regClient,
-		cache:   cache,
+		// OCI:     regClient,
+		cache:          cache,
+		maxGoroutines:  maxGoroutines,
+		artifactDomain: artifactDomain,
 	}
 }
 
-// Path provides the path to the bottle download
-func (store *IndexStore) Path(bottle *Bottle) string {
-	return filepath.Join(store.cache, bottle.LinkName())
+// Source provides the source for a bottle
+func (store *BottleStore) Source(f formula.PlatformFormula) string {
+	src := bottleURL(f)
+	if src == "" {
+		return ""
+	}
+	return store.artifactDomain + "/" + src
 }
 
-// Source provides the source for a bottle
-func (store *IndexStore) Source(bottle *Bottle) string {
+// bottleURL produces the URL for a bottle
+func bottleURL(f formula.PlatformFormula) string {
+	btl := f.Bottle()
+	if btl == nil {
+		return ""
+	}
+
 	// replace default root URL with configured root
-	src := bottle.RootURL + strings.TrimPrefix(bottle.File.URL, "https://ghcr.io/v2/homebrew/core")
+	src := btl.RootURL + "/blobs/sha256:" + btl.Sha256
 	return src
 }
 
-// LookupCachedFile
-func (store *IndexStore) LookupCachedFile(file, link string) (*os.File, error) {
+// FetchBottle implements formula.BottleRegistry.
+func (store *BottleStore) FetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error) {
+	return store.fetchBottle(ctx, f)
+}
+
+// FetchBottles implements formula.ConcurrentBottleRegistry.
+func (store *BottleStore) FetchBottles(ctx context.Context, formulae []formula.PlatformFormula) ([]io.ReadCloser, error) {
+	fetchers := iter.Mapper[formula.PlatformFormula, io.ReadCloser]{MaxGoroutines: store.maxGoroutines}
+	return fetchers.MapErr(formulae, func(fp *formula.PlatformFormula) (io.ReadCloser, error) {
+		return store.fetchBottle(ctx, *fp)
+	})
+}
+
+// fetchBottle implements formula.BottleRegistry.
+func (store *BottleStore) fetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error) {
+	// Download bottle file
+	path, err := store.download(ctx, f)
+	if err != nil {
+		return nil, err
+	}
+	// Open downloaded bottle file
+	return os.Open(path)
+}
+
+// LinkName returns the name of the symlink to the downloaded bottle .tar.gz file for the formula
+//
+// Pattern: NAME--VERSION
+//
+// Example: cowsay--3.04_1
+func linkName(f formula.Formula) string {
+	return f.Name() + "--" + formula.PkgVersion(f.Version())
+}
+
+// func (store *BottleStore) exists()
+
+// lookupCachedFile
+func (store *BottleStore) lookupCachedFile(file, link string) (*os.File, error) {
 	// Create parent directories (also will create the cache directory if it does not exist)
 	err := os.MkdirAll(filepath.Dir(file), 0o775)
 	if err != nil {
@@ -104,29 +156,37 @@ func (store *IndexStore) LookupCachedFile(file, link string) (*os.File, error) {
 }
 
 // Download downloads a bottle
-func (store *IndexStore) Download(ctx context.Context, bottle *Bottle) error {
-	source := store.Source(bottle)
+func (store *BottleStore) download(ctx context.Context, f formula.PlatformFormula) (string, error) {
+	btl := f.Bottle()
+	if btl == nil {
+		return "", fmt.Errorf("no bottle provided for Formula %s", f.Name())
+	}
+
+	source := store.Source(f)
+
+	bottleFileName := formula.BottleFileName(f)
 
 	// 5c7f66c74fe4c17116808bfac4c2729c32062dbec291e2a897d267567c790ea4--cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
-	urlsum := sha256.Sum256([]byte(bottle.File.URL))
-
-	file := filepath.Join(store.cache, "downloads", fmt.Sprintf("%x--%s", urlsum, bottle.ArchiveName()))
+	urlsum := sha256.Sum256([]byte(source))
+	file := filepath.Join(store.cache, "downloads", fmt.Sprintf("%x--%s", urlsum, bottleFileName))
 
 	// cowsay--3.04_1
-	link := store.Path(bottle)
+	link := filepath.Join(store.cache, linkName(f))
 
-	bottleFile, err := store.LookupCachedFile(file, link)
+	bottleFile, err := store.lookupCachedFile(file, link)
 	if err == nil && bottleFile == nil {
 		// Return here if the file is already downloaded
 		// this should also validate the existing file's checksum
-		slog.Debug("Already downloaded: " + bottle.ArchiveName())
-		return nil
+		slog.Debug("Already downloaded: " + bottleFileName)
+		return "", nil
+	} else if err != nil {
+		return "", err
 	}
 	defer bottleFile.Close()
 
 	u, err := url.Parse(source)
 	if err != nil {
-		return fmt.Errorf("parsing bottle source: %w", err)
+		return "", fmt.Errorf("[%s] parsing bottle source: %w", f.Name(), err)
 	}
 
 	slog.Debug("starting bottle download", slog.String("ln", link), slog.String("path", file))
@@ -135,22 +195,23 @@ func (store *IndexStore) Download(ctx context.Context, bottle *Bottle) error {
 	case "https", "http":
 		err = downloadBottleHTTP(ctx, *store.HTTP, store.headers, source, bottleFile)
 		if err != nil {
-			return fmt.Errorf("downloading bottle %s: %w", bottle.id(), err)
+			return "", fmt.Errorf("[%s] downloading bottle: %w", f.Name(), err)
 		}
-	case "oci":
-		err := downloadBottleOCI(ctx, store.OCI, strings.TrimPrefix(source, "oci://"), bottleFile)
-		if err != nil {
-			return fmt.Errorf("downloading bottle %s: %w", bottle.id(), err)
-		}
+	// case "oci":
+	// 	err := downloadBottleOCI(ctx, store.OCI, strings.TrimPrefix(source, "oci://"), bottleFile)
+	// 	if err != nil {
+	// 		return fmt.Errorf("[%s] downloading bottle: %w", f.Name(), err)
+	// 	}
 	default:
-		return fmt.Errorf("unsupported URL scheme %q", u.Scheme)
+		return "", fmt.Errorf("[%s] downloading bottle: unsupported URL scheme %q", f.Name(), u.Scheme)
 	}
 
-	slog.Debug("Downloaded " + bottle.ArchiveName())
+	slog.Debug("Downloaded " + bottleFileName)
 
-	return nil
+	return link, nil
 }
 
+/*
 // downloadBottleOCI downloads a bottle using the oras client
 func downloadBottleOCI(ctx context.Context, client remote.Client, ref string, w io.Writer) error {
 	repo, err := remote.NewRepository(ref)
@@ -186,6 +247,7 @@ func downloadBottleOCI(ctx context.Context, client remote.Client, ref string, w 
 
 	return nil
 }
+*/
 
 // downloadBottleHTTP downloads a bottle using the given
 func downloadBottleHTTP(ctx context.Context, client http.Client, header http.Header, ref string, w io.Writer) error {

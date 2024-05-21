@@ -51,9 +51,11 @@ func Tag(version string, revision, rebuild int) string {
 
 // ArchiveFile produces the bottle archive filename from the given information
 //
-// Pattern: NAME--VERSION[_REVISION][-REBUILD]
+// Pattern: NAME--VERSION[_REVISION].[PLATFORM].bottle[.REBUILD].tar.gz
 //
-// Example: cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
+// Examples:
+//   - cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
+//   - pkl--0.25.3.arm64_sonoma.bottle.1.tar.gz
 func ArchiveFile(name, version string, revision, rebuild int, plat platform.Platform) string {
 	// Construct main name
 	archive := fmt.Sprintf("%s--%s.%s.bottle",

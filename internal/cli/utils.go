@@ -10,6 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/actions"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	"github.com/act3-ai/hops/internal/dependencies"
+	"github.com/act3-ai/hops/internal/formula"
 )
 
 // AutocompleteFormulae returns an autocompletion function that suggests formula names
@@ -79,6 +80,14 @@ func withRegistryFlags(cmd *cobra.Command, action *actions.Hops) {
 
 // withDependencyFlags adds dependency resolution flags
 func withDependencyFlags(cmd *cobra.Command, opts *dependencies.Options) {
+	cmd.Flags().BoolVar(&opts.IncludeBuild, "include-build", false, "Include :build dependencies for formula")
+	cmd.Flags().BoolVar(&opts.IncludeOptional, "include-optional", false, "Include :optional dependencies for formula")
+	cmd.Flags().BoolVar(&opts.IncludeTest, "include-test", false, "Include :test dependencies for formula (non-recursive)")
+	cmd.Flags().BoolVar(&opts.SkipRecommended, "skip-recommended", false, "Skip :recommended dependencies for formula")
+}
+
+// withDependencyFlags adds dependency resolution flags
+func newWithDependencyFlags(cmd *cobra.Command, opts *formula.DependencyTags) {
 	cmd.Flags().BoolVar(&opts.IncludeBuild, "include-build", false, "Include :build dependencies for formula")
 	cmd.Flags().BoolVar(&opts.IncludeOptional, "include-optional", false, "Include :optional dependencies for formula")
 	cmd.Flags().BoolVar(&opts.IncludeTest, "include-test", false, "Include :test dependencies for formula (non-recursive)")

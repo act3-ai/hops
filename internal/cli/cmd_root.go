@@ -98,11 +98,10 @@ func NewCLI(version string) *cobra.Command {
 
 	commands.AddGroupedCommands(cmd,
 		&cobra.Group{
-			ID:    "experimental",
-			Title: "Experimental commands for working with Homebrew Bottles",
+			ID:    "registry",
+			Title: "Manage registries of Homebrew Bottles",
 		},
 		imagesCmd(hops),
-		xinstallCmd(hops),
 		copyCmd(hops),
 	)
 

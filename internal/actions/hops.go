@@ -1,10 +1,13 @@
 package actions
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
@@ -19,7 +22,10 @@ import (
 	"github.com/act3-ai/hops/internal/brew"
 	brewclient "github.com/act3-ai/hops/internal/brew/client"
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/brewformulary"
+	"github.com/act3-ai/hops/internal/formula/hopsreg"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
 )
 
@@ -38,6 +44,8 @@ type Hops struct {
 	authClient *auth.Client
 	cfg        *hopsv1.Configuration
 	brewcfg    *brewenv.Environment
+
+	client formula.Client
 }
 
 // DefaultConcurrency is the default maximum threads for parallel tasks
@@ -241,4 +249,83 @@ func (action *Hops) Registry() (bottle.Registry, error) {
 			action.Config().Registry.PlainHTTP,
 		)
 	}
+}
+
+// Formulary initializes the default formulary
+func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.Client, error) {
+	if action.client == nil {
+		switch action.Config().Registry.Prefix {
+		// Homebrew-style Formulary
+		case "":
+			index := action.Index()
+			err := index.Load(ctx)
+			if err != nil {
+				return nil, err
+			}
+			formulaStore, err := brewformulary.NewPreloaded(index)
+			if err != nil {
+				return nil, err
+			}
+			bottleStore := brewformulary.NewBottleStore(
+				action.AuthHeaders(),
+				retry.DefaultClient,
+				action.Homebrew().Cache,
+				action.MaxGoroutines(),
+				action.Homebrew().ArtifactDomain,
+			)
+			action.client = brewformulary.NewHomebrewClient(*formulaStore, *bottleStore)
+		// Hops-style Formulary
+		default:
+			reg, err := action.Registry()
+			if err != nil {
+				return nil, err
+			}
+
+			alternateTags := map[string]string{}
+			for _, arg := range args {
+				name, version := parseArg(arg)
+				alternateTags[name] = version
+			}
+
+			action.client, err = hopsreg.NewHopsFormulary(
+				reg, action.bottleCache(),
+				alternateTags, action.MaxGoroutines())
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return action.client, nil
+}
+
+// bottleCache initializes an OCI layout cache for bottles
+func (action *Hops) bottleCache() bottle.Registry {
+	// Initialize OCI layout cache
+	return bottle.NewLocal(filepath.Join(action.Config().Cache, "oci"))
+}
+
+func parseArgs(args []string) (names, versions []string) { //nolint:unparam
+	names = make([]string, len(args))
+	versions = make([]string, len(args))
+	for i, arg := range args {
+		names[i], versions[i] = parseArg(arg)
+	}
+	return names, versions
+}
+
+func parseArg(arg string) (name, version string) {
+	fields := strings.SplitN(arg, "=", 2)
+	if len(fields) == 1 {
+		return fields[0], ""
+	}
+	return fields[0], fields[1]
+}
+
+func (action *Hops) fetchFromArgs(ctx context.Context, args []string, plat platform.Platform) ([]formula.PlatformFormula, error) {
+	store, err := action.FormulaClient(ctx, args)
+	if err != nil {
+		return nil, err
+	}
+	names, _ := parseArgs(args)
+	return formula.FetchAllPlatform(ctx, store, names, plat)
 }

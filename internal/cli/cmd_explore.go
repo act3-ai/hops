@@ -83,7 +83,7 @@ func depsCmd(hops *actions.Hops) *cobra.Command {
 	platflag.DefValue = "system"
 
 	// Dependency resolution flags
-	withDependencyFlags(cmd, &action.DependencyOptions)
+	newWithDependencyFlags(cmd, &action.DependencyOptions)
 
 	return cmd
 }

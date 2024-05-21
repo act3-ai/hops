@@ -12,10 +12,11 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/sourcegraph/conc/iter"
 	"golang.org/x/mod/semver"
 
-	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/prefix/keg"
 	"github.com/act3-ai/hops/internal/prefix/rack"
 	"github.com/act3-ai/hops/internal/utils"
@@ -72,9 +73,42 @@ func (p Prefix) Cellar() string {
 	return filepath.Join(string(p), "Cellar")
 }
 
+// CompatibleWithCellar reports whether the Formula's Bottle is compatible with the Prefix's Cellar
+func (p Prefix) CompatibleWithCellar(f formula.PlatformFormula) error {
+	want := ""
+	if btl := f.Bottle(); btl != nil {
+		want = btl.Cellar
+	}
+	got := p.Cellar()
+
+	switch want {
+	// Empty string means Bottle is relocatable (or cannot be checked for compatibility)
+	case "":
+		return nil
+	// Compatible with configured Cellar
+	case got:
+		return nil
+	// Cannot be relocated and is not compatible with configured Cellar
+	default:
+		return errors.New(heredoc.Docf(`
+			bottle for %s may be incompatible with your settings
+			  HOMEBREW_CELLAR: %s (yours is %s)
+			  HOMEBREW_PREFIX: %s (yours is %s)`,
+			f.Name(),
+			want, got,
+			filepath.Dir(want), p.String(),
+		))
+	}
+}
+
 // KegPath
 func (p Prefix) KegPath(name, version string) string {
 	return filepath.Join(p.Cellar(), name, version)
+}
+
+// KegPath
+func (p Prefix) FormulaKegPath(f formula.Formula) string {
+	return p.KegPath(f.Name(), formula.PkgVersion(f.Version()))
 }
 
 // Opt
@@ -222,7 +256,7 @@ func isPycFile(path string) bool {
 // libtoolExtensions = []string{".la", ".lai"}
 
 // AnyInstalled reports if any versions of the given formula are installed
-func (p Prefix) AnyInstalled(f *brewv1.Info) bool {
+func (p Prefix) AnyInstalled(f formula.Formula) bool {
 	prefix, err := p.InstalledKegs(f)
 	if err != nil {
 		slog.Warn("checking installed prefixes", logutil.ErrAttr(err))
@@ -231,8 +265,8 @@ func (p Prefix) AnyInstalled(f *brewv1.Info) bool {
 }
 
 // InstalledKegs returns all currently installed prefix directories.
-func (p Prefix) InstalledKegs(f *brewv1.Info) ([]keg.Keg, error) {
-	return p.InstalledKegsByName(f.PossibleNames()...)
+func (p Prefix) InstalledKegs(f formula.Formula) ([]keg.Keg, error) {
+	return p.InstalledKegsByName(f.Name())
 }
 
 // InstalledPrefixes returns all currently installed prefix directories
@@ -281,13 +315,13 @@ func (p Prefix) InstalledKegsByName(names ...string) ([]keg.Keg, error) {
 }
 
 // FormulaOutdated reports whether the formula is outdated
-func (p Prefix) FormulaOutdated(f *brewv1.Info) (bool, error) {
+func (p Prefix) FormulaOutdated(f formula.Formula) (bool, error) {
 	installedPrefixes, err := p.InstalledKegs(f)
 	if err != nil {
 		return true, err
 	}
 
-	latest := f.Version()
+	latest := formula.PkgVersion(f.Version())
 
 	outdated := true
 
@@ -311,6 +345,22 @@ func (p Prefix) FormulaOutdated(f *brewv1.Info) (bool, error) {
 	}
 
 	return outdated, nil
+}
+
+// FilterInstalledGeneric categorizes Formulae by install status
+func FilterInstalled[T formula.Formula](p Prefix, list []T) (uninstalled []T, installed []T, err error) {
+	for _, entry := range list {
+		missing, err := p.FormulaOutdated(entry)
+		switch {
+		case err != nil:
+			return nil, nil, err
+		case missing:
+			uninstalled = append(uninstalled, entry)
+		default:
+			installed = append(installed, entry)
+		}
+	}
+	return uninstalled, installed, nil
 }
 
 // FormulaOutdated reports whether the formula is outdated
@@ -464,7 +514,7 @@ func (p Prefix) forEachRack(fn func(rack fs.DirEntry, kegs []fs.DirEntry)) error
 	return nil
 }
 
-// Racks returns the list of available racks
+// Kegs returns the list of available kegs
 func (p Prefix) Kegs() ([]keg.Keg, error) {
 	ks := []keg.Keg{}
 

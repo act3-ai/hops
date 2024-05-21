@@ -12,16 +12,16 @@ type APIIndex struct {
 	mapped  map[string]*brewv1.Info // full contents indexed by name
 	names   []string                // ordered names
 	aliases map[string]string       // map of aliases to real names
-	// oldnames map[string]string   // map of old names to real names
+	renames map[string]string       // map of old names to real names
 }
 
 // NewAPIIndex creates a new Index for a Homebrew API source
 func NewAPIIndex(index brewv1.Index) *APIIndex {
 	a := &APIIndex{
-		// Contents: v1.Index{},
 		mapped:  make(map[string]*brewv1.Info, len(index)),
 		names:   make([]string, len(index)),
 		aliases: map[string]string{},
+		renames: map[string]string{},
 	}
 
 	// Ingest index content
@@ -30,6 +30,9 @@ func NewAPIIndex(index brewv1.Index) *APIIndex {
 		a.names[i] = info.Name     // add name to list for iteration
 		for _, alias := range info.Aliases {
 			a.aliases[alias] = info.Name // map alias to real name for alias lookups
+		}
+		for _, renamed := range info.OldNames {
+			a.renames[renamed] = info.Name // map old name to real name for rename lookups
 		}
 	}
 

@@ -70,6 +70,11 @@ type PlatformInfo struct {
 }
 
 const (
+	// RubySourceChecksumSha256 is the key for the sha256 checksum of a Formula's Ruby source
+	RubySourceChecksumSha256 = "sha256"
+)
+
+const (
 	PourBottleConditionDefaultPrefix = "default_prefix" // pour bottle condition requiring the default prefix
 	PourBottleConditionCLTInstalled  = "clt_installed"  // pour bottle condition requiring the macOS command line tools
 )

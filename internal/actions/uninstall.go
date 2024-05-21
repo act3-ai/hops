@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/platform"
 )
 
 // Uninstall represents the action and its options
@@ -15,27 +15,21 @@ type Uninstall struct {
 }
 
 // Run runs the action
-func (action *Uninstall) Run(ctx context.Context, names ...string) error {
-	index := action.Index()
-	err := index.Load(ctx)
-	if err != nil {
-		return err
-	}
-
-	formulae, err := action.FetchAll(o.Noop, index, names...)
+func (action *Uninstall) Run(ctx context.Context, args []string) error {
+	formulae, err := action.fetchFromArgs(ctx, args, platform.SystemPlatform())
 	if err != nil {
 		return err
 	}
 
 	// List all installed kegs
-	kegs := make([]string, 0, len(names))
+	kegs := make([]string, 0, len(args))
 	for _, f := range formulae {
 		fkegs, err := action.Prefix().InstalledKegs(f)
 		if err != nil {
 			return err
 		}
 		if len(fkegs) == 0 {
-			return action.Prefix().NewErrNoSuchKeg(f.Name)
+			return action.Prefix().NewErrNoSuchKeg(f.Name())
 		}
 		for _, k := range fkegs {
 			kegs = append(kegs, k.String())

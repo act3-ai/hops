@@ -36,12 +36,14 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 		},
 	}
 
+	withRegistryFlags(cmd, action.Hops)
+
 	cmd.Flags().BoolVar(&action.Force, "force", false, "Install formulae without checking for previously installed keg-only or non-migrated versions. When installing casks, overwrite existing files (binaries and symlinks are excluded, unless originally from the same cask)")
 	cmd.Flags().BoolVar(&action.DryRun, "dry-run", false, "Show what would be installed, but do not actually install anything")
 	cmd.Flags().BoolVar(&action.Overwrite, "overwrite", false, "Delete files that already exist in the prefix while linking")
 
 	// Dependency resolution flags
-	withDependencyFlags(cmd, &action.DependencyOptions)
+	newWithDependencyFlags(cmd, &action.DependencyOptions)
 	cmd.Flags().BoolVar(&action.IgnoreDependencies, "ignore-dependencies", false, "Skip installing any dependencies of any kind [TESTING-ONLY]")
 	cmd.Flags().BoolVar(&action.OnlyDependencies, "only-dependencies", false, "Install the dependencies with specified options but do not install the formula itself")
 	cmd.MarkFlagsMutuallyExclusive("ignore-dependencies", "only-dependencies")
@@ -61,7 +63,7 @@ func uninstallCmd(hops *actions.Hops) *cobra.Command {
 		Args:              cobra.MinimumNArgs(1),
 		ValidArgsFunction: installedFormulae(hops),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return action.Run(cmd.Context(), args...)
+			return action.Run(cmd.Context(), args)
 		},
 	}
 

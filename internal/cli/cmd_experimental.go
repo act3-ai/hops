@@ -10,37 +10,6 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// xinstallCmd creates the command
-func xinstallCmd(hops *actions.Hops) *cobra.Command {
-	action := &actions.XInstall{
-		Hops: hops,
-	}
-
-	cmd := &cobra.Command{
-		Use:               "xinstall formula [...]",
-		Short:             "Install formulae using a standalone registry",
-		Args:              cobra.MinimumNArgs(1),
-		ValidArgsFunction: formulaNames(hops),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			return action.Run(cmd.Context(), args...)
-		},
-	}
-
-	withRegistryFlags(cmd, action.Hops)
-
-	cmd.Flags().BoolVar(&action.Force, "force", false, "Install formulae without checking for previously installed keg-only or non-migrated versions. When installing casks, overwrite existing files (binaries and symlinks are excluded, unless originally from the same cask)")
-	cmd.Flags().BoolVar(&action.DryRun, "dry-run", false, "Show what would be installed, but do not actually install anything")
-	cmd.Flags().BoolVar(&action.IgnoreDependencies, "ignore-dependencies", false, "Skip installing any dependencies of any kind [TESTING-ONLY]")
-	cmd.Flags().BoolVar(&action.OnlyDependencies, "only-dependencies", false, "Install the dependencies with specified options but do not install the formula itself")
-	cmd.MarkFlagsMutuallyExclusive("ignore-dependencies", "only-dependencies")
-	cmd.Flags().BoolVar(&action.Overwrite, "overwrite", false, "Delete files that already exist in the prefix while linking")
-
-	// Dependency resolution flags
-	withDependencyFlags(cmd, &action.DependencyOptions)
-
-	return cmd
-}
-
 // copyCmd creates the command
 func copyCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Copy{
@@ -105,7 +74,7 @@ func imagesCmd(hops *actions.Hops) *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("no-resolve", "no-verify")
 
 	// Dependency resolution flags
-	withDependencyFlags(cmd, &action.DependencyOptions)
+	newWithDependencyFlags(cmd, &action.DependencyOptions)
 
 	return cmd
 }

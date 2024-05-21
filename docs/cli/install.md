@@ -45,6 +45,8 @@ hops install formula [...] [flags]
       --include-test          Include :test dependencies for formula (non-recursive)
       --only-dependencies     Install the dependencies with specified options but do not install the formula itself
       --overwrite             Delete files that already exist in the prefix while linking
+      --plain-http            Allow insecure connections to registry without SSL check
+  -r, --registry string       Registry prefix for bottles
       --skip-recommended      Skip :recommended dependencies for formula
 ```
 

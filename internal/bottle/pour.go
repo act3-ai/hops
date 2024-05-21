@@ -10,31 +10,6 @@ import (
 	"path/filepath"
 )
 
-// PourFile pours the bottle downloaded by the store into the cellar
-func PourFile(path string, b *Bottle, cellar string) error {
-	// The path the bottle will be unzipped to
-	kegPath := filepath.Join(cellar, b.KegPath())
-	err := os.RemoveAll(kegPath)
-	if err != nil {
-		return fmt.Errorf("removing old keg: %w", err)
-	}
-
-	// Open the bottle file
-	bottleFile, err := os.Open(path)
-	if err != nil {
-		return fmt.Errorf("opening bottle: %w", err)
-	}
-	defer bottleFile.Close()
-
-	// Untar the bottle
-	err = untar(bottleFile, cellar)
-	if err != nil {
-		return fmt.Errorf("pouring bottle: %w", err)
-	}
-
-	return nil
-}
-
 // PourReader pours the bottle into the cellar
 func PourReader(b io.Reader, cellar string) error {
 	// Untar the bottle
@@ -42,11 +17,6 @@ func PourReader(b io.Reader, cellar string) error {
 		return fmt.Errorf("pouring bottle: %w", err)
 	}
 	return nil
-}
-
-// CompatibleWithCellar reports if the bottle is compatible with the given cellar
-func (b *Bottle) CompatibleWithCellar(cellar string) bool {
-	return b.File.Relocatable() || string(b.File.Cellar) == cellar
 }
 
 // untar takes a destination path and a reader; a tar reader loops over the tarfile

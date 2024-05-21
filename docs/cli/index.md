@@ -56,4 +56,3 @@ Hops is an experimental client for installing Homebrew bottles.
 - [`hops update`](update.md) - Update formula index
 - [`hops upgrade`](upgrade.md) - Upgrade installed formulae
 - [`hops version`](version.md) - Print the version
-- [`hops xinstall`](xinstall.md) - Install formulae using a standalone registry

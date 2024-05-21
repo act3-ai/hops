@@ -11,6 +11,7 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
@@ -89,6 +90,11 @@ func (p Prefix) BrokenLinks() ([]string, error) {
 
 // LinkOptions configure the link step
 type LinkOptions symlink.Options
+
+// FormulaLink links a keg from the Cellar into the prefix
+func (p Prefix) FormulaLink(f formula.Formula, opts *LinkOptions) (int, int, error) {
+	return p.Link(f.Name(), formula.PkgVersion(f.Version()), opts)
+}
 
 // Link links a keg from the Cellar into the prefix
 // https://github.com/Homebrew/brew/blob/ea2892f8ee58494623fc3c15cc8ce81b9124e6e6/Library/Homebrew/keg.rb
