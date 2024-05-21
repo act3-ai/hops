@@ -4,16 +4,17 @@ import (
 	"context"
 
 	brew "github.com/act3-ai/hops/internal/brew"
+	brewclient "github.com/act3-ai/hops/internal/brew/client"
 	"github.com/act3-ai/hops/internal/formula"
 )
 
 // NewFormulary creates a pre-loaded formulary
-func NewFormulary(index formula.Index) (formula.Formulary, error) {
+func NewFormulary(index brewclient.Index) (formula.Formulary, error) {
 	return NewPreloaded(index)
 }
 
 // NewPreloaded creates a pre-loaded formulary
-func NewPreloaded(index formula.Index) (*Preloaded, error) {
+func NewPreloaded(index brewclient.Index) (*Preloaded, error) {
 	return &Preloaded{
 		index: index,
 	}, nil
@@ -21,7 +22,7 @@ func NewPreloaded(index formula.Index) (*Preloaded, error) {
 
 // Preloaded is a formulary with the full contents of the Homebrew API
 type Preloaded struct {
-	index formula.Index
+	index brewclient.Index
 }
 
 // Fetch implements formula.Formulary.

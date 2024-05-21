@@ -10,10 +10,12 @@ import (
 
 // General Formula types
 type (
+	// Namer has a name
 	Namer interface {
 		Name() string
 	}
 
+	// Versioner has a version
 	Versioner interface {
 		Version() Version
 	}
@@ -69,84 +71,7 @@ type (
 		// Bottle produces information about the Formula's Bottle. Bottle will return nil if the Formula does not provide a Bottle.
 		Bottle() *Bottle
 	}
-
-	// // FormulaWithInfo represents a Homebrew Formula with full metadata
-	// FormulaWithInfo interface {
-	// 	Formula
-	// 	Info() *Info
-	// }
-
-	// // MultiPlatformFormulaWithInfo represents a Homebrew Formula with full metadata
-	// MultiPlatformFormulaWithInfo interface {
-	// 	MultiPlatformFormula
-	// 	FormulaWithInfo
-	// }
-
-	// // PlatformFormulaWithInfo represents a Homebrew Formula with full metadata
-	// PlatformFormulaWithInfo interface {
-	// 	PlatformFormula
-	// 	FormulaWithInfo
-
-	// 	// Caveats produces the Formula's caveats, if any
-	// 	Caveats() string
-	// 	// Dependencies lists dependencies on other Formulae
-	// 	Dependencies() Dependencies
-	// 	// SystemDependencies lists dependencies on system software
-	// 	SystemDependencies() Dependencies
-	// 	// Conflicts lists conflicts with other formulae
-	// 	Conflicts() []Conflict
-	// 	// LinkOverwrite lists links to be overwritten in the prefix
-	// 	LinkOverwrite() []string
-	// 	// IsKegOnly reports whether the Formula is keg-only
-	// 	IsKegOnly() bool
-	// 	// KegOnlyReason produces the reason why a Formula is keg-only
-	// 	KegOnlyReason() (reason string)
-	// 	// Requirements lists other system requirements
-	// 	// Requirements() []any
-	// 	Service() *brewv1.Service
-	// }
 )
-
-// // List types
-// type (
-// 	// Formulae is a list of Formula
-// 	Formulae []Formula
-// 	// MultiPlatformFormulae is a list of MultiPlatformFormula
-// 	MultiPlatformFormulae []MultiPlatformFormula
-// 	// PlatformFormulae is a list of PlatformFormula
-// 	PlatformFormulae []PlatformFormula
-
-// 	// // FormulaeWithInfo is a list of FormulaWithInfo
-// 	// FormulaeWithInfo []FormulaWithInfo
-// 	// // MultiPlatformFormulaeWithInfo is a list of MultiPlatformFormulaWithInfo
-// 	// MultiPlatformFormulaeWithInfo []MultiPlatformFormulaWithInfo
-// 	// // PlatformFormulaeWithInfo is a list of PlatformFormulaWithInfo
-// 	// PlatformFormulaeWithInfo []PlatformFormulaWithInfo
-// )
-
-// // Metadata types
-// type (
-// 	FormulaV1 interface {
-// 		V1() *brewv1.Info
-// 	}
-// )
-
-// // formula represents a formula
-// type formula struct {
-// 	info    Info
-// 	version version
-// 	name    string
-// 	source  SourceInfo
-// 	Link    Link
-// 	v1 *brewv1.Info
-// 	evaluatedPlatforms map[platform.Platform]platformConfig
-// }
-
-// // platformFormula is an implementation of PlatformFormula
-// type platformFormula struct {
-// 	formula
-// 	platformConfig
-// }
 
 type platformConfig struct {
 	caveats             string

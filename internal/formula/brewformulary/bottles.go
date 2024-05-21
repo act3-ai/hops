@@ -14,6 +14,7 @@ import (
 
 	"github.com/sourcegraph/conc/iter"
 
+	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/utils/resputil"
@@ -64,7 +65,10 @@ func (store *BottleStore) Source(f formula.PlatformFormula) string {
 	if src == "" {
 		return ""
 	}
-	return store.artifactDomain + "/" + src
+	if store.artifactDomain != "" {
+		return store.artifactDomain + "/" + src
+	}
+	return src
 }
 
 // bottleURL produces the URL for a bottle
@@ -75,7 +79,7 @@ func bottleURL(f formula.PlatformFormula) string {
 	}
 
 	// replace default root URL with configured root
-	src := btl.RootURL + "/blobs/sha256:" + btl.Sha256
+	src := btl.RootURL + "/" + brewfmt.Repo(f.Name()) + "/blobs/sha256:" + btl.Sha256
 	return src
 }
 
@@ -99,6 +103,7 @@ func (store *BottleStore) fetchBottle(ctx context.Context, f formula.PlatformFor
 	if err != nil {
 		return nil, err
 	}
+
 	// Open downloaded bottle file
 	return os.Open(path)
 }
@@ -140,7 +145,7 @@ func (store *BottleStore) lookupCachedFile(file, link string) (*os.File, error) 
 		// Remove files and redownload
 		slog.Warn("Removing unreadable cache file", o.ErrAttr(err))
 
-		err = errors.Join(os.RemoveAll(file))
+		err = os.RemoveAll(file)
 		if err != nil {
 			return nil, fmt.Errorf("removing unreadable file in cache: %w", err)
 		}
@@ -189,13 +194,27 @@ func (store *BottleStore) download(ctx context.Context, f formula.PlatformFormul
 		return "", fmt.Errorf("[%s] parsing bottle source: %w", f.Name(), err)
 	}
 
-	slog.Debug("starting bottle download", slog.String("ln", link), slog.String("path", file))
+	slog.Debug("starting bottle download",
+		slog.String("url", source),
+		slog.String("ln", link),
+		slog.String("path", file))
+
+	deleteOnFailure := func() error {
+		return errors.Join(
+			os.RemoveAll(file),
+			os.RemoveAll(link),
+		)
+	}
 
 	switch u.Scheme {
 	case "https", "http":
+		slog.Debug("Downloading bottle")
 		err = downloadBottleHTTP(ctx, *store.HTTP, store.headers, source, bottleFile)
 		if err != nil {
-			return "", fmt.Errorf("[%s] downloading bottle: %w", f.Name(), err)
+			return "", errors.Join(
+				fmt.Errorf("[%s] downloading bottle: %w", f.Name(), err),
+				deleteOnFailure(),
+			)
 		}
 	// case "oci":
 	// 	err := downloadBottleOCI(ctx, store.OCI, strings.TrimPrefix(source, "oci://"), bottleFile)
@@ -203,7 +222,10 @@ func (store *BottleStore) download(ctx context.Context, f formula.PlatformFormul
 	// 		return fmt.Errorf("[%s] downloading bottle: %w", f.Name(), err)
 	// 	}
 	default:
-		return "", fmt.Errorf("[%s] downloading bottle: unsupported URL scheme %q", f.Name(), u.Scheme)
+		return "", errors.Join(
+			fmt.Errorf("[%s] downloading bottle: unsupported URL scheme %q", f.Name(), u.Scheme),
+			deleteOnFailure(),
+		)
 	}
 
 	slog.Debug("Downloaded " + bottleFileName)

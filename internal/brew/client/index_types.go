@@ -1,4 +1,4 @@
-package formula
+package brewclient
 
 import (
 	"context"

@@ -17,9 +17,7 @@ import (
 
 	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
-	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/bottle"
-	"github.com/act3-ai/hops/internal/brew"
 	brewclient "github.com/act3-ai/hops/internal/brew/client"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/formula/brewformulary"
@@ -127,7 +125,7 @@ func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuratio
 }
 
 // Index returns the index
-func (action *Hops) Index() formula.CachedIndex {
+func (action *Hops) Index() brewclient.CachedIndex {
 	return brewclient.New(
 		http.DefaultClient,
 		action.Homebrew().Cache,
@@ -208,29 +206,6 @@ func (action *Hops) Config() *hopsv1.Configuration {
 	slog.Debug("using config", slog.String("config", action.cfg.String()))
 
 	return action.cfg
-}
-
-// FetchAll finds all formula from the index, using a concurrent iterator if the list of names is large
-func (action *Hops) FetchAll(log func(string), index formula.Index, names ...string) ([]*brewv1.Info, error) {
-	find := func(name string) (*brewv1.Info, error) {
-		log("Fetching " + o.StyleGreen(name))
-		f := index.Find(name)
-		if f == nil {
-			return nil, brew.NewErrFormulaNotFound(name)
-		}
-		return f, nil
-	}
-
-	formulae := make([]*brewv1.Info, len(names))
-	var err error
-	for i, n := range names {
-		formulae[i], err = find(n)
-		if err != nil {
-			return formulae, err
-		}
-	}
-
-	return formulae, nil
 }
 
 var errNoRegistryConfig = errors.New("no registry configured")
