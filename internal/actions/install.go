@@ -12,12 +12,10 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/sourcegraph/conc/iter"
-	"oras.land/oras-go/v2/registry/remote/retry"
 
 	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/brew"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/formula/brewformulary"
 	"github.com/act3-ai/hops/internal/formula/dependencies"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
@@ -59,11 +57,10 @@ type Install struct {
 }
 
 // Run runs the action
-func (action *Install) Run(ctx context.Context, names ...string) error {
-	brew := action.Homebrew()
+func (action *Install) Run(ctx context.Context, args ...string) error {
 	action.platform = platform.SystemPlatform()
 
-	installs, err := action.resolveInstalls(ctx, names)
+	installs, client, err := action.resolveInstalls(ctx, args)
 	if err != nil {
 		return err
 	}
@@ -77,28 +74,15 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 		return nil
 	}
 
-	// store := bottle.NewIndexStore(
-	// 	action.AuthHeaders(),
-	// 	retry.DefaultClient,
-	// 	action.AuthClient(),
-	// 	brew.Cache)
-	store := brewformulary.NewBottleStore(
-		action.AuthHeaders(),
-		retry.DefaultClient,
-		brew.Cache,
-		action.MaxGoroutines(),
-		brew.ArtifactDomain,
-	)
-
 	// Download all bottles
-	bottles, err := formula.FetchBottles(ctx, store, installs)
+	bottles, err := formula.FetchBottles(ctx, client, installs)
 	if err != nil {
 		return err
 	}
 
 	// Use an iterator to start concurrent installs of each bottle
 	routines := iter.Iterator[formula.PlatformFormula]{MaxGoroutines: action.MaxGoroutines()}
-	err = iterutil.ForEachIdxErr[formula.PlatformFormula](routines, installs, func(i int, pf *formula.PlatformFormula) error {
+	err = iterutil.ForEachIdxErr(routines, installs, func(i int, pf *formula.PlatformFormula) error {
 		btl := bottles[i]
 		_, err = action.run(ctx, *pf, bottles[i])
 		return errors.Join(err, btl.Close())
@@ -119,10 +103,10 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 }
 
 // resolveInstalls resolves the list of formulae that will be installed
-func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]formula.PlatformFormula, error) {
+func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]formula.PlatformFormula, formula.Client, error) {
 	formulary, err := action.FormulaClient(ctx, args)
 	if err != nil {
-		return nil, err
+		return nil, formulary, err
 	}
 
 	names, _ := parseArgs(args)
@@ -130,13 +114,13 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 	// Fetch directly-requested formulae
 	all, err := formula.FetchAllPlatform(ctx, formulary, names, action.platform)
 	if err != nil {
-		return nil, err
+		return nil, formulary, err
 	}
 
 	// Filter requested formulae into installed and not installed lists
 	roots, reinstalls, err := prefix.FilterInstalled(action.Prefix(), all)
 	if err != nil {
-		return nil, err
+		return nil, formulary, err
 	}
 
 	// Direct user to the reinstall command
@@ -153,19 +137,19 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 
 	// Exit with no error for reinstalls
 	if len(reinstalls) > 0 {
-		return nil, nil
+		return nil, formulary, nil
 	}
 
 	// Ignore dependencies
 	// --ignore-dependencies flag
 	if action.IgnoreDependencies {
-		return roots, nil
+		return roots, formulary, nil
 	}
 
 	// Build dependency graph
 	graph, err := dependencies.Walk(ctx, formulary, roots, action.platform, &action.DependencyOptions)
 	if err != nil {
-		return nil, err
+		return nil, formulary, err
 	}
 
 	// Print all resolved dependencies
@@ -176,7 +160,7 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 	slog.Debug("Resolved dependencies", slog.Any("dependencies", allDeps), slog.Any("tags", action.DependencyOptions))
 	missingDeps, installedDeps, err := prefix.FilterInstalled(action.Prefix(), allDeps)
 	if err != nil {
-		return nil, err
+		return nil, formulary, err
 	}
 	slog.Debug("Validated dependencies", slog.Any("installed", installedDeps), slog.Any("missing", missingDeps))
 
@@ -184,11 +168,11 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 
 	// Only install dependencies
 	if action.OnlyDependencies {
-		return missingDeps, nil
+		return missingDeps, formulary, nil
 	}
 
 	// Install dependencies and then requested formulae
-	return slices.Concat(missingDeps, graph.Roots()), nil
+	return slices.Concat(missingDeps, graph.Roots()), formulary, nil
 }
 
 // run is the meat

@@ -142,7 +142,12 @@ func (store *Formulary) resolve(ctx context.Context, name string) (*regbottle.Bo
 		return nil, err
 	}
 
-	store.resolved[name], err = regbottle.ResolveVersion(ctx, source, store.tags[name])
+	tag := store.tags[name]
+	if tag == "" {
+		tag = "latest"
+	}
+
+	store.resolved[name], err = regbottle.ResolveVersion(ctx, source, tag)
 	if err != nil {
 		if errors.Is(err, errdef.ErrNotFound) {
 			return nil, errors.Join(err, listAvailableTags(ctx, source, name))

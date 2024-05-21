@@ -176,6 +176,8 @@ func (action *Hops) Config() *hopsv1.Configuration {
 		for _, override := range action.configOverrides {
 			override(action.cfg)
 		}
+
+		slog.Debug("using config", slog.String("config", action.cfg.String()))
 	}()
 
 	// Load first config file found
@@ -202,8 +204,6 @@ func (action *Hops) Config() *hopsv1.Configuration {
 
 	// Set default values for the configuration here
 	hopsv1.ConfigurationDefault(action.cfg)
-
-	slog.Debug("using config", slog.String("config", action.cfg.String()))
 
 	return action.cfg
 }
@@ -232,6 +232,7 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 		switch action.Config().Registry.Prefix {
 		// Homebrew-style Formulary
 		case "":
+			slog.Debug("using Homebrew client")
 			index := action.Index()
 			err := index.Load(ctx)
 			if err != nil {
@@ -251,6 +252,7 @@ func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.C
 			action.client = brewformulary.NewHomebrewClient(*formulaStore, *bottleStore)
 		// Hops-style Formulary
 		default:
+			slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix))
 			reg, err := action.Registry()
 			if err != nil {
 				return nil, err

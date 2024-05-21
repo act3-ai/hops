@@ -20,6 +20,7 @@ import (
 	"github.com/act3-ai/hops/internal/brew"
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/brewformulary"
 	"github.com/act3-ai/hops/internal/formula/dependencies"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
@@ -157,12 +158,15 @@ func (action *Copy) resolve(ctx context.Context, args []string) ([]*brewv1.Info,
 	// // Combine root formulae with their dependencies in this list
 	// all = append(all, dependents...)
 
-	all, err := action.fetchFromArgs(ctx, args, platform.All)
+	store, err := brewformulary.NewPreloaded(index)
 	if err != nil {
 		return nil, err
 	}
 
-	store, err := action.FormulaClient(ctx, args)
+	names, _ := parseArgs(args)
+
+	all, err := formula.FetchAllPlatform(ctx, store, names, platform.All)
+	// all, err := action.fetchFromArgs(ctx, args, platform.All)
 	if err != nil {
 		return nil, err
 	}
