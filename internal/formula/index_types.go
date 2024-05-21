@@ -47,5 +47,3 @@ func AutoUpdate(ctx context.Context, index CachedIndex, opts *hopsv1.AutoUpdateC
 func Load(ctx context.Context, index CachedIndex) error {
 	return index.Load(ctx)
 }
-
-// type MapIndex map[string]*v1.Info
