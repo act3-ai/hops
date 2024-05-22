@@ -301,9 +301,6 @@ func (action *Hops) autoUpdate(ctx context.Context) error {
 	if action.Config().Registry.Prefix != "" {
 		return nil
 	}
-
-	slog.Debug("using Homebrew API formulary", slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain)) //nolint:sloglint
-
 	_, err := action.brewFormulary(ctx, true)
 	return err
 }
