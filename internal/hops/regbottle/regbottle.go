@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -28,13 +27,6 @@ var (
 	// ErrNoMetadata is returned when metadata is not found
 	ErrNoMetadata = fmt.Errorf("metadata %w", errdef.ErrNotFound)
 )
-
-// VersionedBottle represents a version of a Bottle
-type VersionedBottle interface {
-	Fetch(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (io.ReadCloser, error)
-	Metadata(ctx context.Context, repo hopsreg.Repository) (*brewv1.Info, error)
-	PlatformMetadata(ctx context.Context, repo hopsreg.Repository, plat platform.Platform) (*brewv1.Info, error)
-}
 
 // BottleIndex represents a versioned bottle
 type BottleIndex struct {

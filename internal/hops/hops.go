@@ -1,4 +1,4 @@
-package hopsreg
+package hopsclient
 
 import (
 	"context"

@@ -108,6 +108,7 @@ func fetchV1(ctx context.Context, apiclient *brewapi.Client, dir string) (*V1Cac
 	if err != nil {
 		return nil, err
 	}
+	defer r.Close()
 
 	// Parse JSON and cache the response
 	data, err := readWriteJSON[[]*brewv1.Info](formulaeFile(dir), r)

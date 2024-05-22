@@ -26,18 +26,19 @@ hops copy ([formula]... | [--file Brewfile]) [flags]
 ## Options
 
 ```plaintext
-      --file string        Copy formulae listed in a Brewfile
-      --from string        Source registry prefix for bottles (default "ghcr.io/homebrew/core")
-      --from-oci-layout    Set source target as an OCI image layout
-      --from-plain-http    Allow insecure connections to source registry without SSL check
-  -h, --help               help for copy
-      --include-build      Include :build dependencies for formula
-      --include-optional   Include :optional dependencies for formula
-      --include-test       Include :test dependencies for formula (non-recursive)
-      --skip-recommended   Skip :recommended dependencies for formula
-      --to string          Destination registry prefix for bottles
-      --to-oci-layout      Set destination target as an OCI image layout
-      --to-plain-http      Allow insecure connections to destination registry without SSL check
+      --file string              Copy formulae listed in a Brewfile
+      --from string              Source registry prefix for bottles (default "ghcr.io/homebrew/core")
+      --from-api-domain string   Source API domain for metadata (default "https://formulae.brew.sh/api")
+      --from-oci-layout          Set source target as an OCI image layout
+      --from-plain-http          Allow insecure connections to source registry without SSL check
+  -h, --help                     help for copy
+      --include-build            Include :build dependencies for formula
+      --include-optional         Include :optional dependencies for formula
+      --include-test             Include :test dependencies for formula (non-recursive)
+      --skip-recommended         Skip :recommended dependencies for formula
+      --to string                Destination registry prefix for bottles
+      --to-oci-layout            Set destination target as an OCI image layout
+      --to-plain-http            Allow insecure connections to destination registry without SSL check
 ```
 
 ## Options inherited from parent commands

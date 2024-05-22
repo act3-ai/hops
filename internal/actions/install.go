@@ -168,12 +168,12 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 
 	// Filter dependent formulae into installed and not installed lists
 	allDeps := graph.Dependents()
-	slog.Debug("Resolved dependencies", slog.Any("dependencies", allDeps), slog.Any("tags", action.DependencyOptions))
+	slog.Debug("Resolved dependencies", slog.Any("dependencies", formula.Names(allDeps)), slog.Any("tags", action.DependencyOptions))
 	missingDeps, installedDeps, err := prefix.FilterInstalled(action.Prefix(), allDeps)
 	if err != nil {
 		return nil, err
 	}
-	slog.Debug("Validated dependencies", slog.Any("installed", installedDeps), slog.Any("missing", missingDeps))
+	slog.Debug("Validated dependencies", slog.Any("installed", formula.Names(installedDeps)), slog.Any("missing", formula.Names(missingDeps)))
 
 	printDeps(formula.Names(missingDeps), action.DryRun, action.IgnoreDependencies)
 
@@ -195,6 +195,9 @@ func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.
 	// slog.Info("Pouring " + b.ArchiveName()) // ex: Pouring cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
 	err := action.Prefix().Pour(btl)
 	if err != nil {
+		return "", errors.Join(err, btl.Close())
+	}
+	if err := btl.Close(); err != nil {
 		return "", err
 	}
 
