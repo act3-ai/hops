@@ -24,7 +24,6 @@ import (
 	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
-	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -46,26 +45,27 @@ type Copy struct {
 
 	File string // path to a Brewfile specifying formulae dependencies
 
-	FromRegistry hopsv1.RegistryConfig
+	From hopsv1.RegistryConfig // source registry for bottles
+	To   hopsv1.RegistryConfig // destination registry for bottles
 
-	From          string // source registry for bottles
-	FromOCILayout bool   // use OCI layout directory as source
-	FromPlainHTTP bool   // allow insecure connections to source registry without SSL check
+	// From          string // source registry for bottles
+	// FromOCILayout bool   // use OCI layout directory as source
+	// FromPlainHTTP bool   // allow insecure connections to source registry without SSL check
 	FromAPIDomain string // HOMEBREW_API_DOMAIN to source metadata from
 	// FromTap       string // Tap source for bottles
 
-	To          string // destination registry for bottles
-	ToOCILayout bool   // use OCI layout directory as destination
-	ToPlainHTTP bool   // allow insecure connections to destination registry without SSL check
+	// To          string // destination registry for bottles
+	// ToOCILayout bool   // use OCI layout directory as destination
+	// ToPlainHTTP bool   // allow insecure connections to destination registry without SSL check
 }
 
 // Run runs the action
 func (action *Copy) Run(ctx context.Context, args []string) error {
-	if action.To == "" {
+	if action.To.Prefix == "" {
 		return errors.New("empty destination registry")
 	}
 
-	if action.From == "" {
+	if action.From.Prefix == "" {
 		return errors.New("empty source registry")
 	}
 
@@ -83,28 +83,15 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 
 	names := action.SetAlternateTags(args)
 
-	auth := action.Hops.AuthClient()
-	var err error
-
 	// Initialize source and destination registries
-	var srcReg hopsreg.Registry
-	if action.FromOCILayout {
-		srcReg = hopsreg.NewLocal(action.From)
-	} else {
-		srcReg, err = hopsreg.NewRegistry(action.From, auth, action.FromPlainHTTP)
-		if err != nil {
-			return fmt.Errorf("initializing source registry: %w", err)
-		}
+	srcReg, err := hopsRegistry(action.AuthClient(), &action.From)
+	if err != nil {
+		return fmt.Errorf("initializing source registry: %w", err)
 	}
 
-	var dstReg hopsreg.Registry
-	if action.ToOCILayout {
-		dstReg = hopsreg.NewLocal(action.To)
-	} else {
-		dstReg, err = hopsreg.NewRegistry(action.To, auth, action.ToPlainHTTP)
-		if err != nil {
-			return fmt.Errorf("initializing destination registry: %w", err)
-		}
+	dstReg, err := hopsRegistry(action.AuthClient(), &action.To)
+	if err != nil {
+		return fmt.Errorf("initializing destination registry: %w", err)
 	}
 
 	var formulary formula.Formulary

@@ -131,13 +131,6 @@ func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuratio
 	action.configOverrides = append(action.configOverrides, overrides...)
 }
 
-// // Index returns the index
-// func (action *Hops) Index() brewformulary.V1Cache {
-// 	return brewformulary.LoadV1(
-// 		action.Config().Homebrew.Domain,
-// 		action.Config().Cache)
-// }
-
 // Returns the client used for authentication to OCI repositories
 func (action *Hops) AuthClient() *auth.Client {
 	if action.authClient == nil {

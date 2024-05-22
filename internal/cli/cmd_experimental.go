@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/act3-ai/hops/internal/actions"
+	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	"github.com/act3-ai/hops/internal/o"
 )
 
@@ -14,7 +15,10 @@ import (
 func copyCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Copy{
 		Hops: hops,
-		From: "ghcr.io/homebrew/core",
+		From: hopsv1.RegistryConfig{
+			Prefix: "ghcr.io/homebrew/core",
+		},
+		FromAPIDomain: "https://formulae.brew.sh/api",
 	}
 
 	cmd := &cobra.Command{
@@ -28,14 +32,15 @@ func copyCmd(hops *actions.Hops) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&action.From, "from", "ghcr.io/homebrew/core", "Source registry prefix for bottles")
-	cmd.Flags().BoolVar(&action.FromOCILayout, "from-oci-layout", false, "Set source target as an OCI image layout")
-	cmd.Flags().BoolVar(&action.FromPlainHTTP, "from-plain-http", false, "Allow insecure connections to source registry without SSL check")
+	cmd.Flags().StringVar(&action.From.Prefix, "from", "ghcr.io/homebrew/core", "Source registry prefix for bottles")
+	cmd.Flags().BoolVar(&action.From.OCILayout, "from-oci-layout", false, "Set source target as an OCI image layout")
+	cmd.Flags().BoolVar(&action.From.PlainHTTP, "from-plain-http", false, "Allow insecure connections to source registry without SSL check")
+	cmd.Flags().StringVar(&action.FromAPIDomain, "from-api-domain", "https://formulae.brew.sh/api", "Source API domain for metadata")
 
-	cmd.Flags().StringVar(&action.To, "to", "", "Destination registry prefix for bottles")
+	cmd.Flags().StringVar(&action.To.Prefix, "to", "", "Destination registry prefix for bottles")
 	cobra.CheckErr(cmd.MarkFlagRequired("to"))
-	cmd.Flags().BoolVar(&action.ToOCILayout, "to-oci-layout", false, "Set destination target as an OCI image layout")
-	cmd.Flags().BoolVar(&action.ToPlainHTTP, "to-plain-http", false, "Allow insecure connections to destination registry without SSL check")
+	cmd.Flags().BoolVar(&action.To.OCILayout, "to-oci-layout", false, "Set destination target as an OCI image layout")
+	cmd.Flags().BoolVar(&action.To.PlainHTTP, "to-plain-http", false, "Allow insecure connections to destination registry without SSL check")
 
 	cmd.Flags().StringVar(&action.File, "file", "", "Copy formulae listed in a Brewfile")
 	if err := cmd.MarkFlagFilename("file"); err != nil {
