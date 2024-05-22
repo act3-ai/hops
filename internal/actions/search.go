@@ -13,6 +13,8 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/o"
 )
 
@@ -49,14 +51,20 @@ type Search struct {
 
 // Run runs the action
 func (action *Search) Run(ctx context.Context, terms ...string) error {
+	if action.Config().Registry.Prefix == "" {
+		o.Hai("Search is not available for standalone registry mode")
+		return nil
+	}
+
 	matchFuncs, err := parseTerms(terms)
 	if err != nil {
 		return err
 	}
 
-	index := action.Index()
-
-	err = index.Load(ctx)
+	// Load the index
+	index, err := brewformulary.FetchV1(ctx,
+		brewapi.NewClient(action.Config().Homebrew.Domain),
+		action.Config().Cache, nil)
 	if err != nil {
 		return err
 	}

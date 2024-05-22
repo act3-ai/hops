@@ -12,6 +12,7 @@ import (
 	"oras.land/oras-go/v2/errdef"
 
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/bottle"
 	"github.com/act3-ai/hops/internal/hops/regbottle"
 	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
@@ -21,7 +22,7 @@ import (
 // Client is an interface for combined metadata and bottle stores
 type Client interface {
 	formula.ConcurrentPlatformFormulary
-	formula.ConcurrentBottleRegistry
+	bottle.ConcurrentRegistry
 }
 
 // NewClient creates a Hops formulary

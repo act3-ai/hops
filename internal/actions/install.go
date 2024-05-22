@@ -16,6 +16,7 @@ import (
 	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/bottle"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
@@ -60,6 +61,11 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	action.platform = platform.SystemPlatform()
 	names := action.SetAlternateTags(args)
 
+	err := action.autoUpdate(ctx)
+	if err != nil {
+		return err
+	}
+
 	installs, err := action.resolveInstalls(ctx, names)
 	if err != nil {
 		return err
@@ -82,7 +88,7 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	}
 
 	// Download all bottles
-	bottles, err := formula.FetchBottles(ctx, reg, installs)
+	bottles, err := bottle.FetchAll(ctx, reg, installs)
 	if err != nil {
 		return err
 	}

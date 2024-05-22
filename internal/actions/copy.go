@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"strings"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -15,7 +16,9 @@ import (
 	oraserr "oras.land/oras-go/v2/errdef"
 
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
+	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
 	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
@@ -43,9 +46,13 @@ type Copy struct {
 
 	File string // path to a Brewfile specifying formulae dependencies
 
+	FromRegistry hopsv1.RegistryConfig
+
 	From          string // source registry for bottles
 	FromOCILayout bool   // use OCI layout directory as source
 	FromPlainHTTP bool   // allow insecure connections to source registry without SSL check
+	FromAPIDomain string // HOMEBREW_API_DOMAIN to source metadata from
+	// FromTap       string // Tap source for bottles
 
 	To          string // destination registry for bottles
 	ToOCILayout bool   // use OCI layout directory as destination
@@ -74,15 +81,10 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 
 	o.H1("Copying:\n" + strings.Join(args, " "))
 
-	slog.Debug("copying bottles", slog.Any("names", args))
-
-	// Resolve all formulae
-	formulae, err := action.resolve(ctx, args)
-	if err != nil {
-		return err
-	}
+	names := action.SetAlternateTags(args)
 
 	auth := action.Hops.AuthClient()
+	var err error
 
 	// Initialize source and destination registries
 	var srcReg hopsreg.Registry
@@ -103,6 +105,31 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 		if err != nil {
 			return fmt.Errorf("initializing destination registry: %w", err)
 		}
+	}
+
+	var formulary formula.Formulary
+	switch action.FromAPIDomain {
+	// Source API data from the source registry (assumes Hops-style bottles)
+	case "":
+		formulary = hopsClient(
+			filepath.Join(action.Config().Cache, "oci"),
+			action.alternateTags,
+			action.MaxGoroutines(),
+			srcReg)
+	// Use the API to source metadata
+	default:
+		formulary, err = brewformulary.FetchV1(ctx,
+			brewapi.NewClient(action.FromAPIDomain),
+			action.Config().Cache, nil)
+		if err != nil {
+			return err
+		}
+	}
+
+	// Resolve all formulae
+	formulae, err := action.resolve(ctx, formulary, names)
+	if err != nil {
+		return err
 	}
 
 	// Initialize Bottle sources/destinations
@@ -134,36 +161,8 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 	return nil
 }
 
-func (action *Copy) resolve(ctx context.Context, args []string) ([]*brewv1.Info, error) {
-	index := action.Index()
-	err := index.Load(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// all, err := action.FetchAll(o.H1, index, formulae...)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// o.H1("Fetching dependencies...")
-	// deps, err := dependencies.Walk(ctx, apiwalker.New(index, platform.All), all, &action.DependencyOptions)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// dependents := deps.Dependents()
-	// fmt.Printf("Found %d dependencies\n", len(dependents))
-
-	// // Combine root formulae with their dependencies in this list
-	// all = append(all, dependents...)
-
-	formulary := brewformulary.NewFormulary(index)
-
-	names, _ := parseArgs(args)
-
+func (action *Copy) resolve(ctx context.Context, formulary formula.Formulary, names []string) ([]*brewv1.Info, error) {
 	all, err := formula.FetchAllPlatform(ctx, formulary, names, platform.All)
-	// all, err := action.fetchFromArgs(ctx, args, platform.All)
 	if err != nil {
 		return nil, err
 	}
@@ -181,11 +180,27 @@ func (action *Copy) resolve(ctx context.Context, args []string) ([]*brewv1.Info,
 	all = append(all, dependents...)
 	metadata := make([]*brewv1.Info, 0, len(all))
 	for _, f := range all {
-		md := index.Find(f.Name())
-		if md == nil {
-			return nil, errdef.NewErrFormulaNotFound(f.Name())
+		switch formulary := formulary.(type) {
+		// Grab metadata simply
+		case *brewformulary.V1Cache:
+			md := formulary.Find(f.Name())
+			if md == nil {
+				return nil, errdef.NewErrFormulaNotFound(f.Name())
+			}
+			metadata = append(metadata, md)
+		// Fetch the generalized formula metadata, cast to v1
+		default:
+			base, err := formulary.FetchFormula(ctx, f.Name())
+			if err != nil {
+				return nil, err
+			}
+			switch base := base.(type) {
+			case *formula.V1:
+				metadata = append(metadata, base.SourceV1())
+			default:
+				return nil, fmt.Errorf("no v1 metadata for formula %s", f.Name())
+			}
 		}
-		metadata = append(metadata, md)
 	}
 
 	return metadata, nil

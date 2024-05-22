@@ -17,6 +17,7 @@ import (
 
 	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
 	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	brewreg "github.com/act3-ai/hops/internal/brew/registry"
 	"github.com/act3-ai/hops/internal/formula"
@@ -130,13 +131,12 @@ func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuratio
 	action.configOverrides = append(action.configOverrides, overrides...)
 }
 
-// Index returns the index
-func (action *Hops) Index() brewformulary.CachedIndex {
-	return brewformulary.New(
-		http.DefaultClient,
-		action.Homebrew().Cache,
-		action.Config().Homebrew.Domain)
-}
+// // Index returns the index
+// func (action *Hops) Index() brewformulary.V1Cache {
+// 	return brewformulary.LoadV1(
+// 		action.Config().Homebrew.Domain,
+// 		action.Config().Cache)
+// }
 
 // Returns the client used for authentication to OCI repositories
 func (action *Hops) AuthClient() *auth.Client {
@@ -148,7 +148,7 @@ func (action *Hops) AuthClient() *auth.Client {
 		}
 
 		action.authClient = &auth.Client{
-			Client:     retry.DefaultClient,
+			Client:     retry.NewClient(),
 			Cache:      auth.NewCache(),
 			Credential: credentials.Credential(credStore), // Use the credentials store
 		}
@@ -218,18 +218,32 @@ var errNoRegistryConfig = errors.New("no registry configured")
 
 // registry produces the Hops registry from options
 func (action *Hops) registry() (hopsreg.Registry, error) {
+	return hopsRegistry(action.AuthClient(), &action.Config().Registry)
+}
+
+func hopsRegistry(authClient *auth.Client, cfg *hopsv1.RegistryConfig) (hopsreg.Registry, error) {
 	switch {
-	case action.Config().Registry.Prefix == "":
+	case cfg.Prefix == "":
 		return nil, errNoRegistryConfig
-	case action.Config().Registry.OCILayout:
-		return hopsreg.NewLocal(action.Config().Registry.Prefix), nil
+	case cfg.OCILayout:
+		return hopsreg.NewLocal(cfg.Prefix), nil
 	default:
 		return hopsreg.NewRegistry(
-			action.Config().Registry.Prefix,
-			action.AuthClient(),
-			action.Config().Registry.PlainHTTP,
+			cfg.Prefix,
+			authClient,
+			cfg.PlainHTTP,
 		)
 	}
+}
+
+func hopsClient(cache string, alternateTags map[string]string, maxGoroutines int, reg hopsreg.Registry) hops.Client {
+	// Create OCI layout cache
+	btlcache := hopsreg.NewLocal(cache)
+
+	// Initialize client
+	return hops.NewClient(
+		reg, btlcache,
+		alternateTags, maxGoroutines)
 }
 
 // SetAlternateVersions sets alternate tags from a list of arguments,
@@ -250,7 +264,7 @@ func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Formulary
 	case "":
-		return action.brewFormulary(ctx)
+		return action.brewFormulary(ctx, false)
 	// Hops-style Formulary
 	default:
 		return action.hopsClient()
@@ -280,27 +294,47 @@ func (action *Hops) hopsClient() (hops.Client, error) {
 			return nil, err
 		}
 
-		// Initialize OCI layout cache
-		btlcache := hopsreg.NewLocal(filepath.Join(action.Config().Cache, "oci"))
-
-		// Initialize client
-		action.hopsclient = hops.NewClient(
-			reg, btlcache,
-			action.alternateTags, action.MaxGoroutines())
+		action.hopsclient = hopsClient(
+			filepath.Join(action.Config().Cache, "oci"),
+			action.alternateTags,
+			action.MaxGoroutines(),
+			reg)
 	}
 	return action.hopsclient, nil
 }
 
 // brewFormulary initializes the configured formula.Formulary
-func (action *Hops) brewFormulary(ctx context.Context) (brewformulary.PreloadedFormulary, error) {
+func (action *Hops) autoUpdate(ctx context.Context) error {
+	if action.Config().Registry.Prefix != "" {
+		return nil
+	}
+
+	slog.Debug("using Homebrew API formulary", slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain)) //nolint:sloglint
+
+	_, err := action.brewFormulary(ctx, true)
+	return err
+}
+
+// brewFormulary initializes the configured formula.Formulary
+func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewformulary.PreloadedFormulary, error) {
 	if action.brewclient.formulary == nil {
 		slog.Debug("using Homebrew API formulary", slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain)) //nolint:sloglint
-		index := action.Index()
-		err := index.Load(ctx)
+
+		// Set auto-update config
+		var upcfg *hopsv1.AutoUpdateConfig
+		if autoUpdate {
+			upcfg = &action.Config().Homebrew.AutoUpdate
+		}
+
+		// Load the index
+		index, err := brewformulary.FetchV1(ctx,
+			brewapi.NewClient(action.Config().Homebrew.Domain),
+			action.Config().Cache, upcfg)
 		if err != nil {
 			return nil, err
 		}
-		action.brewclient.formulary = brewformulary.NewFormulary(index)
+
+		action.brewclient.formulary = index
 	}
 	return action.brewclient.formulary, nil
 }
@@ -320,14 +354,14 @@ func (action *Hops) brewRegistry() brewreg.Registry {
 	return action.brewclient.registry
 }
 
-func parseArgs(args []string) (names, versions []string) {
-	names = make([]string, len(args))
-	versions = make([]string, len(args))
-	for i, arg := range args {
-		names[i], versions[i] = parseArg(arg)
-	}
-	return names, versions
-}
+// func parseArgs(args []string) (names, versions []string) {
+// 	names = make([]string, len(args))
+// 	versions = make([]string, len(args))
+// 	for i, arg := range args {
+// 		names[i], versions[i] = parseArg(arg)
+// 	}
+// 	return names, versions
+// }
 
 func parseArg(arg string) (name, version string) {
 	fields := strings.SplitN(arg, "=", 2)

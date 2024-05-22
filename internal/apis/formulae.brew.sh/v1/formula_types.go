@@ -21,9 +21,9 @@ type Info struct {
 // Info represents Homebrew API information for a formula
 type PlatformInfo struct {
 	Name                    string                `json:"name"`
-	FullName                string                `json:"full_name"`
+	FullName                string                `json:"full_name"` // Deprecated: Evaluate from Tap/Name
 	Tap                     string                `json:"tap"`
-	OldName                 string                `json:"oldname"`
+	OldName                 string                `json:"oldname"` // Deprecated: Use OldNames list
 	OldNames                []string              `json:"oldnames"`
 	Aliases                 []string              `json:"aliases"`
 	VersionedFormulae       []string              `json:"versioned_formulae"`

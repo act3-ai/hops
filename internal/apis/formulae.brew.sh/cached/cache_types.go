@@ -14,6 +14,7 @@ import (
 const (
 	FormulaNamesFile   = "formula_names.txt"   // FormulaAliasesFile is the name of the formula name cache
 	FormulaAliasesFile = "formula_aliases.txt" // FormulaAliasesFile is the name of the formula aliases cache
+	FormulaRenamesFile = "formula_renames.txt" // FormulaAliasesFile is the name of the formula aliases cache
 )
 
 // FormulaNames represents the contents of the formula names file

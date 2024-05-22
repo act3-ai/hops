@@ -6,213 +6,123 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
-	"net/http"
 	"os"
 	"path/filepath"
 
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	api "github.com/act3-ai/hops/internal/apis/formulae.brew.sh"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/errdef"
-	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/utils/resputil"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
 )
 
-// PreloadedFormulary defines the formulary's capabilities
-type PreloadedFormulary interface {
-	formula.Formulary
-}
-
-// NewFormulary creates a pre-loaded formulary
-func NewFormulary(index Index) formula.Formulary {
-	return newPreloaded(index)
-}
-
-// newPreloaded creates a pre-loaded formulary
-func newPreloaded(index Index) *preloaded {
-	return &preloaded{
-		index: index,
+// FetchV1 fetches the v1 index either from the cache or from the API according to its existence and the auto-update configuration
+func FetchV1(ctx context.Context, apiclient *brewapi.Client, dir string, autoUpdate *hopsv1.AutoUpdateConfig) (*V1Cache, error) {
+	_, err := os.Stat(formulaeFile(dir))
+	switch {
+	// File does not exist or is unreadable
+	case err != nil:
+		return fetchV1(ctx, apiclient, dir)
+	// File exists and auto-update is disabled
+	case autoUpdate == nil:
+		return LoadV1(dir)
+	// File exists but requires updating
+	case autoUpdate.ShouldAutoUpdate(formulaeFile(dir)):
+		return fetchV1(ctx, apiclient, dir)
+	// File exists and does not need updated
+	default:
+		return LoadV1(dir)
 	}
 }
 
-// preloaded is a formulary with the full contents of the Homebrew API
-type preloaded struct {
-	index Index
+func formulaeFile(dir string) string {
+	return filepath.Join(dir, "api", "formula.json")
 }
 
-// FetchFormula implements formula.Formulary.
-func (f *preloaded) FetchFormula(_ context.Context, name string) (formula.MultiPlatformFormula, error) {
-	data := f.index.Find(name)
-	if data == nil {
-		return nil, errdef.NewErrFormulaNotFound(name)
+func namesFile(dir string) string {
+	return filepath.Join(dir, "api", api.CachedFormulaNamesFile)
+}
+
+func aliasesFile(dir string) string {
+	return filepath.Join(dir, "api", api.CachedFormulaAliasesFile)
+}
+
+// readWriteJSON reads from r while writing to a file at path and simultaneously decoding JSON into type T
+func readWriteJSON[T any](path string, r io.Reader) (*T, error) {
+	// Create parent directory
+	if err := os.MkdirAll(filepath.Dir(path), 0o775); err != nil {
+		return nil, fmt.Errorf("creating dir: %w", err)
 	}
-	return formula.FromV1(data), nil
-}
 
-// Client represents the Homebrew API index
-type Client struct {
-	*http.Client        // for API requests
-	domain       string // HOMEBREW_API_DOMAIN
-	file         string // cached location of the index
-	namefile     string // cached location of the names
-	aliasfile    string // cached location of formula aliases
-	*APIIndex           // uses the default implementations
-}
-
-// New creates a new Index for a Homebrew API source
-func New(client *http.Client, cache, apiDomain string) *Client {
-	return &Client{
-		Client:    client,
-		domain:    apiDomain,
-		file:      filepath.Join(cache, "api", "formula.json"),
-		namefile:  filepath.Join(cache, "api", api.CachedFormulaNamesFile),
-		aliasfile: filepath.Join(cache, "api", api.CachedFormulaAliasesFile),
+	// Create the index file
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o644)
+	if err != nil {
+		return nil, fmt.Errorf("creating file: %w", err)
 	}
+	defer f.Close()
+
+	// Create decoder that reads from a TeeReader
+	// The TeeReader writes to the file as it reads from the given reader
+	decoder := json.NewDecoder(io.TeeReader(r, f))
+	// decoder.DisallowUnknownFields()
+
+	obj := new(T)
+	if err := decoder.Decode(obj); err != nil {
+		return nil, fmt.Errorf("decoding JSON failed: %w", err)
+	}
+
+	return obj, nil
 }
 
-// Load implements Loader
-func (hi *Client) Load(ctx context.Context) error {
-	parseIndex := func(r io.Reader) error {
+// LoadV1 loads the v1 index from a cache directory
+func LoadV1(dir string) (*V1Cache, error) {
+	file := formulaeFile(dir)
+	// Check for existing index file
+	f, err := os.Open(file)
+	switch {
+	// No cached file
+	case errors.Is(err, os.ErrNotExist):
+		return nil, errors.New("loading index from cache: index is not cached")
+	// Unreadable file
+	case err != nil:
+		return nil, fmt.Errorf("reading cached file %s: %w", file, err)
+	// Readable cached file
+	default:
+		defer f.Close()
+
 		data := brewv1.Index{}
 
-		jd := json.NewDecoder(r)
-		jd.DisallowUnknownFields()
+		jd := json.NewDecoder(f)
 
 		err := jd.Decode(&data)
-		// err := jd.(b, &data)
 		if err != nil {
-			return fmt.Errorf("parsing formula index: %w", err)
+			return nil, fmt.Errorf("parsing cached file: %w", err)
 		}
 
-		hi.APIIndex = NewAPIIndex(data)
-
-		return nil
+		return cacheV1(data), nil
 	}
-
-	// Check for existing index file
-	f, err := os.Open(hi.file)
-	if err == nil {
-		// If file exists, parse it and return existing file
-		return parseIndex(f)
-	} else if !errors.Is(err, os.ErrNotExist) {
-		// If file was unreadable, return the error
-		return fmt.Errorf("checking index file %s: %w", hi.file, err)
-	}
-
-	// Create parent directory
-	err = os.MkdirAll(filepath.Dir(hi.file), 0o775)
-	if err != nil {
-		return fmt.Errorf("creating cache dir: %w", err)
-	}
-
-	// Open the symlink path, creating the bottle download file
-	download, err := os.OpenFile(hi.file, os.O_CREATE|os.O_RDWR|os.O_TRUNC, 0o644)
-	if err != nil {
-		return fmt.Errorf("creating formula index: %w", err)
-	}
-	defer download.Close()
-
-	// Fetch the index
-	r, err := hi.fetchAll(ctx)
-	if err != nil {
-		return fmt.Errorf("downloading formula index: %w", err)
-	}
-
-	// Read the response, use tee reader to write to cache file while decoding
-	err = parseIndex(io.TeeReader(r, download))
-	if err != nil {
-		return err
-	}
-
-	// Write names and aliases to basic text files for lighter reads
-	err = hi.cacheFormulaNames()
-	if err != nil {
-		return fmt.Errorf("caching index: %w", err)
-	}
-
-	return nil
 }
 
-// fetchAll
-func (hi *Client) fetchAll(ctx context.Context) (io.ReadCloser, error) {
-	// https://formulae.brew.sh/docs/api/#list-metadata-for-all-homebrewcore-formulae-or-homebrewcask-casks
-	// GET https://formulae.brew.sh/api/formula.json
-	slog.Info("Downloading " + hi.domain + "/formula.json")
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet,
-		hi.domain+"/formula.json",
-		nil)
+func fetchV1(ctx context.Context, apiclient *brewapi.Client, dir string) (*V1Cache, error) {
+	// Fetch full v1 list
+	r, err := apiclient.FetchFormulaeV1(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("preparing request: %w", err)
+		return nil, err
 	}
 
-	resp, err := hi.Client.Do(req)
+	// Parse JSON and cache the response
+	data, err := readWriteJSON[[]*brewv1.Info](formulaeFile(dir), r)
 	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
+		return nil, err
 	}
 
-	// Check for a non-success status and handle
-	if !resputil.HTTPSuccess(resp) {
-		return resp.Body, resputil.HandleHTTPError(resp)
-	}
+	// Load in cached form
+	index := cacheV1(*data)
 
-	return resp.Body, nil
-}
-
-// CachedLocation produces the cached location of the index file
-// The function does not check if the path actually exists or not
-func (hi *Client) Source() string {
-	return hi.domain
-}
-
-// IsCached reports whether a cached version of the index exists
-func (hi *Client) IsCached() bool {
-	_, err1 := os.Stat(hi.file)
-	_, err2 := os.Stat(hi.namefile)
-	_, err3 := os.Stat(hi.aliasfile)
-	return errors.Join(err1, err2, err3) == nil
-}
-
-// ShouldAutoUpdate reports whether an auto update should be performed or not
-func (hi *Client) ShouldAutoUpdate(opts *hopsv1.AutoUpdateConfig) bool {
-	return opts.ShouldAutoUpdate(hi.file)
-}
-
-// Reset resets the cached index
-func (hi *Client) Reset(_ *hopsv1.AutoUpdateConfig) error {
-	// Remove cached index file
-	// The load functions only download a fresh index if there is no existing index
-	if err := os.RemoveAll(hi.file); err != nil {
-		return fmt.Errorf("removing existing index: %w", err)
-	}
-	return nil
-}
-
-// cacheFormulaNames caches the formula names in a separate file
-func (hi *Client) cacheFormulaNames() error {
-	if hi.APIIndex == nil {
-		slog.Debug("skipped caching formula names, empty formula index")
-		return nil
-	}
-
-	// Create parent directory
-	err := os.MkdirAll(filepath.Dir(hi.namefile), 0o775)
+	// Update cache
+	err = writeAPICache(index, dir)
 	if err != nil {
-		return fmt.Errorf("creating cache dir: %w", err)
+		return index, err
 	}
 
-	names := hi.APIIndex.ListNames()
-	err = api.WriteFormulaNames(names, hi.namefile)
-	if err != nil {
-		return err
-	}
-
-	aliases := hi.APIIndex.Aliases()
-	err = api.WriteFormulaAliases(aliases, hi.aliasfile)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return index, nil
 }

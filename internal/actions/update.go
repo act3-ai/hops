@@ -7,7 +7,10 @@ import (
 
 	"golang.org/x/mod/semver"
 
+	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/utils"
 )
@@ -19,27 +22,25 @@ type Update struct {
 
 // Run runs the action
 func (action *Update) Run(ctx context.Context) error {
-	oldIndex := action.Index()
+	if action.Config().Registry.Prefix != "" {
+		o.Hai("Update not necessary for standalone registry mode")
+		return nil
+	}
+
+	apiclient := brewapi.NewClient(action.Config().Homebrew.Domain)
 
 	// Only load the cached indexes
-	if oldIndex.IsCached() {
-		err := oldIndex.Load(ctx)
-		if err != nil {
-			slog.Warn("loading cached index", o.ErrAttr(err))
-		}
-	}
-
-	cfg := action.Config()
-
-	newIndex := action.Index()
-
-	// Force a reset and redownload
-	err := newIndex.Reset(&cfg.Homebrew.AutoUpdate)
+	oldIndex, err := brewformulary.LoadV1(action.Config().Cache)
 	if err != nil {
-		return err
+		slog.Warn("loading cached index", o.ErrAttr(err))
 	}
 
-	err = newIndex.Load(ctx)
+	newIndex, err := brewformulary.FetchV1(ctx,
+		apiclient,
+		action.Config().Cache,
+		&hopsv1.AutoUpdateConfig{
+			Secs: new(int), // set refresh seconds to zero
+		})
 	if err != nil {
 		return err
 	}

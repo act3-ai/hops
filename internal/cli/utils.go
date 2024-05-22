@@ -9,19 +9,26 @@ import (
 
 	"github.com/act3-ai/hops/internal/actions"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/formula"
 )
 
 // AutocompleteFormulae returns an autocompletion function that suggests formula names
 func AutocompleteFormulae(ctx context.Context, action *actions.Hops) func(s string) []string {
 	return func(_ string) []string {
-		index := action.Index()
-		err := index.Load(ctx)
+		index, err := action.Formulary(ctx)
 		if err != nil {
 			cobra.CompErrorln("loading completions: " + err.Error())
 			return []string{}
 		}
-		return index.ListNames()
+
+		switch index := index.(type) {
+		case brewformulary.PreloadedFormulary:
+			return index.ListNames()
+		default:
+			cobra.CompErrorln("completions not available for standalone regsistry mode")
+			return []string{}
+		}
 	}
 }
 
