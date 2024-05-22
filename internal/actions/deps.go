@@ -53,18 +53,20 @@ func (action *Deps) Tree(ctx context.Context, names ...string) error {
 }
 
 func (action *Deps) eval(ctx context.Context, args []string) (*dependencies.DependencyGraph, error) {
-	client, err := action.FormulaClient(ctx, args)
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	formulae, err := action.fetchFromArgs(ctx, args, action.Platform)
+	formulae, err := formula.FetchAllPlatform(ctx, formulary, names, action.Platform)
 	if err != nil {
 		return nil, err
 	}
 
 	graph, err := dependencies.Walk(ctx,
-		client,
+		formulary,
 		formulae,
 		action.Platform,
 		&action.DependencyOptions)

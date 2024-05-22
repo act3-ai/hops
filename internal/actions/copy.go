@@ -158,21 +158,18 @@ func (action *Copy) resolve(ctx context.Context, args []string) ([]*brewv1.Info,
 	// // Combine root formulae with their dependencies in this list
 	// all = append(all, dependents...)
 
-	store, err := brewformulary.NewPreloaded(index)
-	if err != nil {
-		return nil, err
-	}
+	formulary := brewformulary.NewFormulary(index)
 
 	names, _ := parseArgs(args)
 
-	all, err := formula.FetchAllPlatform(ctx, store, names, platform.All)
+	all, err := formula.FetchAllPlatform(ctx, formulary, names, platform.All)
 	// all, err := action.fetchFromArgs(ctx, args, platform.All)
 	if err != nil {
 		return nil, err
 	}
 
 	o.H1("Fetching dependencies...")
-	deps, err := dependencies.WalkAll(ctx, store, all, &action.DependencyOptions)
+	deps, err := dependencies.WalkAll(ctx, formulary, all, &action.DependencyOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +366,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing platform metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), slog.String("digest", configDesc.Digest.String()))
+		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), logutil.Descriptor(configDesc))
 
 		configDesc.Platform = manifestDesc.Platform // preserve platform
 
@@ -387,7 +384,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing index metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for index", slog.String("digest", configDesc.Digest.String()))
+		l.Debug("Pushed metadata for index", logutil.Descriptor(configDesc))
 
 		manifestOptions = metadatManifestOptions(f.FullName, f.Version(), manifestDesc, configDesc)
 	}
@@ -398,7 +395,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		return ocispec.Descriptor{}, err
 	}
 
-	l.Debug("Pushed metadata manifest", slog.String("digest", metadataManifest.Digest.String()))
+	l.Debug("Pushed metadata manifest", logutil.Descriptor(metadataManifest))
 	return metadataManifest, nil
 }
 

@@ -30,12 +30,12 @@ func (action *Link) Run(ctx context.Context, args ...string) error {
 		action.platform = platform.SystemPlatform()
 	}
 
-	store, err := action.FormulaClient(ctx, args)
+	names := action.SetAlternateTags(args)
+
+	store, err := action.Formulary(ctx)
 	if err != nil {
 		return err
 	}
-
-	names, _ := parseArgs(args)
 
 	formulae, err := formula.FetchAllPlatform(ctx, store, names, action.platform)
 	if err != nil {

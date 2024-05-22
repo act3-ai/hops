@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,9 +13,7 @@ import (
 	"oras.land/oras-go/v2/registry"
 	"oras.land/oras-go/v2/registry/remote"
 
-	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
-	"github.com/act3-ai/hops/internal/platform"
 )
 
 const (
@@ -33,33 +30,9 @@ const (
 	MetadataVersionV3 = "v3"
 )
 
-// Registry is a source of Bottles
+// Registry stores Bottles
 type Registry interface {
 	Repository(ctx context.Context, name string) (Repository, error)
-}
-
-// SearchableRegistry is a source supporting search
-type SearchableRegistry interface {
-	Registry
-	RepositoryLister
-}
-
-// MetadataRegistry is a source of metadata
-type MetadataRegistry interface {
-	Metadata(ctx context.Context, name string) (*brewv1.Info, error)
-	PlatformMetadata(ctx context.Context, name string, plat platform.Platform) (*brewv1.Info, error)
-}
-
-// RepositoryLister lists Bottle repositories
-type RepositoryLister interface {
-	Repositories(ctx context.Context) ([]string, error)
-}
-
-// Fetcher is unused
-type Fetcher interface {
-	Fetch(ctx context.Context, name string, plat platform.Platform) (io.ReadCloser, error)
-	Metadata(ctx context.Context, name string) (*brewv1.Info, error)
-	PlatformMetadata(ctx context.Context, name string, plat platform.Platform) (*brewv1.Info, error)
 }
 
 // Repository represents the minimum interface for a bottle repository

@@ -17,10 +17,10 @@ import (
 
 	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
-	"github.com/act3-ai/hops/internal/brew"
 	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	brewreg "github.com/act3-ai/hops/internal/brew/registry"
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/bottle"
 	hops "github.com/act3-ai/hops/internal/hops"
 	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
@@ -44,7 +44,12 @@ type Hops struct {
 	cfg        *hopsv1.Configuration
 	brewcfg    *brewenv.Environment
 
-	client formula.Client
+	alternateTags map[string]string
+	hopsclient    hops.Client
+	brewclient    struct {
+		formulary brewformulary.PreloadedFormulary
+		registry  brewreg.Registry
+	}
 }
 
 // DefaultConcurrency is the default maximum threads for parallel tasks
@@ -227,62 +232,95 @@ func (action *Hops) registry() (hopsreg.Registry, error) {
 	}
 }
 
-// Formulary initializes the default formulary
-func (action *Hops) FormulaClient(ctx context.Context, args []string) (formula.Client, error) {
-	if action.client == nil {
-		switch action.Config().Registry.Prefix {
-		// Homebrew-style Formulary
-		case "":
-			slog.Debug("using Homebrew client")
-			index := action.Index()
-			err := index.Load(ctx)
-			if err != nil {
-				return nil, err
-			}
-			formulaStore, err := brewformulary.NewPreloaded(index)
-			if err != nil {
-				return nil, err
-			}
-			bottleStore := brewreg.NewBottleStore(
-				action.authHeaders(),
-				retry.DefaultClient,
-				action.Homebrew().Cache,
-				action.MaxGoroutines(),
-				action.Homebrew().ArtifactDomain,
-			)
-			action.client = brew.NewHomebrewClient(*formulaStore, *bottleStore)
-		// Hops-style Formulary
-		default:
-			slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix))
-			reg, err := action.registry()
-			if err != nil {
-				return nil, err
-			}
-
-			alternateTags := map[string]string{}
-			for _, arg := range args {
-				name, version := parseArg(arg)
-				alternateTags[name] = version
-			}
-
-			action.client, err = hops.NewHopsFormulary(
-				reg, action.bottleCache(),
-				alternateTags, action.MaxGoroutines())
-			if err != nil {
-				return nil, err
-			}
-		}
+// SetAlternateVersions sets alternate tags from a list of arguments,
+// and returns the isolated names from the arguments
+func (action *Hops) SetAlternateTags(args []string) (names []string) {
+	action.alternateTags = map[string]string{}
+	names = make([]string, 0, len(args))
+	for _, arg := range args {
+		name, version := parseArg(arg)
+		action.alternateTags[name] = version
+		names = append(names, name)
 	}
-	return action.client, nil
+	return names
 }
 
-// bottleCache initializes an OCI layout cache for bottles
-func (action *Hops) bottleCache() hopsreg.Registry {
-	// Initialize OCI layout cache
-	return hopsreg.NewLocal(filepath.Join(action.Config().Cache, "oci"))
+// Formulary produces the configured Formulary
+func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
+	switch action.Config().Registry.Prefix {
+	// Homebrew-style Formulary
+	case "":
+		return action.brewFormulary(ctx)
+	// Hops-style Formulary
+	default:
+		return action.hopsClient()
+	}
 }
 
-func parseArgs(args []string) (names, versions []string) { //nolint:unparam
+// BottleRegistry produces the configured Bottle registry
+func (action *Hops) BottleRegistry() (bottle.Registry, error) {
+	switch action.Config().Registry.Prefix {
+	// Homebrew-style Registry
+	case "":
+		return action.brewRegistry(), nil
+	// Hops-style Registry
+	default:
+		return action.hopsClient()
+	}
+}
+
+// hopsClient initializes the configured formula.Formulary/bottle.Registry
+func (action *Hops) hopsClient() (hops.Client, error) {
+	if action.hopsclient == nil {
+		slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix))
+
+		// Initialize registry.Registry
+		reg, err := action.registry()
+		if err != nil {
+			return nil, err
+		}
+
+		// Initialize OCI layout cache
+		btlcache := hopsreg.NewLocal(filepath.Join(action.Config().Cache, "oci"))
+
+		// Initialize client
+		action.hopsclient = hops.NewClient(
+			reg, btlcache,
+			action.alternateTags, action.MaxGoroutines())
+	}
+	return action.hopsclient, nil
+}
+
+// brewFormulary initializes the configured formula.Formulary
+func (action *Hops) brewFormulary(ctx context.Context) (brewformulary.PreloadedFormulary, error) {
+	if action.brewclient.formulary == nil {
+		slog.Debug("using Homebrew API formulary", slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain)) //nolint:sloglint
+		index := action.Index()
+		err := index.Load(ctx)
+		if err != nil {
+			return nil, err
+		}
+		action.brewclient.formulary = brewformulary.NewFormulary(index)
+	}
+	return action.brewclient.formulary, nil
+}
+
+// brewRegistry initializes the configured bottle.Registry
+func (action *Hops) brewRegistry() brewreg.Registry {
+	if action.brewclient.registry == nil {
+		slog.Debug("using Homebrew registry", slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Homebrew().ArtifactDomain)) //nolint:sloglint
+		action.brewclient.registry = brewreg.NewBottleRegistry(
+			action.authHeaders(),
+			retry.DefaultClient,
+			action.Homebrew().Cache,
+			action.MaxGoroutines(),
+			action.Homebrew().ArtifactDomain,
+		)
+	}
+	return action.brewclient.registry
+}
+
+func parseArgs(args []string) (names, versions []string) {
 	names = make([]string, len(args))
 	versions = make([]string, len(args))
 	for i, arg := range args {
@@ -300,10 +338,10 @@ func parseArg(arg string) (name, version string) {
 }
 
 func (action *Hops) fetchFromArgs(ctx context.Context, args []string, plat platform.Platform) ([]formula.PlatformFormula, error) {
-	store, err := action.FormulaClient(ctx, args)
+	names := action.SetAlternateTags(args)
+	store, err := action.Formulary(ctx)
 	if err != nil {
 		return nil, err
 	}
-	names, _ := parseArgs(args)
 	return formula.FetchAllPlatform(ctx, store, names, plat)
 }

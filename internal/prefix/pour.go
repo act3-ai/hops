@@ -1,4 +1,4 @@
-package bottle
+package prefix
 
 import (
 	"archive/tar"
@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 )
 
-// PourReader pours the bottle into the cellar
-func PourReader(b io.Reader, cellar string) error {
+// Pour pours a Bottle into the Cellar.
+func (p Prefix) Pour(btl io.Reader) error {
 	// Untar the bottle
-	if err := untar(b, cellar); err != nil {
+	if err := untar(btl, p.Cellar()); err != nil {
 		return fmt.Errorf("pouring bottle: %w", err)
 	}
 	return nil

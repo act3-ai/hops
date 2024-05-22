@@ -8,7 +8,6 @@ import (
 	"log/slog"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
-	"github.com/sourcegraph/conc/iter"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/errdef"
@@ -344,71 +343,4 @@ var copyOptions = oras.ExtendedCopyGraphOptions{
 // IterOptions configures iteration
 type IterOptions struct {
 	MaxGoroutines int
-}
-
-// List
-func List(ctx context.Context, reg hopsreg.SearchableRegistry, opts *IterOptions) ([]*brewv1.Info, error) {
-	repos, err := reg.Repositories(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	fetchers := iter.Mapper[string, *brewv1.Info]{
-		MaxGoroutines: opts.MaxGoroutines,
-	}
-
-	return fetchers.MapErr(repos, func(repop *string) (*brewv1.Info, error) {
-		repo, err := reg.Repository(ctx, *repop)
-		if err != nil {
-			return nil, err
-		}
-
-		btl, err := ResolveVersion(ctx, repo, "latest")
-		if err != nil {
-			return nil, err
-		}
-
-		info, err := btl.GeneralMetadata(ctx, repo)
-		if err != nil {
-			return nil, err
-		}
-
-		return info, nil
-	})
-}
-
-// CopyAllMetadata copies all metadata artifacts from srcReg to dstReg
-func CopyAllMetadata(ctx context.Context, srcReg, dstReg hopsreg.SearchableRegistry, opts *IterOptions) ([]*BottleIndex, error) {
-	srcRepos, err := srcReg.Repositories(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	fetchers := iter.Mapper[string, *BottleIndex]{
-		MaxGoroutines: opts.MaxGoroutines,
-	}
-
-	return fetchers.MapErr(srcRepos, func(repop *string) (*BottleIndex, error) {
-		srcRepo, err := srcReg.Repository(ctx, *repop)
-		if err != nil {
-			return nil, err
-		}
-
-		dstRepo, err := dstReg.Repository(ctx, *repop)
-		if err != nil {
-			return nil, err
-		}
-
-		btl, err := ResolveVersion(ctx, srcRepo, "latest")
-		if err != nil {
-			return nil, err
-		}
-
-		err = CopyGeneralMetadata(ctx, srcRepo, dstRepo, btl)
-		if err != nil {
-			return nil, err
-		}
-
-		return btl, nil
-	})
 }

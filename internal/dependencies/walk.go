@@ -16,7 +16,7 @@ import (
 type DependencyGraph struct {
 	rootKeys      []string                           // list of root formulae
 	dependentKeys []string                           // list of dependency names, ordered
-	info          map[string]formula.PlatformFormula // stores dependency information
+	formulae      map[string]formula.PlatformFormula // stores dependency information
 	trees         map[string]*treeprint.Node         // stores dependency trees
 }
 
@@ -24,7 +24,7 @@ type DependencyGraph struct {
 func (deps DependencyGraph) Dependents() []formula.PlatformFormula {
 	list := make([]formula.PlatformFormula, len(deps.dependentKeys))
 	for i, name := range deps.dependentKeys {
-		list[i] = deps.info[name]
+		list[i] = deps.formulae[name]
 	}
 	return list
 }
@@ -33,7 +33,7 @@ func (deps DependencyGraph) Dependents() []formula.PlatformFormula {
 func (deps *DependencyGraph) Roots() []formula.PlatformFormula {
 	list := make([]formula.PlatformFormula, len(deps.rootKeys))
 	for i, name := range deps.rootKeys {
-		list[i] = deps.info[name]
+		list[i] = deps.formulae[name]
 	}
 	return list
 }
@@ -52,7 +52,7 @@ func Walk(ctx context.Context, store formula.Formulary, roots []formula.Platform
 	deps := &DependencyGraph{
 		rootKeys:      []string{},
 		dependentKeys: []string{},
-		info:          map[string]formula.PlatformFormula{},
+		formulae:      map[string]formula.PlatformFormula{},
 		trees:         map[string]*treeprint.Node{},
 	}
 
@@ -115,7 +115,7 @@ func (deps *DependencyGraph) add(ctx context.Context, store formula.Formulary, f
 		}
 	}
 
-	deps.info[key] = f
+	deps.formulae[key] = f
 	deps.trees[key] = node
 
 	// Return my tree once all my children have been accounted for

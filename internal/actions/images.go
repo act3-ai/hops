@@ -79,12 +79,13 @@ func (action *Images) Run(ctx context.Context, args ...string) error {
 }
 
 func (action *Images) findDeps(ctx context.Context, args []string) ([]formula.PlatformFormula, error) {
-	formulary, err := action.FormulaClient(ctx, args)
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	names, _ := parseArgs(args)
 	roots, err := formula.FetchAllPlatform(ctx, formulary, names, platform.All)
 	if err != nil {
 		return nil, err

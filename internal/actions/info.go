@@ -26,12 +26,12 @@ func (action *Info) Run(ctx context.Context, args ...string) error {
 		action.Platform = platform.SystemPlatform()
 	}
 
-	formulary, err := action.FormulaClient(ctx, args)
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return err
 	}
-
-	names, _ := parseArgs(args)
 
 	switch {
 	case action.JSON == "v1":

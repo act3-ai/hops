@@ -19,25 +19,30 @@ import (
 	"github.com/act3-ai/hops/internal/utils/resputil"
 )
 
+// PreloadedFormulary defines the formulary's capabilities
+type PreloadedFormulary interface {
+	formula.Formulary
+}
+
 // NewFormulary creates a pre-loaded formulary
-func NewFormulary(index Index) (formula.Formulary, error) {
-	return NewPreloaded(index)
+func NewFormulary(index Index) formula.Formulary {
+	return newPreloaded(index)
 }
 
-// NewPreloaded creates a pre-loaded formulary
-func NewPreloaded(index Index) (*Preloaded, error) {
-	return &Preloaded{
+// newPreloaded creates a pre-loaded formulary
+func newPreloaded(index Index) *preloaded {
+	return &preloaded{
 		index: index,
-	}, nil
+	}
 }
 
-// Preloaded is a formulary with the full contents of the Homebrew API
-type Preloaded struct {
+// preloaded is a formulary with the full contents of the Homebrew API
+type preloaded struct {
 	index Index
 }
 
-// Fetch implements formula.Formulary.
-func (f *Preloaded) Fetch(_ context.Context, name string) (formula.MultiPlatformFormula, error) {
+// FetchFormula implements formula.Formulary.
+func (f *preloaded) FetchFormula(_ context.Context, name string) (formula.MultiPlatformFormula, error) {
 	data := f.index.Find(name)
 	if data == nil {
 		return nil, errdef.NewErrFormulaNotFound(name)

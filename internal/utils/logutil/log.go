@@ -55,6 +55,18 @@ func descriptorValues(desc ocispec.Descriptor) []slog.Attr {
 	return attrs
 }
 
+// // PlainDescriptor returns a plain descriptor that contains only MediaType, Digest and
+// // Size.
+// //
+// // From: https://github.com/oras-project/oras-go/blob/main/internal/descriptor/descriptor.go
+// func PlainDescriptor(desc ocispec.Descriptor) ocispec.Descriptor {
+// 	return ocispec.Descriptor{
+// 		MediaType: desc.MediaType,
+// 		Digest:    desc.Digest,
+// 		Size:      desc.Size,
+// 	}
+// }
+
 // WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions
 func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOptions) oras.CopyGraphOptions {
 	onCopySkipped := opts.OnCopySkipped

@@ -13,7 +13,6 @@ import (
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/sourcegraph/conc/iter"
 
-	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
@@ -59,8 +58,9 @@ type Install struct {
 // Run runs the action
 func (action *Install) Run(ctx context.Context, args ...string) error {
 	action.platform = platform.SystemPlatform()
+	names := action.SetAlternateTags(args)
 
-	installs, client, err := action.resolveInstalls(ctx, args)
+	installs, err := action.resolveInstalls(ctx, names)
 	if err != nil {
 		return err
 	}
@@ -70,21 +70,28 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 		return nil
 	}
 
+	// Exit if there is nothing to install
 	if len(installs) == 0 {
 		return nil
 	}
 
-	// Download all bottles
-	bottles, err := formula.FetchBottles(ctx, client, installs)
+	// Get bottle registry
+	reg, err := action.BottleRegistry()
 	if err != nil {
 		return err
 	}
 
-	// Use an iterator to start concurrent installs of each bottle
+	// Download all bottles
+	bottles, err := formula.FetchBottles(ctx, reg, installs)
+	if err != nil {
+		return err
+	}
+
+	// Install the downloaded bottles
 	routines := iter.Iterator[formula.PlatformFormula]{MaxGoroutines: action.MaxGoroutines()}
 	err = iterutil.ForEachIdxErr(routines, installs, func(i int, pf *formula.PlatformFormula) error {
 		btl := bottles[i]
-		_, err = action.run(ctx, *pf, bottles[i])
+		_, err = action.run(ctx, *pf, btl)
 		return errors.Join(err, btl.Close())
 	})
 
@@ -92,7 +99,7 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	o.Hai(fmt.Sprintf("Installed %d formulae in the Cellar:", len(installs)))
 	pretty.FormulaInstallStats(action.Prefix(), installs)
 
-	// 3. Finish by printing all caveats again
+	// Finish by printing all caveats again
 	for _, f := range installs {
 		if caveats := pretty.Caveats(f, action.Prefix()); caveats != "" {
 			o.Hai(f.Name() + ": Caveats\n" + caveats)
@@ -103,24 +110,22 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 }
 
 // resolveInstalls resolves the list of formulae that will be installed
-func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]formula.PlatformFormula, formula.Client, error) {
-	formulary, err := action.FormulaClient(ctx, args)
+func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]formula.PlatformFormula, error) {
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
-		return nil, formulary, err
+		return nil, err
 	}
-
-	names, _ := parseArgs(args)
 
 	// Fetch directly-requested formulae
 	all, err := formula.FetchAllPlatform(ctx, formulary, names, action.platform)
 	if err != nil {
-		return nil, formulary, err
+		return nil, err
 	}
 
 	// Filter requested formulae into installed and not installed lists
 	roots, reinstalls, err := prefix.FilterInstalled(action.Prefix(), all)
 	if err != nil {
-		return nil, formulary, err
+		return nil, err
 	}
 
 	// Direct user to the reinstall command
@@ -137,19 +142,19 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 
 	// Exit with no error for reinstalls
 	if len(reinstalls) > 0 {
-		return nil, formulary, nil
+		return nil, nil
 	}
 
 	// Ignore dependencies
 	// --ignore-dependencies flag
 	if action.IgnoreDependencies {
-		return roots, formulary, nil
+		return roots, nil
 	}
 
 	// Build dependency graph
 	graph, err := dependencies.Walk(ctx, formulary, roots, action.platform, &action.DependencyOptions)
 	if err != nil {
-		return nil, formulary, err
+		return nil, err
 	}
 
 	// Print all resolved dependencies
@@ -160,7 +165,7 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 	slog.Debug("Resolved dependencies", slog.Any("dependencies", allDeps), slog.Any("tags", action.DependencyOptions))
 	missingDeps, installedDeps, err := prefix.FilterInstalled(action.Prefix(), allDeps)
 	if err != nil {
-		return nil, formulary, err
+		return nil, err
 	}
 	slog.Debug("Validated dependencies", slog.Any("installed", installedDeps), slog.Any("missing", missingDeps))
 
@@ -168,11 +173,11 @@ func (action *Install) resolveInstalls(ctx context.Context, args []string) ([]fo
 
 	// Only install dependencies
 	if action.OnlyDependencies {
-		return missingDeps, formulary, nil
+		return missingDeps, nil
 	}
 
 	// Install dependencies and then requested formulae
-	return slices.Concat(missingDeps, graph.Roots()), formulary, nil
+	return slices.Concat(missingDeps, graph.Roots()), nil
 }
 
 // run is the meat
@@ -182,7 +187,7 @@ func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.
 	// 2. Pour bottle to the Cellar
 	l.Info("Pouring bottle", slog.String("file", formula.BottleFileName(f)))
 	// slog.Info("Pouring " + b.ArchiveName()) // ex: Pouring cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
-	err := bottle.PourReader(btl, action.Prefix().Cellar())
+	err := action.Prefix().Pour(btl)
 	if err != nil {
 		return "", err
 	}

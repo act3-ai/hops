@@ -8,7 +8,7 @@ import (
 
 // Fetch fetches a Formula from the Formulary
 func Fetch(ctx context.Context, src Formulary, name string) (MultiPlatformFormula, error) {
-	return src.Fetch(ctx, name)
+	return src.FetchFormula(ctx, name)
 }
 
 // FetchAll fetches Formulae from the Formulary
@@ -16,12 +16,12 @@ func FetchAll(ctx context.Context, src Formulary, names []string) ([]MultiPlatfo
 	switch src := src.(type) {
 	// Call FetchAll for Formulary with support for concurrency
 	case ConcurrentFormulary:
-		return src.FetchAll(ctx, names)
+		return src.FetchFormulae(ctx, names)
 	// Call Fetch for all other Formulary kinds
 	default:
 		formulae := make([]MultiPlatformFormula, 0, len(names))
 		for _, name := range names {
-			f, err := src.Fetch(ctx, name)
+			f, err := src.FetchFormula(ctx, name)
 			if err != nil {
 				return nil, err
 			}
@@ -35,9 +35,9 @@ func FetchAll(ctx context.Context, src Formulary, names []string) ([]MultiPlatfo
 func FetchPlatform(ctx context.Context, src Formulary, name string, plat platform.Platform) (PlatformFormula, error) {
 	switch src := src.(type) {
 	case PlatformFormulary:
-		return src.FetchPlatform(ctx, name, plat)
+		return src.FetchPlatformFormula(ctx, name, plat)
 	default:
-		f, err := src.Fetch(ctx, name)
+		f, err := src.FetchFormula(ctx, name)
 		if err != nil {
 			return nil, err
 		}
@@ -49,11 +49,11 @@ func FetchPlatform(ctx context.Context, src Formulary, name string, plat platfor
 func FetchAllPlatform(ctx context.Context, src Formulary, names []string, plat platform.Platform) ([]PlatformFormula, error) {
 	switch src := src.(type) {
 	case ConcurrentPlatformFormulary:
-		return src.FetchAllPlatform(ctx, names, plat)
+		return src.FetchPlatformFormulae(ctx, names, plat)
 	case PlatformFormulary:
 		formulae := make([]PlatformFormula, 0, len(names))
 		for _, name := range names {
-			f, err := src.FetchPlatform(ctx, name, plat)
+			f, err := src.FetchPlatformFormula(ctx, name, plat)
 			if err != nil {
 				return nil, err
 			}
@@ -62,7 +62,7 @@ func FetchAllPlatform(ctx context.Context, src Formulary, names []string, plat p
 		return formulae, nil
 	// Call FetchAll for Formulary with support for concurrency
 	case ConcurrentFormulary:
-		formulae, err := src.FetchAll(ctx, names)
+		formulae, err := src.FetchFormulae(ctx, names)
 		if err != nil {
 			return nil, err
 		}
@@ -81,7 +81,7 @@ func FetchAllPlatform(ctx context.Context, src Formulary, names []string, plat p
 	default:
 		platformulae := make([]PlatformFormula, 0, len(names))
 		for _, name := range names {
-			f, err := src.Fetch(ctx, name)
+			f, err := src.FetchFormula(ctx, name)
 			if err != nil {
 				return nil, err
 			}

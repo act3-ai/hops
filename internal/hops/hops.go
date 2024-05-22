@@ -20,20 +20,19 @@ import (
 
 // Client is an interface for combined metadata and bottle stores
 type Client interface {
-	formula.Client
 	formula.ConcurrentPlatformFormulary
 	formula.ConcurrentBottleRegistry
 }
 
-// NewHopsFormulary creates a Hops formulary
-func NewHopsFormulary(source, cache hopsreg.Registry, alternateTags map[string]string, maxGoroutines int) (Client, error) {
+// NewClient creates a Hops formulary
+func NewClient(source, cache hopsreg.Registry, alternateTags map[string]string, maxGoroutines int) Client {
 	return &formulary{
 		registry:      source,
 		cache:         cache,
 		tags:          alternateTags,
 		resolved:      map[string]*regbottle.BottleIndex{},
 		maxGoroutines: maxGoroutines,
-	}, nil
+	}
 }
 
 // formulary is an OCI registry-backed formulary with caching and concurrency
@@ -45,18 +44,18 @@ type formulary struct {
 	maxGoroutines int
 }
 
-// Fetch implements formula.Formulary.
-func (store *formulary) Fetch(ctx context.Context, name string) (formula.MultiPlatformFormula, error) {
+// FetchFormula implements formula.Formulary.
+func (store *formulary) FetchFormula(ctx context.Context, name string) (formula.MultiPlatformFormula, error) {
 	return store.fetch(ctx, name)
 }
 
-// FetchPlatform implements formula.Formulary.
-func (store *formulary) FetchPlatform(ctx context.Context, name string, plat platform.Platform) (formula.PlatformFormula, error) {
+// FetchPlatformFormula implements formula.Formulary.
+func (store *formulary) FetchPlatformFormula(ctx context.Context, name string, plat platform.Platform) (formula.PlatformFormula, error) {
 	return store.fetchPlatform(ctx, name, plat)
 }
 
-// FetchAll implements formula.ConcurrentFormulary.
-func (store *formulary) FetchAll(ctx context.Context, names []string) ([]formula.MultiPlatformFormula, error) {
+// FetchFormulae implements formula.ConcurrentFormulary.
+func (store *formulary) FetchFormulae(ctx context.Context, names []string) ([]formula.MultiPlatformFormula, error) {
 	fetchers := iter.Mapper[string, formula.MultiPlatformFormula]{MaxGoroutines: store.maxGoroutines}
 	return fetchers.MapErr(names, func(namep *string) (formula.MultiPlatformFormula, error) {
 		f, err := store.fetch(ctx, *namep)
@@ -67,8 +66,8 @@ func (store *formulary) FetchAll(ctx context.Context, names []string) ([]formula
 	})
 }
 
-// FetchAllPlatform implements formula.ConcurrentFormulary.
-func (store *formulary) FetchAllPlatform(ctx context.Context, names []string, plat platform.Platform) ([]formula.PlatformFormula, error) {
+// FetchPlatformFormulae implements formula.ConcurrentFormulary.
+func (store *formulary) FetchPlatformFormulae(ctx context.Context, names []string, plat platform.Platform) ([]formula.PlatformFormula, error) {
 	fetchers := iter.Mapper[string, formula.PlatformFormula]{MaxGoroutines: store.maxGoroutines}
 	return fetchers.MapErr(names, func(namep *string) (formula.PlatformFormula, error) {
 		f, err := store.fetchPlatform(ctx, *namep, plat)

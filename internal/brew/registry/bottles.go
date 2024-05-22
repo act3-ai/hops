@@ -16,24 +16,23 @@ import (
 
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/bottle"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/utils/resputil"
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
-// BottleStore downloads bottles with an HTTP client.
+// Registry defines the capabilities of Homebrew's registry usage
+type Registry interface {
+	bottle.ConcurrentRegistry
+}
+
+// registry downloads bottles with an HTTP client.
 //
 // URLs are constructed as:
 //
 // [ARTIFACT_DOMAIN/]BOTTLE_ROOT_URL/BOTTLE_NAME:BOTTLE_VERSION@sha256:BOTTLE_SHA256
-//
-//   - ARTIFACT_DOMAIN: given as argument to NewHTTPStore
-//   - BOTTLE_ROOT_URL: f.Bottle["stable"].RootURL
-//   - BOTTLE_NAME: f.Name
-//   - BOTTLE_VERSION: f.Version()
-//
-// TODO: Does not support HOMEBREW_ARTIFACT_DOMAIN
-type BottleStore struct {
+type registry struct {
 	headers http.Header  // for GitHub Packages auth
 	HTTP    *http.Client // client for HTTP requests
 	// OCI           remote.Client // client for OCI requests
@@ -43,13 +42,13 @@ type BottleStore struct {
 }
 
 // NewBottleRegistry creates a new BottleRegistry
-func NewBottleRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) formula.ConcurrentBottleRegistry {
-	return NewBottleStore(headers, client, cache, maxGoroutines, artifactDomain)
+func NewBottleRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) Registry {
+	return newRegistry(headers, client, cache, maxGoroutines, artifactDomain)
 }
 
-// NewBottleStore creates a new store
-func NewBottleStore(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) *BottleStore {
-	return &BottleStore{
+// newRegistry creates a new registry
+func newRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) *registry {
+	return &registry{
 		headers: headers,
 		HTTP:    client,
 		// OCI:     regClient,
@@ -60,15 +59,22 @@ func NewBottleStore(headers http.Header, client *http.Client, cache string, maxG
 }
 
 // Source provides the source for a bottle
-func (store *BottleStore) Source(f formula.PlatformFormula) string {
+func (store *registry) Source(f formula.PlatformFormula) (string, error) {
 	src := bottleURL(f)
-	if src == "" {
-		return ""
+	if src == "" { // specifies no bottle
+		return "", nil
 	}
 	if store.artifactDomain != "" {
-		return store.artifactDomain + "/" + src
+		srcURL, err := url.Parse(src)
+		if err != nil {
+			return "", fmt.Errorf("parsing URL to replace domain with HOMEBREW_ARTIFACT_DOMAIN: %w", err)
+		}
+		// scheme:opaque?query#fragment
+		// scheme://userinfo@host/path?query#fragment
+		// This join does not support query or fragment additions
+		return store.artifactDomain + "/" + srcURL.Path, nil
 	}
-	return src
+	return src, nil
 }
 
 // bottleURL produces the URL for a bottle
@@ -84,12 +90,12 @@ func bottleURL(f formula.PlatformFormula) string {
 }
 
 // FetchBottle implements formula.BottleRegistry.
-func (store *BottleStore) FetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error) {
+func (store *registry) FetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error) {
 	return store.fetchBottle(ctx, f)
 }
 
 // FetchBottles implements formula.ConcurrentBottleRegistry.
-func (store *BottleStore) FetchBottles(ctx context.Context, formulae []formula.PlatformFormula) ([]io.ReadCloser, error) {
+func (store *registry) FetchBottles(ctx context.Context, formulae []formula.PlatformFormula) ([]io.ReadCloser, error) {
 	fetchers := iter.Mapper[formula.PlatformFormula, io.ReadCloser]{MaxGoroutines: store.maxGoroutines}
 	return fetchers.MapErr(formulae, func(fp *formula.PlatformFormula) (io.ReadCloser, error) {
 		return store.fetchBottle(ctx, *fp)
@@ -97,7 +103,7 @@ func (store *BottleStore) FetchBottles(ctx context.Context, formulae []formula.P
 }
 
 // fetchBottle implements formula.BottleRegistry.
-func (store *BottleStore) fetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error) {
+func (store *registry) fetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error) {
 	// Download bottle file
 	path, err := store.download(ctx, f)
 	if err != nil {
@@ -120,7 +126,7 @@ func linkName(f formula.Formula) string {
 // func (store *BottleStore) exists()
 
 // lookupCachedFile
-func (store *BottleStore) lookupCachedFile(file, link string) (*os.File, error) {
+func (store *registry) lookupCachedFile(file, link string) (*os.File, error) {
 	// Create parent directories (also will create the cache directory if it does not exist)
 	err := os.MkdirAll(filepath.Dir(file), 0o775)
 	if err != nil {
@@ -161,13 +167,16 @@ func (store *BottleStore) lookupCachedFile(file, link string) (*os.File, error) 
 }
 
 // Download downloads a bottle
-func (store *BottleStore) download(ctx context.Context, f formula.PlatformFormula) (string, error) {
+func (store *registry) download(ctx context.Context, f formula.PlatformFormula) (string, error) {
 	btl := f.Bottle()
 	if btl == nil {
 		return "", fmt.Errorf("no bottle provided for Formula %s", f.Name())
 	}
 
-	source := store.Source(f)
+	source, err := store.Source(f)
+	if err != nil {
+		return "", err
+	}
 
 	bottleFileName := formula.BottleFileName(f)
 
