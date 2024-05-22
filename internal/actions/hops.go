@@ -279,7 +279,8 @@ func (action *Hops) BottleRegistry() (bottle.Registry, error) {
 // hopsClient initializes the configured formula.Formulary/bottle.Registry
 func (action *Hops) hopsClient() (hops.Client, error) {
 	if action.hopsclient == nil {
-		slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix))
+		cache := filepath.Join(action.Config().Cache, "oci")
+		slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix), slog.String("cache", cache))
 
 		// Initialize registry.Registry
 		reg, err := action.registry()
@@ -288,7 +289,7 @@ func (action *Hops) hopsClient() (hops.Client, error) {
 		}
 
 		action.hopsclient = hopsClient(
-			filepath.Join(action.Config().Cache, "oci"),
+			cache,
 			action.alternateTags,
 			action.MaxGoroutines(),
 			reg)
