@@ -186,11 +186,17 @@ tasks:
     cmds:
       - podman stop {{.TEST_REGISTRY_NAME}}
 
-  version-preview:
+  next:
     desc: Print next version
     deps: [tool:svu]
     cmds:
       - svu
+  
+  next-beta:
+    desc: Print next beta version
+    deps: [tool:svu]
+    cmds:
+      - svu prerelease --pre-release=beta
 
   changelog-preview:
     desc: Preview updated CHANGELOG.md
@@ -213,16 +219,15 @@ tasks:
     deps: 
       - git-status-clean
       - tool:svu
-    vars:
-      VERSION:
-        sh: svu
-    prompt: 'Create release tag "{{.VERSION}}"?'
+    requires:
+      vars: [TAG]
+    prompt: 'Create release tag "{{.TAG}}"?'
     cmds:
       - task: update-changelog
         vars:
-          TAG: "{{.VERSION}}"
-      - 'git commit --allow-empty -m "chore(release): create release {{.VERSION}}"'
-      - git tag "{{.VERSION}}"
+          TAG: "{{.TAG}}"
+      - 'git commit -m "chore(changelog): update changelog for tag {{.TAG}}"'
+      - git tag "{{.TAG}}"
   
   release-tag-beta:
     desc: Create beta release tag
