@@ -221,7 +221,7 @@ tasks:
       - task: update-changelog
         vars:
           TAG: "{{.VERSION}}"
-      - 'git commit -m "chore(release): create release {{.VERSION}}"'
+      - 'git commit --allow-empty -m "chore(release): create release {{.VERSION}}"'
       - git tag "{{.VERSION}}"
   
   release-tag-beta:
@@ -236,7 +236,7 @@ tasks:
       - task: update-changelog
         vars:
           TAG: "{{.VERSION}}"
-      - 'git commit -m "chore(release): create release {{.VERSION}}"'
+      - 'git commit --allow-empty -m "chore(release): create release {{.VERSION}}"'
       - git tag "{{.VERSION}}"
 
   push-tag-instruction:
