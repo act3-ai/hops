@@ -201,6 +201,7 @@ func (store *formulary) fetchBottle(ctx context.Context, f formula.PlatformFormu
 		return nil, err
 	}
 
+	// TODO: figure out why this was not copying the bottle blob
 	// err = regbottle.CopyTargetPlatform(ctx, source, cache, btl, f.Platform())
 	// if err != nil {
 	// 	return nil, err
