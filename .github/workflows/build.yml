@@ -60,7 +60,7 @@ jobs:
           gocover-cobertura < cover.out > coverage.xml
       
       - name: Code coverage summary
-        uses: irongut/CodeCoverageSummary@v1
+        uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: coverage.xml
           badge: true
