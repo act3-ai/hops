@@ -66,6 +66,9 @@ jobs:
           badge: true
           format: markdown
           output: both
+      
+      - name: Set job summary
+        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
 
       - name: Upload test artifacts
         id: upload
