@@ -1,6 +1,7 @@
 package formula
 
 import (
+	"log/slog"
 	"slices"
 
 	"github.com/act3-ai/hops/internal/platform"
@@ -124,4 +125,15 @@ func (deps *TaggedDependencies) ForTags(tags *DependencyTags) []string {
 	}
 
 	return result
+}
+
+// LogAttr formats the tags as a slog.Attr
+func (deps *DependencyTags) LogAttr() slog.Attr {
+	return slog.Group(
+		"tags",
+		slog.Bool("build", deps.IncludeBuild),
+		slog.Bool("test", deps.IncludeTest),
+		slog.Bool("recommended", !deps.SkipRecommended),
+		slog.Bool("optional", deps.IncludeOptional),
+	)
 }

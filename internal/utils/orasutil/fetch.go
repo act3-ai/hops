@@ -9,6 +9,7 @@ import (
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content"
+	"oras.land/oras-go/v2/errdef"
 )
 
 // FetchRead abstracts the fetch/read/verify flow
@@ -64,4 +65,20 @@ func ReadAll(r io.Reader, desc ocispec.Descriptor) ([]byte, error) {
 		return nil, err
 	}
 	return buf, nil
+}
+
+// CopyNode copies a single content from the source CAS to the destination CAS.
+//
+// From: https://github.com/oras-project/oras-go/blob/main/copy.go
+func CopyNode(ctx context.Context, src content.ReadOnlyStorage, dst content.Storage, desc ocispec.Descriptor) error {
+	rc, err := src.Fetch(ctx, desc)
+	if err != nil {
+		return err
+	}
+	defer rc.Close()
+	err = dst.Push(ctx, desc, rc)
+	if err != nil && !errors.Is(err, errdef.ErrAlreadyExists) {
+		return err
+	}
+	return nil
 }

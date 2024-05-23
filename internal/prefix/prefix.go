@@ -329,18 +329,16 @@ func (p Prefix) FormulaOutdated(f formula.Formula) (bool, error) {
 	for _, installedPrefix := range installedPrefixes {
 		installedVersion := filepath.Base(string(installedPrefix))
 
-		l := slog.Default().With(slog.String("keg", installedVersion), slog.String("latest", latest))
+		l := slog.Default().With(slog.String("latest", latest), slog.String("installed", installedVersion))
 
 		// Check if the installed version is newer or up-to-date
 		switch semver.Compare(latest, installedVersion) {
 		case -1:
-			l.Debug("found keg with newer version")
+			l.Debug("Found keg with greater version than found version")
 			outdated = false
 		case 0:
-			l.Debug("found up to date keg")
 			outdated = false
 		default:
-			l.Debug("found out of date keg")
 		}
 	}
 

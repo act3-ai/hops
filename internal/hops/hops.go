@@ -7,8 +7,10 @@ import (
 	"io"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/sourcegraph/conc/iter"
+	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/errdef"
 
 	"github.com/act3-ai/hops/internal/formula"
@@ -17,6 +19,7 @@ import (
 	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
+	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
 // Client is an interface for combined metadata and bottle stores
@@ -26,12 +29,12 @@ type Client interface {
 }
 
 // NewClient creates a Hops formulary
-func NewClient(source, cache hopsreg.Registry, alternateTags map[string]string, maxGoroutines int) Client {
+func NewClient(source hopsreg.Registry, cache *hopsreg.Local, alternateTags map[string]string, maxGoroutines int) Client {
 	return &formulary{
 		registry:      source,
 		cache:         cache,
 		tags:          alternateTags,
-		resolved:      map[string]*regbottle.BottleIndex{},
+		resolved:      sync.Map{},
 		maxGoroutines: maxGoroutines,
 	}
 }
@@ -39,9 +42,9 @@ func NewClient(source, cache hopsreg.Registry, alternateTags map[string]string, 
 // formulary is an OCI registry-backed formulary with caching and concurrency
 type formulary struct {
 	registry      hopsreg.Registry
-	cache         hopsreg.Registry
+	cache         *hopsreg.Local
 	tags          map[string]string // map names to special tags to use
-	resolved      map[string]*regbottle.BottleIndex
+	resolved      sync.Map
 	maxGoroutines int
 }
 
@@ -86,7 +89,7 @@ func (store *formulary) fetch(ctx context.Context, name string) (formula.MultiPl
 		return nil, err
 	}
 
-	cache, err := store.registry.Repository(ctx, name)
+	cache, err := store.cache.Repository(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +119,7 @@ func (store *formulary) fetchPlatform(ctx context.Context, name string, plat pla
 		return nil, err
 	}
 
-	cache, err := store.registry.Repository(ctx, name)
+	cache, err := store.cache.Repository(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -139,10 +142,9 @@ func (store *formulary) fetchPlatform(ctx context.Context, name string, plat pla
 	return formula.PlatformFromV1(plat, data), nil
 }
 
-// fetch implements formula.Formulary.
 func (store *formulary) resolve(ctx context.Context, name string) (*regbottle.BottleIndex, error) {
-	if btl, ok := store.resolved[name]; ok && btl != nil {
-		return btl, nil
+	if btl, ok := store.resolved.Load(name); ok && btl != nil {
+		return btl.(*regbottle.BottleIndex), nil
 	}
 
 	source, err := store.registry.Repository(ctx, name)
@@ -155,15 +157,16 @@ func (store *formulary) resolve(ctx context.Context, name string) (*regbottle.Bo
 		tag = "latest"
 	}
 
-	store.resolved[name], err = regbottle.ResolveVersion(ctx, source, tag)
+	btl, err := regbottle.ResolveVersion(ctx, source, tag)
 	if err != nil {
 		if errors.Is(err, errdef.ErrNotFound) {
 			return nil, errors.Join(err, listAvailableTags(ctx, source, name))
 		}
 		return nil, err
 	}
+	store.resolved.Store(name, btl)
 
-	return store.resolved[name], nil
+	return btl, nil
 }
 
 // FetchBottle implements formula.BottleRegistry.
@@ -188,7 +191,7 @@ func (store *formulary) fetchBottle(ctx context.Context, f formula.PlatformFormu
 		return nil, err
 	}
 
-	cache, err := store.registry.Repository(ctx, name)
+	cache, err := store.cache.Repository(ctx, name)
 	if err != nil {
 		return nil, err
 	}
@@ -198,16 +201,23 @@ func (store *formulary) fetchBottle(ctx context.Context, f formula.PlatformFormu
 		return nil, err
 	}
 
-	err = regbottle.CopyTargetPlatform(ctx, source, cache, btl, f.Platform())
-	if err != nil {
-		return nil, err
-	}
+	// err = regbottle.CopyTargetPlatform(ctx, source, cache, btl, f.Platform())
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	btldesc, err := btl.ResolveBottle(ctx, cache, f.Platform())
 	if err != nil {
 		return nil, err
 	}
 
+	// Copy the bottle blob
+	err = orasutil.CopyNode(ctx, source, cache, btldesc)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch the bottle blob
 	r, err := cache.Fetch(ctx, btldesc)
 	if err != nil {
 		return nil, fmt.Errorf("fetching bottle from cache: %w", err)
@@ -216,7 +226,7 @@ func (store *formulary) fetchBottle(ctx context.Context, f formula.PlatformFormu
 	return r, nil
 }
 
-func listAvailableTags(ctx context.Context, repo hopsreg.Repository, name string) error {
+func listAvailableTags(ctx context.Context, repo oras.ReadOnlyGraphTarget, name string) error {
 	tags, err := hopsreg.ListTags(ctx, repo)
 	if err != nil {
 		o.Poo(fmt.Sprintf("[%s] Could not list available tags", name))

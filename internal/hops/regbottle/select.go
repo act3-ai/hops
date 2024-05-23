@@ -2,28 +2,34 @@ package regbottle
 
 import (
 	"context"
+	"fmt"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content"
 
 	"github.com/act3-ai/hops/internal/platform"
+	"github.com/act3-ai/hops/internal/utils/debugutil"
 	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
 // successorsForPlatform creates a platform-specific function to list successors used by Hops
-func successorsForPlatform(plat platform.Platform) func(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) ([]ocispec.Descriptor, error) {
+func successorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	if plat == platform.All {
 		return content.Successors
 	}
 
 	return func(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) ([]ocispec.Descriptor, error) {
+		// fmt.Println(debugutil.DebugMarshalJSON(desc))
+		fmt.Printf("desc.MediaType: %v\n", desc.MediaType)
 		switch desc.MediaType {
 		case ocispec.MediaTypeImageIndex,
 			"application/vnd.docker.distribution.manifest.list.v2+json":
+
 			index, err := orasutil.FetchDecode[ocispec.Index](ctx, fetcher, desc)
 			if err != nil {
 				return nil, err
 			}
+			fmt.Println(debugutil.DebugMarshalJSON(index))
 
 			// Return nodes for platform and subject
 			sel, err := platform.SelectManifest(index, plat)
@@ -55,6 +61,8 @@ func successorsForPlatform(plat platform.Platform) func(ctx context.Context, fet
 				nodes = append(nodes, manifest.Config)
 			}
 
+			fmt.Println(debugutil.DebugMarshalJSON(manifest.Layers))
+
 			// Copy layers
 			return append(nodes, manifest.Layers...), nil
 		default:
@@ -64,7 +72,7 @@ func successorsForPlatform(plat platform.Platform) func(ctx context.Context, fet
 }
 
 // metadataSuccessorsForPlatform creates a platform-specific function to list successors used as metadata by Hops
-func metadataSuccessorsForPlatform(plat platform.Platform) func(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) ([]ocispec.Descriptor, error) {
+func metadataSuccessorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	if plat == platform.All {
 		return metadataSuccessors
 	}

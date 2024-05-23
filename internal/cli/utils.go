@@ -84,8 +84,8 @@ func withRegistryFlags(cmd *cobra.Command, action *actions.Hops) {
 	})
 }
 
-// withDependencyFlags adds dependency resolution flags
-func newWithDependencyFlags(cmd *cobra.Command, opts *formula.DependencyTags) {
+// withDependencyFlags adds flags for dependency resolution
+func withDependencyFlags(cmd *cobra.Command, opts *formula.DependencyTags) {
 	cmd.Flags().BoolVar(&opts.IncludeBuild, "include-build", false, "Include :build dependencies for formula")
 	cmd.Flags().BoolVar(&opts.IncludeOptional, "include-optional", false, "Include :optional dependencies for formula")
 	cmd.Flags().BoolVar(&opts.IncludeTest, "include-test", false, "Include :test dependencies for formula (non-recursive)")

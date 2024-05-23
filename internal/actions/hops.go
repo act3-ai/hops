@@ -309,7 +309,8 @@ func (action *Hops) autoUpdate(ctx context.Context) error {
 // brewFormulary initializes the configured formula.Formulary
 func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewformulary.PreloadedFormulary, error) {
 	if action.brewclient.formulary == nil {
-		slog.Debug("using Homebrew API formulary", slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain)) //nolint:sloglint
+		slog.Debug("using Homebrew API formulary", //nolint:sloglint
+			slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain))
 
 		// Set auto-update config
 		var upcfg *hopsv1.AutoUpdateConfig
@@ -333,10 +334,11 @@ func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewfor
 // brewRegistry initializes the configured bottle.Registry
 func (action *Hops) brewRegistry() brewreg.Registry {
 	if action.brewclient.registry == nil {
-		slog.Debug("using Homebrew registry", slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Homebrew().ArtifactDomain)) //nolint:sloglint
+		slog.Debug("using Homebrew registry", //nolint:sloglint
+			slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Homebrew().ArtifactDomain))
 		action.brewclient.registry = brewreg.NewBottleRegistry(
 			action.authHeaders(),
-			retry.DefaultClient,
+			retry.NewClient(),
 			action.Homebrew().Cache,
 			action.MaxGoroutines(),
 			action.Homebrew().ArtifactDomain,
@@ -345,17 +347,8 @@ func (action *Hops) brewRegistry() brewreg.Registry {
 	return action.brewclient.registry
 }
 
-// func parseArgs(args []string) (names, versions []string) {
-// 	names = make([]string, len(args))
-// 	versions = make([]string, len(args))
-// 	for i, arg := range args {
-// 		names[i], versions[i] = parseArg(arg)
-// 	}
-// 	return names, versions
-// }
-
 func parseArg(arg string) (name, version string) {
-	fields := strings.SplitN(arg, "=", 2)
+	fields := strings.SplitN(arg, ":", 2)
 	if len(fields) == 1 {
 		return fields[0], ""
 	}

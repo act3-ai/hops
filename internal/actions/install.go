@@ -96,10 +96,16 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	// Install the downloaded bottles
 	routines := iter.Iterator[formula.PlatformFormula]{MaxGoroutines: action.MaxGoroutines()}
 	err = iterutil.ForEachIdxErr(routines, installs, func(i int, pf *formula.PlatformFormula) error {
+		// var err error // create local err variable to avoid race
 		btl := bottles[i]
-		_, err = action.run(ctx, *pf, btl)
-		return errors.Join(err, btl.Close())
+		return errors.Join(
+			action.run(ctx, *pf, btl),
+			btl.Close(),
+		)
 	})
+	if err != nil {
+		return err
+	}
 
 	// Print stats on the keg's contents
 	o.Hai(fmt.Sprintf("Installed %d formulae in the Cellar:", len(installs)))
@@ -168,7 +174,10 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 
 	// Filter dependent formulae into installed and not installed lists
 	allDeps := graph.Dependents()
-	slog.Debug("Resolved dependencies", slog.Any("dependencies", formula.Names(allDeps)), slog.Any("tags", action.DependencyOptions))
+	slog.Debug("Resolved dependencies",
+		slog.Any("dependencies", formula.Names(allDeps)),
+		action.DependencyOptions.LogAttr(),
+	)
 	missingDeps, installedDeps, err := prefix.FilterInstalled(action.Prefix(), allDeps)
 	if err != nil {
 		return nil, err
@@ -187,7 +196,7 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 }
 
 // run is the meat
-func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.ReadCloser) (string, error) {
+func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.Reader) error {
 	l := slog.Default().With(slog.String("formula", f.Name()))
 
 	// 2. Pour bottle to the Cellar
@@ -195,17 +204,12 @@ func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.
 	// slog.Info("Pouring " + b.ArchiveName()) // ex: Pouring cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
 	err := action.Prefix().Pour(btl)
 	if err != nil {
-		return "", errors.Join(err, btl.Close())
+		return err
 	}
-	if err := btl.Close(); err != nil {
-		return "", err
-	}
-
-	keg := action.Prefix().FormulaKegPath(f)
 
 	// 3. Link keg to the prefix
 	if !f.IsKegOnly() || action.Force {
-		l.Info("Linking keg", slog.String("keg", keg)) // ex: Linking cowsay
+		l.Info("Linking keg", slog.String("keg", action.Prefix().FormulaKegPath(f))) // ex: Linking cowsay
 
 		lnopts := &prefix.LinkOptions{
 			Name:      f.Name(),
@@ -215,11 +219,11 @@ func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.
 
 		_, _, err = action.Prefix().FormulaLink(f, lnopts)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
-	return keg, nil
+	return nil
 }
 
 func printFormulae(roots []string, dryrun bool) {

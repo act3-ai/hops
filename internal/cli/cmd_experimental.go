@@ -48,7 +48,7 @@ func copyCmd(hops *actions.Hops) *cobra.Command {
 	}
 
 	// Dependency resolution flags
-	newWithDependencyFlags(cmd, &action.DependencyOptions)
+	withDependencyFlags(cmd, &action.DependencyOptions)
 
 	return cmd
 }
@@ -79,7 +79,7 @@ func imagesCmd(hops *actions.Hops) *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("no-resolve", "no-verify")
 
 	// Dependency resolution flags
-	newWithDependencyFlags(cmd, &action.DependencyOptions)
+	withDependencyFlags(cmd, &action.DependencyOptions)
 
 	return cmd
 }

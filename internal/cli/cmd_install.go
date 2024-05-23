@@ -28,7 +28,14 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 			the installed formulae or, every 30 days, for all formulae.
 
 			Unless HOMEBREW_NO_INSTALL_UPGRADE is set, brew install formula will
-			upgrade formula if it is already installed but outdated.`),
+			upgrade formula if it is already installed but outdated.
+			
+			STANDALONE MODE:
+
+			Hops has an alternate mode to fetch all packages and metadata from a single OCI registry.
+			The default behavior for standalone mode is to install the version tagged "latest".
+			The tag for a formula can be set by using the argument format "<formula>:<tag>".
+			`),
 		Args:              cobra.MinimumNArgs(1),
 		ValidArgsFunction: formulaNames(hops),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -43,7 +50,7 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 	cmd.Flags().BoolVar(&action.Overwrite, "overwrite", false, "Delete files that already exist in the prefix while linking")
 
 	// Dependency resolution flags
-	newWithDependencyFlags(cmd, &action.DependencyOptions)
+	withDependencyFlags(cmd, &action.DependencyOptions)
 	cmd.Flags().BoolVar(&action.IgnoreDependencies, "ignore-dependencies", false, "Skip installing any dependencies of any kind [TESTING-ONLY]")
 	cmd.Flags().BoolVar(&action.OnlyDependencies, "only-dependencies", false, "Install the dependencies with specified options but do not install the formula itself")
 	cmd.MarkFlagsMutuallyExclusive("ignore-dependencies", "only-dependencies")

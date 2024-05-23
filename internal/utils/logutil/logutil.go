@@ -27,11 +27,11 @@ func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	}
 }
 
-// Descriptor formats an OCI descriptor for logging
-func Descriptor(desc ocispec.Descriptor) slog.Attr {
+// DescriptorGroup formats an OCI descriptor for logging
+func DescriptorGroup(desc ocispec.Descriptor) slog.Attr {
 	return slog.Attr{
 		Key:   "desc",
-		Value: slog.GroupValue(descriptorValues(desc)...),
+		Value: slog.GroupValue(descriptorAttrs(desc)...),
 	}
 }
 
@@ -43,7 +43,34 @@ func ociPlatformAttrs(plat ocispec.Platform) []slog.Attr {
 	}
 }
 
-func descriptorValues(desc ocispec.Descriptor) []slog.Attr {
+// DescriptorAttrs formats a descriptor as a list of attributes
+func DescriptorAttrs(desc ocispec.Descriptor) []any {
+	attrs := []any{
+		slog.String("mediaType", desc.MediaType),
+	}
+
+	if desc.ArtifactType != "" {
+		attrs = append(attrs, slog.String("artifactType", desc.ArtifactType))
+	}
+
+	if desc.Annotations != nil {
+		if v, ok := desc.Annotations[ocispec.AnnotationTitle]; ok {
+			attrs = append(attrs, slog.String("annotations."+ocispec.AnnotationTitle, v))
+		}
+	}
+
+	if desc.Platform != nil {
+		attrs = append(attrs, OCIPlatformValue(desc.Platform))
+	}
+
+	// Add size and digest last for more readability
+	return append(attrs,
+		slog.Int64("size", desc.Size),
+		slog.String("digest", desc.Digest.String()))
+}
+
+// descriptorAttrs formats a descriptor as a list of attributes
+func descriptorAttrs(desc ocispec.Descriptor) []slog.Attr {
 	attrs := []slog.Attr{
 		slog.String("mediaType", desc.MediaType),
 		slog.String("digest", desc.Digest.String()),
@@ -69,9 +96,18 @@ func descriptorValues(desc ocispec.Descriptor) []slog.Attr {
 
 // WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions
 func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOptions) oras.CopyGraphOptions {
+	dolog := func(ctx context.Context, msg string, desc ocispec.Descriptor) {
+		logger.Log(ctx, level, msg, //nolint:sloglint
+			DescriptorAttrs(desc)...,
+		)
+	}
+
 	onCopySkipped := opts.OnCopySkipped
 	opts.OnCopySkipped = func(ctx context.Context, desc ocispec.Descriptor) error {
-		logger.Log(ctx, level, "Skipped artifact", Descriptor(desc))
+		dolog(ctx, "Skipped copy for artifact", desc)
+
+		// fmt.Println(debugutil.DebugMarshalJSON(desc))
+
 		if onCopySkipped != nil {
 			return onCopySkipped(ctx, desc)
 		}
@@ -79,7 +115,7 @@ func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOpti
 	}
 	postCopy := opts.PostCopy
 	opts.PostCopy = func(ctx context.Context, desc ocispec.Descriptor) error {
-		logger.Log(ctx, level, "Copied artifact", Descriptor(desc))
+		dolog(ctx, "Copied artifact", desc)
 		if postCopy != nil {
 			return postCopy(ctx, desc)
 		}
@@ -87,7 +123,7 @@ func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOpti
 	}
 	onMounted := opts.OnMounted
 	opts.OnMounted = func(ctx context.Context, desc ocispec.Descriptor) error {
-		logger.Log(ctx, level, "Mounted artifact", Descriptor(desc))
+		dolog(ctx, "Mounted artifact", desc)
 		if onMounted != nil {
 			return onMounted(ctx, desc)
 		}

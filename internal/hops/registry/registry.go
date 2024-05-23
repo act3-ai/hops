@@ -32,13 +32,13 @@ const (
 
 // Registry stores Bottles
 type Registry interface {
-	Repository(ctx context.Context, name string) (Repository, error)
+	Repository(ctx context.Context, name string) (oras.GraphTarget, error)
 }
 
-// Repository represents the minimum interface for a bottle repository
-type Repository interface {
-	oras.GraphTarget
-}
+// // Repository represents the minimum interface for a bottle repository
+// type Repository interface {
+// 	oras.GraphTarget
+// }
 
 // Remote defines a registry of bottles
 type Remote struct {
@@ -106,7 +106,7 @@ func (r *Remote) Repositories(ctx context.Context) ([]string, error) {
 }
 
 // Repository produces a bottle repository
-func (r *Remote) Repository(ctx context.Context, name string) (Repository, error) {
+func (r *Remote) Repository(ctx context.Context, name string) (oras.GraphTarget, error) {
 	return r.repository(ctx, name)
 }
 
@@ -120,7 +120,7 @@ type Local struct {
 	Dir string
 }
 
-// NewLocal initializes
+// NewLocal initializes a local registry
 func NewLocal(dir string) *Local {
 	return &Local{
 		Dir: dir,
@@ -129,7 +129,8 @@ func NewLocal(dir string) *Local {
 
 // repository produces a bottle repository
 func (r *Local) repository(ctx context.Context, name string) (*OCILayoutStore, error) {
-	s, err := oci.NewWithContext(ctx, filepath.Join(r.Dir, brewfmt.Repo(name)))
+	dir := filepath.Join(r.Dir, brewfmt.Repo(name))
+	s, err := oci.NewWithContext(ctx, dir)
 	if err != nil {
 		return nil, fmt.Errorf("initializing local storage for %s: %w", name, err)
 	}
@@ -141,7 +142,7 @@ func (r *Local) repository(ctx context.Context, name string) (*OCILayoutStore, e
 }
 
 // Repository produces a bottle repository
-func (r *Local) Repository(ctx context.Context, name string) (Repository, error) {
+func (r *Local) Repository(ctx context.Context, name string) (oras.GraphTarget, error) {
 	return r.repository(ctx, name)
 }
 
@@ -175,7 +176,7 @@ type OCILayoutStore struct {
 // }
 
 // ListTags lists the tags available in a repository, only if the repository supports listing tags
-func ListTags(ctx context.Context, repo Repository) ([]string, error) {
+func ListTags(ctx context.Context, repo oras.ReadOnlyGraphTarget) ([]string, error) {
 	lister, ok := repo.(registry.TagLister)
 	if !ok {
 		return nil, nil

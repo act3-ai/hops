@@ -299,7 +299,7 @@ func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *brew
 	l := slog.Default().With(slog.String("bottle", f.Name+":"+tag))
 	l.Info("Copying bottle artifacts")
 
-	opts := oras.DefaultExtendedCopyOptions
+	opts := oras.ExtendedCopyOptions{}
 	opts.CopyGraphOptions = logutil.WithLogging(l, slog.LevelInfo, &opts.CopyGraphOptions)
 
 	md, err := oras.ExtendedCopy(ctx, src, tag, dst, "", opts)
@@ -307,7 +307,7 @@ func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *brew
 		return ocispec.Descriptor{}, fmt.Errorf("copying bottle %q: %w", f.Name, err)
 	}
 
-	l.Debug("Copied bottle artifacts", logutil.Descriptor(md))
+	l.Debug("Copied bottle artifacts", logutil.DescriptorGroup(md))
 
 	return md, nil
 }
@@ -368,7 +368,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing platform metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), logutil.Descriptor(configDesc))
+		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), logutil.DescriptorGroup(configDesc))
 
 		configDesc.Platform = manifestDesc.Platform // preserve platform
 
@@ -386,7 +386,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing index metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for index", logutil.Descriptor(configDesc))
+		l.Debug("Pushed metadata for index", logutil.DescriptorGroup(configDesc))
 
 		manifestOptions = metadatManifestOptions(f.FullName, f.Version(), manifestDesc, configDesc)
 	}
@@ -397,7 +397,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		return ocispec.Descriptor{}, err
 	}
 
-	l.Debug("Pushed metadata manifest", logutil.Descriptor(metadataManifest))
+	l.Debug("Pushed metadata manifest", logutil.DescriptorGroup(metadataManifest))
 	return metadataManifest, nil
 }
 
