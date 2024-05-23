@@ -59,7 +59,7 @@ dockers:
       - "--pull"
       - "--platform=linux/amd64"
       - "--build-arg=HOPS_EXECUTABLE=bin/hops"
-  - id: hops-amd64
+  - id: hops-arm64
     goos: linux
     goarch: arm64
     ids:
@@ -76,25 +76,29 @@ dockers:
 
 docker_manifests:
   - id: hops
-    name_template: "ghcr.io/act3-ai/hops:{{ .Version }}"
+    name_template: |
+      ghcr.io/act3-ai/hops:{{ .Version }}
+      ghcr.io/act3-ai/hops:v{{ .Major }}
+      ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}
+      {{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}
     image_templates:
       - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
       - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
-  - id: hops-major
-    name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}"
-    image_templates:
-      - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
-      - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
-  - id: hops-majorminor
-    name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}"
-    image_templates:
-      - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
-      - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
-  - id: hops-latest
-    name_template: "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}"
-    image_templates:
-      - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
-      - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
+  # - id: hops-major
+  #   name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}"
+  #   image_templates:
+  #     - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
+  #     - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
+  # - id: hops-majorminor
+  #   name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}"
+  #   image_templates:
+  #     - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
+  #     - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
+  # - id: hops-latest
+  #   name_template: "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}"
+  #   image_templates:
+  #     - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
+  #     - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
 
 kos:
   - id: hops
