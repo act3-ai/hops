@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"slices"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Leaves represents the action and its options
+// Leaves represents the action and its options.
 type Leaves struct {
 	*Hops
 
@@ -18,60 +17,46 @@ type Leaves struct {
 	// InstalledAsDependency bool // Only list leaves that were installed as dependencies
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Leaves) Run(ctx context.Context) error {
-	plat := platform.SystemPlatform()
-
-	formulae, err := action.resolveInstalled(ctx)
+	// List all racks
+	kegs, err := action.Prefix().Kegs()
 	if err != nil {
 		return err
 	}
 
-	deps := []string{}
+	kegNames := formula.Names(kegs)
+	slices.Sort(kegNames)
+	kegNames = slices.Compact(kegNames)
+
+	formulae, err := action.fetchFromArgs(ctx, kegNames, platform.SystemPlatform())
+	if err != nil {
+		return err
+	}
+
+	foundDependents := []string{}
 
 	// Iterate over every installed formula, adding its direct dependencies to the list of known deps
 	// This will create a list of every formula that is depended on by another installed formula
 	// Once all
 	for _, f := range formulae {
-		platinfo, err := f.ForPlatform(plat)
-		if err != nil {
-			return err
+		fdeps := f.Dependencies()
+		if fdeps == nil {
+			continue
 		}
-
-		for _, d := range platinfo.Dependencies {
-			if !slices.Contains(deps, d) {
-				deps = append(deps, d)
+		for _, d := range fdeps.Required {
+			if !slices.Contains(foundDependents, d) {
+				foundDependents = append(foundDependents, d)
 			}
 		}
 	}
 
 	// Iterate over every installed formula, if it is not a dependency, print the name
 	for _, f := range formulae {
-		if !slices.Contains(deps, f.Name) {
-			fmt.Println(f.Name)
+		if !slices.Contains(foundDependents, f.Name()) {
+			fmt.Println(f.Name())
 		}
 	}
 
 	return nil
-}
-
-func (action *Leaves) resolveInstalled(ctx context.Context) ([]*v1.Info, error) {
-	index := action.Index()
-	err := index.Load(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// List all racks
-	racks, err := action.Prefix().Racks()
-	if err != nil {
-		return nil, err
-	}
-
-	rackNames := make([]string, 0, len(racks))
-	for _, r := range racks {
-		rackNames = append(rackNames, r.Name())
-	}
-
-	return action.FetchAll(o.Noop, index, rackNames...)
 }

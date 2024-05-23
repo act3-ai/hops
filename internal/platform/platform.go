@@ -8,15 +8,15 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
-// ErrInvalidPlatform represents a platform value error
+// ErrInvalidPlatform represents a platform value error.
 var ErrInvalidPlatform = errors.New("invalid platform")
 
-// NewErrInvalidPlatform wraps ErrInvalidPlatform with the invalid platform value
+// NewErrInvalidPlatform wraps ErrInvalidPlatform with the invalid platform value.
 func NewErrInvalidPlatform(value string) error {
 	return fmt.Errorf("%q: %w", value, ErrInvalidPlatform)
 }
 
-// Platform defines a platform
+// Platform defines a platform.
 type Platform string
 
 // Set implements pflag.Value.
@@ -33,7 +33,7 @@ func (p Platform) Type() string {
 	return "platform"
 }
 
-// List defines a list of platforms
+// List defines a list of platforms.
 type List []Platform
 
 const (
@@ -51,15 +51,14 @@ const (
 	X8664Linux    Platform = "x86_64_linux"   // Linux x86 64-bit
 	All           Platform = "all"            // All platforms
 	Unsupported   Platform = ""               // Unsupported platform (hops defined)
-	// Any           Platform = "any"            // Any single platform (hops defined)
 )
 
-// IsValid reports if s is a valid platform
+// IsValid reports if s is a valid platform.
 func IsValid(s string) bool {
 	return slices.Contains(append([]Platform{All}, SupportedPlatforms...), Platform(s))
 }
 
-// ValidateAll reports an error if any given strings are an invalid platform
+// ValidateAll reports an error if any given strings are an invalid platform.
 func ValidateAll(s ...string) error {
 	var err error
 	for _, p := range s {
@@ -70,7 +69,7 @@ func ValidateAll(s ...string) error {
 	return nil
 }
 
-// ParseList parses strings into a List, filtering out invalid platforms in the process
+// ParseList parses strings into a List, filtering out invalid platforms in the process.
 func ParseList(s []string) List {
 	l := List{}
 	for _, p := range s {
@@ -82,7 +81,7 @@ func ParseList(s []string) List {
 	return l
 }
 
-// Computed computes the actual included platforms for a Platform value
+// Computed computes the actual included platforms for a Platform value.
 func (p Platform) Computed() []Platform {
 	switch {
 	case !IsValid(p.String()):
@@ -94,7 +93,7 @@ func (p Platform) Computed() []Platform {
 	}
 }
 
-// // Computed computes the actual included platforms for a Platform value
+// // Computed computes the actual included platforms for a Platform value.
 // func (p Platform) Contains(plat Platform) bool {
 // 	switch {
 // 	case !IsValid(p.String()):
@@ -106,7 +105,7 @@ func (p Platform) Computed() []Platform {
 // 	}
 // }
 
-// Computed computes the actual included platforms for a list
+// Computed computes the actual included platforms for a list.
 func (l List) Computed() []Platform {
 	plats := []Platform{}
 	for _, p := range l {
@@ -122,10 +121,10 @@ func (l List) Computed() []Platform {
 	return plats
 }
 
-// Used to validate flags
+// ValidPlatformValues validates flag values.
 var ValidPlatformValues = append([]Platform{All}, SupportedPlatforms...)
 
-// SupportedPlatforms contains all supported platforms
+// SupportedPlatforms contains all supported platforms.
 var SupportedPlatforms = List{
 	Arm64Sonoma,
 	Arm64Ventura,
@@ -141,7 +140,7 @@ var SupportedPlatforms = List{
 	X8664Linux,
 }
 
-// Returns the corresponding ARM version of the platform
+// ARM produces the corresponding ARM version of the platform.
 func (p Platform) ARM() Platform {
 	switch p {
 	case Arm64Sonoma:
@@ -177,12 +176,12 @@ func (p Platform) ARM() Platform {
 	}
 }
 
-// String implements the fmt.Stringer interface
+// String implements the fmt.Stringer interface.
 func (p Platform) String() string {
 	return string(p)
 }
 
-// maps darwin versions to Homebrew platform strings
+// maps darwin versions to Homebrew platform strings.
 var darwinVersionToPlatform = map[string]Platform{
 	"v17": HighSierra,
 	"v18": Mojave,
@@ -194,7 +193,7 @@ var darwinVersionToPlatform = map[string]Platform{
 }
 
 var (
-	// priority order for arm64 macOS versions
+	// priority order for arm64 macOS versions.
 	orderArm64MacOS = []Platform{
 		All,
 		Arm64BigSur,
@@ -203,7 +202,7 @@ var (
 		Arm64Sonoma,
 	}
 
-	// priority order for macOS versions
+	// priority order for macOS versions.
 	orderAmd64MacOS = []Platform{
 		All,
 		HighSierra,
@@ -215,14 +214,14 @@ var (
 		Sonoma,
 	}
 
-	// priority order for orderAmd64Linux versions
+	// priority order for orderAmd64Linux versions.
 	orderAmd64Linux = []Platform{
 		All,
 		X8664Linux,
 	}
 )
 
-// SelectManifest selects the most viable manifest from an OCI image index
+// SelectManifest selects the most viable manifest from an OCI image index.
 // The returned index will be -1 if a compatible image is not found.
 // The selected platform will not exceed the constraint.
 func SelectManifest(index *ocispec.Index, constraint Platform) (ocispec.Descriptor, error) {
@@ -241,7 +240,7 @@ func SelectManifest(index *ocispec.Index, constraint Platform) (ocispec.Descript
 	return index.Manifests[sel], nil
 }
 
-// SelectManifestIndex selects the most viable manifest from an OCI image index
+// SelectManifestIndex selects the most viable manifest from an OCI image index.
 // The returned index will be -1 if a compatible image is not found.
 // The selected platform will not exceed the constraint.
 func SelectManifestIndex(index *ocispec.Index, constraint Platform) int {
@@ -254,7 +253,7 @@ func SelectManifestIndex(index *ocispec.Index, constraint Platform) int {
 	return SelectIndex(candidates, constraint)
 }
 
-// SelectIndex selects the most viable platform from a list of candidate platforms
+// SelectIndex selects the most viable platform from a list of candidate platforms.
 // The returned index will be -1 if a compatible platform is not found.
 // The selected platform will not exceed the constraint.
 func SelectIndex(candidates []Platform, constraint Platform) int {

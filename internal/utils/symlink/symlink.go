@@ -7,20 +7,20 @@ import (
 	"path/filepath"
 )
 
-// CreateOption represents an option
+// CreateOption represents an option.
 type CreateOption func(oldname, newname string) error
 
-// Overwrite overwrites existing files
+// Overwrite overwrites existing files.
 var Overwrite CreateOption = func(_, newname string) error {
 	// Remove current file
 	err := os.Remove(newname)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return err
+		return fmt.Errorf("overwriting link: %w", err)
 	}
 	return nil
 }
 
-// MkdirAll creates the parent directory
+// MkdirAll creates the parent directory.
 var MkdirAll CreateOption = func(_, newname string) error {
 	// Create parent directory
 	err := os.MkdirAll(filepath.Dir(newname), 0o775)
@@ -30,7 +30,7 @@ var MkdirAll CreateOption = func(_, newname string) error {
 	return nil
 }
 
-// Options contains options for creating symlinks
+// Options contains options for creating symlinks.
 type Options struct {
 	Name        string // Name to prefix dry-run messages with
 	MkdirParent bool   // Create parent directory of symlink if it does not exist
@@ -38,7 +38,7 @@ type Options struct {
 	DryRun      bool   // List files which would be linked or overwritten without actually linking or deleting any files
 }
 
-// Relative creates a relative symlink at newname to the location specified by oldname
+// Relative creates a relative symlink at newname to the location specified by oldname.
 func Relative(oldname, newname string, opts *Options) error {
 	// Evaluate relative path
 	relativeOldname, err := filepath.Rel(filepath.Dir(newname), oldname)

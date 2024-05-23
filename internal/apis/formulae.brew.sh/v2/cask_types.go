@@ -1,6 +1,6 @@
 package v2
 
-// Cask represents a cask entry
+// Cask represents a cask entry.
 type Cask struct {
 	Token              string         `json:"token"`
 	FullToken          string         `json:"full_token"`

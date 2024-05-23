@@ -19,7 +19,7 @@ import (
 	commands "gitlab.com/act3-ai/asce/go-common/pkg/cmd"
 )
 
-// NewCLI creates the base hops command
+// NewCLI creates the CLI.
 func NewCLI(version string) *cobra.Command {
 	// Create hops with scheme initialized
 	hops := actions.NewHops(version)
@@ -98,18 +98,17 @@ func NewCLI(version string) *cobra.Command {
 
 	commands.AddGroupedCommands(cmd,
 		&cobra.Group{
-			ID:    "experimental",
-			Title: "Experimental commands for working with Homebrew Bottles",
+			ID:    "registry",
+			Title: "Manage registries of Homebrew Bottles",
 		},
 		imagesCmd(hops),
-		xinstallCmd(hops),
 		copyCmd(hops),
 	)
 
 	return cmd
 }
 
-// withVerbosityOverrides adds the debug, quiet, and verbose flags to the given command
+// withVerbosityOverrides adds the debug, quiet, and verbose flags to the given command.
 func withVerbosityOverrides(action *actions.Hops, cmd *cobra.Command) {
 	var debug, quiet, verbose int
 	cmd.PersistentFlags().CountVarP(&debug, "debug", "d", "Display any debugging information")
@@ -121,7 +120,7 @@ func withVerbosityOverrides(action *actions.Hops, cmd *cobra.Command) {
 	})
 }
 
-// withConfigOverrides adds config overrides
+// withConfigOverrides adds config overrides.
 func withConfigOverrides(action *actions.Hops, cmd *cobra.Command) {
 	cmd.PersistentFlags().StringSliceVar(&action.ConfigFiles, "config",
 		env.PathSlice(hopsv1.ConfigurationEnvName, action.ConfigFiles),

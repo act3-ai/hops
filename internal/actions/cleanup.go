@@ -6,12 +6,12 @@ import (
 	"os"
 )
 
-// Cleanup represents the action and its options
+// Cleanup represents the action and its options.
 type Cleanup struct {
 	*Hops
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Cleanup) Run(_ context.Context) error {
 	broken, err := action.Prefix().BrokenLinks()
 	if err != nil {

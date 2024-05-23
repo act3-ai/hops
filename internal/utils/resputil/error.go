@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// HTTPSuccess reports if the status code is success
+// HTTPSuccess reports if the status code is success.
 func HTTPSuccess(resp *http.Response) bool {
 	return resp.StatusCode >= 200 && resp.StatusCode < 300
 }

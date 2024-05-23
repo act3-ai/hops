@@ -95,17 +95,17 @@ var ElCapitan = Version{
 	DarwinVersion: 15,
 }
 
-// SupportsARM reports whether the version supports ARM applications
+// SupportsARM reports whether the version supports ARM applications.
 func (v Version) SupportsARM() bool {
 	return v.DarwinVersion >= 20
 }
 
-// Supports64Bit reports whether the version supports 64-bit applications
+// Supports64Bit reports whether the version supports 64-bit applications.
 func (v Version) Supports64Bit() bool {
 	return v.DarwinVersion >= 7
 }
 
-// Supports32Bit reports whether the version supports 32-bit applications
+// Supports32Bit reports whether the version supports 32-bit applications.
 func (v Version) Supports32Bit() bool {
 	return v.DarwinVersion < 19
 }

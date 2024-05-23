@@ -6,23 +6,20 @@ import (
 	"slices"
 	"strings"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/dependencies"
-	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Deps represents the action and its options
+// Deps represents the action and its options.
 type Deps struct {
 	*Hops
 	Standalone        bool
-	DependencyOptions dependencies.Options
+	DependencyOptions formula.DependencyTags
 	Platform          platform.Platform
 }
 
-// Tree runs the action
+// Tree runs the action.
 func (action *Deps) Run(ctx context.Context, names ...string) error {
 	deps, err := action.eval(ctx, names)
 	if err != nil {
@@ -36,7 +33,7 @@ func (action *Deps) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-// Tree runs the action
+// Tree runs the action.
 func (action *Deps) Tree(ctx context.Context, names ...string) error {
 	deps, err := action.eval(ctx, names)
 	if err != nil {
@@ -45,7 +42,7 @@ func (action *Deps) Tree(ctx context.Context, names ...string) error {
 
 	// Print each rooted tree
 	for _, root := range deps.Roots() {
-		tree, err := deps.Tree(root.Name)
+		tree, err := deps.Tree(root.Name())
 		if err != nil {
 			return err
 		}
@@ -55,21 +52,23 @@ func (action *Deps) Tree(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Deps) eval(ctx context.Context, names []string) (*dependencies.DependencyGraph[*v1.Info], error) {
-	index := action.Index()
-	err := index.Load(ctx)
+func (action *Deps) eval(ctx context.Context, args []string) (*dependencies.DependencyGraph, error) {
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	formulae, err := action.FetchAll(o.Noop, index, names...)
+	formulae, err := formula.FetchAllPlatform(ctx, formulary, names, action.Platform)
 	if err != nil {
 		return nil, err
 	}
 
 	graph, err := dependencies.Walk(ctx,
-		apiwalker.New(index, action.Platform),
+		formulary,
 		formulae,
+		action.Platform,
 		&action.DependencyOptions)
 	if err != nil {
 		return nil, err

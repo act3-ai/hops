@@ -19,35 +19,35 @@ import (
 
 var (
 	// configurationFileParts is the parts used to assemble
-	// the config file name and default paths
+	// the config file name and default paths.
 	configurationFileParts = []string{"hops", "config.yaml"}
 
-	// ConfigurationMatchFiles is a list of patterns used to match a config file for schema validation
+	// ConfigurationMatchFiles is a list of patterns used to match a config file for schema validation.
 	ConfigurationMatchFiles = apiutil.ConfigDocumentedPath(configurationFileParts...)
 
-	// ConfigurationFile is the default config file location
+	// ConfigurationFile is the default config file location.
 	ConfigurationFile = apiutil.DefaultConfigPath(configurationFileParts...)
 
-	// ConfigurationSearchFiles is the possible config file locations in descending priority order
+	// ConfigurationSearchFiles is the possible config file locations in descending priority order.
 	ConfigurationSearchFiles = apiutil.ConfigActualPaths(configurationFileParts...)
 
-	// UnevaluatedConfigurationSearchFiles are used for display
+	// UnevaluatedConfigurationSearchFiles are used for display.
 	UnevaluatedSearchFiles = []string{
 		strings.Join(configurationFileParts, "-"),
 		filepath.Join("$XDG_CONFIG_HOME", filepath.Join(configurationFileParts...)),
 		filepath.Join("/", "etc", filepath.Join(configurationFileParts...)),
 	}
 
-	// ConfigurationEnvPrefix is the prefix for configuration environment variables
+	// ConfigurationEnvPrefix is the prefix for configuration environment variables.
 	ConfigurationEnvPrefix = "HOPS"
 
-	// ConfigurationEnvName is the environment variable name that overrides the search paths
+	// ConfigurationEnvName is the environment variable name that overrides the search paths.
 	ConfigurationEnvName = "HOPS_CONFIG"
 )
 
 // Configuration represents the Hops CLI's configuration file.
 type Configuration struct {
-	// Cache sets the path used for caches
+	// Cache sets the path used for caches.
 	//
 	// Default: $XDG_CACHE_HOME/hops
 	Cache string `json:"cache,omitempty" yaml:"cache,omitempty"`
@@ -55,11 +55,11 @@ type Configuration struct {
 	// Configures Hops' usage of Homebrew's sources.
 	Homebrew HomebrewAPIConfig `json:"homebrew,omitempty" yaml:"homebrew,omitempty"`
 
-	// Registry configures a Hops-compatible registry for Bottles
+	// Registry configures a Hops-compatible registry for Bottles.
 	Registry RegistryConfig `json:"registry,omitempty" yaml:"registry,omitempty"`
 }
 
-// RegistryConfig configures a Hops-compatible registry for Bottles
+// RegistryConfig configures a Hops-compatible registry for Bottles.
 type RegistryConfig struct {
 	// Prefix is the prefix for all Bottle repositories
 	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
@@ -100,7 +100,7 @@ type AutoUpdateConfig struct {
 	Secs     *int `json:"secs,omitempty" yaml:"secs,omitempty"`
 }
 
-// DefaultAutoUpdateSecs is the default auto-update seconds value
+// DefaultAutoUpdateSecs is the default auto-update seconds value.
 const DefaultAutoUpdateSecs = 86400
 
 // HomebrewAPIConfig configures Hops' usage of the Homebrew API.
@@ -119,7 +119,7 @@ type HomebrewAPIConfig struct {
 	AutoUpdate AutoUpdateConfig `json:"autoUpdate,omitempty" yaml:"autoUpdate,omitempty"`
 }
 
-// ConfigurationDefault defaults the object's fields
+// ConfigurationDefault defaults the object's fields.
 func ConfigurationDefault(cfg *Configuration) {
 	if cfg.Cache == "" {
 		cfg.Cache = filepath.Join(xdg.CacheHome, "hops")
@@ -144,7 +144,7 @@ func ConfigurationDefault(cfg *Configuration) {
 	// }
 }
 
-// ConfigurationEnvOverrides overrides the configuration with environment variables
+// ConfigurationEnvOverrides overrides the configuration with environment variables.
 func ConfigurationEnvOverrides(cfg *Configuration) {
 	cfg.Cache = env.String(
 		ConfigurationEnvPrefix+"_CACHE",
@@ -179,7 +179,7 @@ func ConfigurationEnvOverrides(cfg *Configuration) {
 	cfg.Registry.PlainHTTP = env.Bool(ConfigurationEnvPrefix+"_REGISTRY_PLAIN_HTTP", cfg.Registry.PlainHTTP)
 }
 
-// String implements fmt.Stringer
+// String implements fmt.Stringer.
 func (cfg *Configuration) String() string {
 	marshalled, err := json.MarshalIndent(cfg, "", "   ")
 	if err != nil {
@@ -188,7 +188,7 @@ func (cfg *Configuration) String() string {
 	return string(marshalled)
 }
 
-// // LogValuer implements slog.LogValuer
+// // LogValuer implements slog.LogValuer.
 // func (cfg *Configuration) LogValue() slog.Value {
 // 	b, err := json.Marshal(cfg)
 // 	if err != nil {
@@ -197,7 +197,7 @@ func (cfg *Configuration) String() string {
 // 	return slog.StringValue(string(b))
 // }
 
-// ShouldAutoUpdate returns true if an auto update should be run
+// ShouldAutoUpdate returns true if an auto update should be run.
 func (au *AutoUpdateConfig) ShouldAutoUpdate(file string) bool {
 	info, err := os.Stat(file)
 	if err != nil {

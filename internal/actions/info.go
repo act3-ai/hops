@@ -2,14 +2,16 @@ package actions
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log/slog"
 
-	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/pretty"
 )
 
-// Info represents the action and its options
+// Info represents the action and its options.
 type Info struct {
 	*Hops
 
@@ -17,31 +19,65 @@ type Info struct {
 	Platform platform.Platform
 }
 
-// Run runs the action
-func (action *Info) Run(ctx context.Context, names ...string) error {
+// Run runs the action.
+func (action *Info) Run(ctx context.Context, args ...string) error {
+	// Default the platform option if action.JSON was not set
 	if action.Platform == "" {
 		action.Platform = platform.SystemPlatform()
 	}
 
-	index := action.Index()
-	err := index.Load(ctx)
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return err
 	}
 
-	formulae, err := action.FetchAll(o.Noop, index, names...)
+	switch {
+	case action.JSON == "v1":
+		return action.jsonV1(ctx, formulary, names)
+	case action.JSON == "v2":
+		slog.Error("v2 JSON not supported")
+		return nil
+	default:
+		return action.pretty(ctx, formulary, names)
+	}
+}
+
+func (action *Info) jsonV1(ctx context.Context, fmlry formula.Formulary, names []string) error {
+	formulae, err := formula.FetchAll(ctx, fmlry, names)
 	if err != nil {
 		return err
 	}
 
 	for _, f := range formulae {
-		switch action.JSON {
-		case "v1":
-			fmt.Println(f)
-		case "v2":
-			fmt.Println("v2 JSON not supported")
+		switch f := f.(type) {
+		case *formula.V1:
+			content, err := json.Marshal(f.SourceV1())
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(content))
 		default:
-			pretty.Info(f, action.Prefix(), action.Platform)
+			return fmt.Errorf("could not get v1 API data for formula %s", f.Name())
+		}
+	}
+
+	return nil
+}
+
+func (action *Info) pretty(ctx context.Context, fmlry formula.Formulary, names []string) error {
+	formulae, err := formula.FetchAllPlatform(ctx, fmlry, names, action.Platform)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range formulae {
+		switch f := f.(type) {
+		case formula.PlatformFormula:
+			pretty.Info(f, action.Prefix())
+		default:
+			return fmt.Errorf("missing metadata for formula %s", f.Name())
 		}
 	}
 

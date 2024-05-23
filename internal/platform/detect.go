@@ -8,14 +8,14 @@ import (
 	"golang.org/x/mod/semver"
 )
 
-// fromDarwinVersion maps
+// fromDarwinVersion maps versions of darwin to amd64 platforms.
 func fromDarwinVersion(darwinVersion string) Platform {
 	darwinVersion = "v" + strings.TrimPrefix(darwinVersion, "v")
 	major := semver.Major(darwinVersion)
 	return darwinVersionToPlatform[major]
 }
 
-// SystemPlatform detects the host's platform
+// SystemPlatform detects the host's platform.
 func SystemPlatform() Platform {
 	host, err := sysinfo.Host()
 	if err != nil {

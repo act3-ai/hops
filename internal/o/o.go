@@ -7,12 +7,12 @@ import (
 	"strings"
 )
 
-// Noop is a noop log function
+// Noop is a noop log function.
 func Noop(_ string) {}
 
-// H1 prints a message, prefixed with a green arrow
+// H1 prints a message, prefixed with a green arrow.
 //
-// It is an implementation of Homebrew's Formula.oh1 function
+// It is an implementation of Homebrew's Formula.oh1 function.
 func H1(msg string) {
 	_, err := output.WriteString(styleGreen.Styled(Arrow) + " " + boldFirstLine(msg) + "\n")
 	if err != nil {
@@ -20,9 +20,9 @@ func H1(msg string) {
 	}
 }
 
-// Hai prints a message, prefixed with a blue arrow
+// Hai prints a message, prefixed with a blue arrow.
 //
-// It is an implementation of Homebrew's Formula.ohai function
+// It is an implementation of Homebrew's Formula.ohai function.
 func Hai(msg string) {
 	_, err := output.WriteString(styleBlue.Styled(Arrow) + " " + boldFirstLine(msg) + "\n")
 	if err != nil {
@@ -30,10 +30,11 @@ func Hai(msg string) {
 	}
 }
 
-// Poo prints a warning, prefixed with "Warning:"
+// Poo prints a warning, prefixed with "Warning:".
 //
-// It is an implementation of Homebrew's Formula.opoo function
 // stderr
+//
+// It is an implementation of Homebrew's Formula.opoo function.
 func Poo(msg string) {
 	_, err := output.WriteString(styleYellow.Styled("Warning:") + " " + boldFirstLine(msg) + "\n")
 	if err != nil {
@@ -41,10 +42,11 @@ func Poo(msg string) {
 	}
 }
 
-// Noe prints an error, prefixed with "Error:"
+// Noe prints an error, prefixed with "Error:".
 //
-// It is an implementation of Homebrew's Formula.onoe function
 // stderr
+//
+// It is an implementation of Homebrew's Formula.onoe function.
 func Noe(msg string) {
 	_, err := output.WriteString(styleRed.Styled("Error: ") + " " + boldFirstLine(msg) + "\n")
 	if err != nil {
@@ -52,17 +54,18 @@ func Noe(msg string) {
 	}
 }
 
-// Die prints an error, prefixed with "Error:"
+// Die prints an error, prefixed with "Error:".
 //
-// It is an implementation of Homebrew's Formula.odie function, but does not exit like Formulae.odie
 // stderr
+//
+// It is an implementation of Homebrew's Formula.odie function, but does not exit like Formulae.odie.
 func Die(msg string) {
 	Noe(msg)
 }
 
-// Debug prints a debug message, prefixed with a magenta arrow
+// Debug prints a debug message, prefixed with a magenta arrow.
 //
-// It is an implementation of Homebrew's Formula.odebug function
+// It is an implementation of Homebrew's Formula.odebug function.
 func Debug(msg string) {
 	_, err := output.WriteString(styleMagenta.Styled(Arrow) + " " + boldFirstLine(msg) + "\n")
 	if err != nil {

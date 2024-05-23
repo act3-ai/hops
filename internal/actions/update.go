@@ -7,38 +7,40 @@ import (
 
 	"golang.org/x/mod/semver"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils"
 )
 
-// Update represents the action and its options
+// Update represents the action and its options.
 type Update struct {
 	*Hops
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Update) Run(ctx context.Context) error {
-	oldIndex := action.Index()
+	if action.Config().Registry.Prefix != "" {
+		o.Hai("Update not necessary for standalone registry mode")
+		return nil
+	}
+
+	apiclient := brewapi.NewClient(action.Config().Homebrew.Domain)
 
 	// Only load the cached indexes
-	if oldIndex.IsCached() {
-		err := oldIndex.Load(ctx)
-		if err != nil {
-			slog.Warn("loading cached index", o.ErrAttr(err))
-		}
-	}
-
-	cfg := action.Config()
-
-	newIndex := action.Index()
-
-	// Force a reset and redownload
-	err := newIndex.Reset(&cfg.Homebrew.AutoUpdate)
+	oldIndex, err := brewformulary.LoadV1(action.Config().Cache)
 	if err != nil {
-		return err
+		slog.Warn("loading cached index", o.ErrAttr(err))
 	}
 
-	err = newIndex.Load(ctx)
+	newIndex, err := brewformulary.FetchV1(ctx,
+		apiclient,
+		action.Config().Cache,
+		&hopsv1.AutoUpdateConfig{
+			Secs: new(int), // set refresh seconds to zero
+		})
 	if err != nil {
 		return err
 	}
@@ -70,28 +72,17 @@ func (action *Update) Run(ctx context.Context) error {
 	return nil
 }
 
-// IsNewerThan reports if n is newer than o by comparing their versions
-func IsNewerThan(n *v1.Info, o *v1.Info) bool {
-	var oldVersion string
-	var newVersion string
-
-	if o.Versions.Stable != nil {
-		oldVersion = "v" + strings.TrimPrefix(*o.Versions.Stable, "v")
-	} else {
-		oldVersion = ""
-	}
-
-	if n.Versions.Stable != nil {
-		newVersion = "v" + strings.TrimPrefix(*n.Versions.Stable, "v")
-	} else {
-		newVersion = ""
-	}
-
-	return semver.Compare(newVersion, oldVersion) > 0
+// IsNewerThan reports if n is newer than o by comparing their versions.
+func IsNewerThan(n *brewv1.Info, o *brewv1.Info) bool {
+	return semver.Compare(
+		utils.FmtSemver(n.Versions.Stable),
+		utils.FmtSemver(o.Versions.Stable),
+	) > 0
 }
 
 func versionCompare(n, o string) int {
-	n = "v" + strings.TrimPrefix(n, "v")
-	o = "v" + strings.TrimPrefix(o, "v")
-	return semver.Compare(n, o)
+	return semver.Compare(
+		utils.FmtSemver(n),
+		utils.FmtSemver(o),
+	)
 }

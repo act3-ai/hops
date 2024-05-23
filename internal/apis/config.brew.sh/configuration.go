@@ -18,7 +18,7 @@ import (
 	nfenv "github.com/Netflix/go-env"
 )
 
-// defaultset is the default values as an envmap
+// defaultset is the default values as an envmap.
 var defaultset = nfenv.EnvSet{
 	"HOMEBREW_API_DOMAIN": Default.APIDomain,
 	// "HOMEBREW_ARCH":                       Default.Arch,
@@ -44,7 +44,7 @@ var defaultset = nfenv.EnvSet{
 	// "HOMEBREW_TEMP":                Default.Temp,
 }
 
-// DefaultEnvironmentFiles returns the default files to load the environment config from
+// DefaultEnvironmentFiles returns the default files to load the environment config from.
 func DefaultEnvironmentFiles() []string {
 	usercfgdir := env.String("XDG_CONFIG_HOME", filepath.Join(xdg.Home, ".homebrew"))
 
@@ -67,14 +67,14 @@ func DefaultEnvironmentFiles() []string {
 	}
 }
 
-// Load loads the environment config from the OS environment
+// Load loads the environment config from the OS environment.
 func Load() (*Environment, error) {
 	// Limit to the envs we care about
 	for k, v := range defaultset {
 		if _, ok := os.LookupEnv(k); !ok {
 			err := os.Setenv(k, v)
 			if err != nil {
-				return Default, err
+				return Default, fmt.Errorf("filtering environment: %w", err)
 			}
 		}
 	}
@@ -113,7 +113,7 @@ func Load() (*Environment, error) {
 	return e, nil
 }
 
-// Environment represents [Homebrew's environment configuration]
+// Environment represents [Homebrew's environment configuration].
 // Note that environment variables must have a value set to be detected. For
 // example, run "export HOMEBREW_NO_INSECURE_REDIRECT=1" rather than just "export HOMEBREW_NO_INSECURE_REDIRECT".
 //
@@ -571,19 +571,9 @@ func (e *Environment) String() string {
 // 	return "/tmp"
 // }
 
-// GitHubPackagesAuth derives the GitHub Packages auth from the env config
+// GitHubPackagesAuth derives the GitHub Packages auth from the env config.
 //
 // From: https://github.com/Homebrew/brew/blob/master/Library/Homebrew/brew.sh
-//
-//	if [[ -n "${HOMEBREW_DOCKER_REGISTRY_TOKEN}" ]]
-//	then
-//	  export HOMEBREW_GITHUB_PACKAGES_AUTH="Bearer ${HOMEBREW_DOCKER_REGISTRY_TOKEN}"
-//	elif [[ -n "${HOMEBREW_DOCKER_REGISTRY_BASIC_AUTH_TOKEN}" ]]
-//	then
-//	  export HOMEBREW_GITHUB_PACKAGES_AUTH="Basic ${HOMEBREW_DOCKER_REGISTRY_BASIC_AUTH_TOKEN}"
-//	else
-//	  export HOMEBREW_GITHUB_PACKAGES_AUTH="Bearer QQ=="
-//	fi
 func (e *Environment) GitHubPackagesAuth() string {
 	if e.DockerRegistryToken != "" {
 		return "Bearer " + e.DockerRegistryToken
@@ -594,12 +584,12 @@ func (e *Environment) GitHubPackagesAuth() string {
 	return "Bearer QQ=="
 }
 
-// AddGitHubPackagesAuthHeader adds the GitHub Packages auth header to the request
+// AddGitHubPackagesAuthHeader adds the GitHub Packages auth header to the request.
 func (e *Environment) AddGitHubPackagesAuthHeader(req http.Request) {
 	req.Header.Set("Authorization", e.GitHubPackagesAuth())
 }
 
-// Default is the default values
+// Default is the default values.
 var Default = &Environment{
 	APIDomain: "https://formulae.brew.sh/api",
 	// Arch:                         "native",

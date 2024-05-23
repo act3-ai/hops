@@ -2,116 +2,112 @@ package actions
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
-	"path"
+	"slices"
 	"strings"
 
 	"github.com/sourcegraph/conc/iter"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/bottle"
+	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
-	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
+	"github.com/act3-ai/hops/internal/formula"
+	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Images represents the action and its options
+// Images represents the action and its options.
 type Images struct {
 	*Hops
-	DependencyOptions dependencies.Options
+	DependencyOptions formula.DependencyTags
 
 	File      string // path to a Brewfile specifying formulae dependencies
 	NoResolve bool   // disable tag resolution
 	NoVerify  bool   // disable tag verification
 }
 
-// Run runs the action
-func (action *Images) Run(ctx context.Context, formulae ...string) error {
+// Run runs the action.
+func (action *Images) Run(ctx context.Context, args ...string) error {
 	// Add Brewfile dependencies if requested
 	if action.File != "" {
 		bf, err := brewfile.Load(action.File)
 		if err != nil {
 			return err
 		}
-
-		formulae = append(formulae, bf.Formula...)
+		args = append(args, bf.Formula...)
 	}
 
-	slog.Debug("finding images for", slog.Any("formulae", formulae))
+	slog.Debug("finding images for", slog.Any("formulae", args))
 
-	index, err := action.findDeps(ctx, formulae...)
+	formulae, err := action.findDeps(ctx, args)
 	if err != nil {
 		return err
 	}
 
-	images, err := action.listImages(ctx, index)
+	images, err := action.listImages(ctx, formulae)
 	if err != nil {
 		return err
 	}
 
 	imageData := strings.Join(images, "\n")
 	o.Hai("Images:\n" + imageData)
-	b, err := json.Marshal(index)
-	if err != nil {
-		return err
-	}
+	// b, err := json.Marshal(formulae)
+	// if err != nil {
+	// 	return err
+	// }
 
 	o.Hai("Writing image list and formula index")
 
 	imagesFile := "hops.images.txt"
-	indexFile := "hops.index.json"
+	// indexFile := "hops.index.json"
 
 	if err = os.WriteFile(imagesFile, []byte(imageData+"\n"), 0o644); err != nil {
 		return fmt.Errorf("writing image list: %w", err)
 	}
 
-	if err = os.WriteFile(indexFile, append(b, []byte("\n")...), 0o644); err != nil {
-		return fmt.Errorf("writing formula index: %w", err)
-	}
+	// if err = os.WriteFile(indexFile, append(b, []byte("\n")...), 0o644); err != nil {
+	// 	return fmt.Errorf("writing formula index: %w", err)
+	// }
 
 	fmt.Println("Image list:    " + o.StyleBold(imagesFile))
-	fmt.Println("Formula index: " + o.StyleBold(indexFile))
+	// fmt.Println("Formula index: " + o.StyleBold(indexFile))
 
 	return nil
 }
 
-func (action *Images) findDeps(ctx context.Context, formulae ...string) ([]*v1.Info, error) {
-	index := action.Index()
-	err := index.Load(ctx)
+func (action *Images) findDeps(ctx context.Context, args []string) ([]formula.PlatformFormula, error) {
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	all, err := action.FetchAll(o.H1, index, formulae...)
+	roots, err := formula.FetchAllPlatform(ctx, formulary, names, platform.All)
 	if err != nil {
 		return nil, err
 	}
 
 	o.H1("Fetching dependencies...")
-	deps, err := dependencies.Walk(ctx,
-		apiwalker.New(index, platform.All),
-		all,
-		&action.DependencyOptions)
-	// deps, err := formula.WalkDependencies(index, &action.DependencyOptions, all...)
+
+	// Build dependency graph
+	graph, err := dependencies.WalkAll(ctx, formulary, roots, &action.DependencyOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	dependents := deps.Dependents()
+	dependents := graph.Dependents()
 	fmt.Printf("Found %d dependencies\n", len(dependents))
 
 	// Combine root formulae with their dependencies in this list
-	all = append(all, dependents...)
-	return all, nil
+	return slices.Concat(dependents, roots), nil
 }
 
-// listImages lists the images for each formula in the index
-func (action *Images) listImages(ctx context.Context, formulae []*v1.Info) ([]string, error) {
+// listImages lists the images for each formula in the index.
+func (action *Images) listImages(ctx context.Context, formulae []formula.PlatformFormula) ([]string, error) {
 	// Print no-resolve warning
 	if action.NoResolve || action.NoVerify {
 		o.Poo("Skipping tag resolution")
@@ -122,24 +118,19 @@ func (action *Images) listImages(ctx context.Context, formulae []*v1.Info) ([]st
 		o.Poo("Skipping tag verification")
 	}
 
-	reg, err := action.Registry()
+	reg, err := action.registry(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	mapper := iter.Mapper[*v1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
-	return mapper.MapErr(formulae, func(f **v1.Info) (string, error) {
+	mapper := iter.Mapper[formula.PlatformFormula, string]{MaxGoroutines: action.MaxGoroutines()}
+	return mapper.MapErr(formulae, func(f *formula.PlatformFormula) (string, error) {
 		return action.resolve(ctx, reg, *f)
 	})
 }
 
-func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f *v1.Info) (string, error) {
-	m, err := bottle.Manifest(f, v1.Stable)
-	if err != nil {
-		return "", fmt.Errorf("computing bottle manifest: %w", err)
-	}
-
-	image := path.Join(action.Config().Registry.Prefix, m)
+func (action *Images) resolve(ctx context.Context, reg hopsreg.Registry, f formula.Formula) (string, error) {
+	image := strings.TrimSuffix(action.Config().Registry.Prefix, "/") + "/" + brewfmt.Repo(f.Name()) + ":" + formula.Tag(f.Version())
 
 	if action.NoVerify {
 		// Skip any resolving or verifying
@@ -147,7 +138,7 @@ func (action *Images) resolve(ctx context.Context, reg bottle.Registry, f *v1.In
 	}
 
 	// create client for bottle repository
-	repo, err := reg.Repository(ctx, f.Name)
+	repo, err := reg.Repository(ctx, f.Name())
 	if err != nil {
 		return image, err
 	}

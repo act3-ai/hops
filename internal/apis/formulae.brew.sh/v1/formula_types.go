@@ -9,21 +9,21 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Index represents a formula index listing multiple formulae
+// Index represents a formula index listing multiple formulae.
 type Index []*Info
 
-// Info represents Homebrew API information for a formula
+// Info represents Homebrew API information for a formula.
 type Info struct {
 	PlatformInfo `json:",inline"`
 	Variations   map[platform.Platform]*PlatformInfo `json:"variations"`
 }
 
-// Info represents Homebrew API information for a formula
+// Info represents Homebrew API information for a formula.
 type PlatformInfo struct {
 	Name                    string                `json:"name"`
-	FullName                string                `json:"full_name"`
+	FullName                string                `json:"full_name"` // Deprecated: Evaluate from Tap/Name
 	Tap                     string                `json:"tap"`
-	OldName                 string                `json:"oldname"`
+	OldName                 string                `json:"oldname"` // Deprecated: Use OldNames list
 	OldNames                []string              `json:"oldnames"`
 	Aliases                 []string              `json:"aliases"`
 	VersionedFormulae       []string              `json:"versioned_formulae"`
@@ -70,11 +70,16 @@ type PlatformInfo struct {
 }
 
 const (
+	// RubySourceChecksumSha256 is the key for the sha256 checksum of a Formula's Ruby source.
+	RubySourceChecksumSha256 = "sha256"
+)
+
+const (
 	PourBottleConditionDefaultPrefix = "default_prefix" // pour bottle condition requiring the default prefix
 	PourBottleConditionCLTInstalled  = "clt_installed"  // pour bottle condition requiring the macOS command line tools
 )
 
-// FormulaURL represents the urls block
+// FormulaURL represents the urls block.
 type FormulaURL struct {
 	URL      string `json:"url"`
 	Branch   string `json:"branch,omitempty"`
@@ -84,7 +89,7 @@ type FormulaURL struct {
 	Checksum string `json:"checksum,omitempty"`
 }
 
-// InstalledInfo represents the installed block
+// InstalledInfo represents the installed block.
 type InstalledInfo struct {
 	Version               string               `json:"version"`
 	UsedOptions           []any                `json:"used_options"`
@@ -96,7 +101,7 @@ type InstalledInfo struct {
 	InstalledOnRequest    bool                 `json:"installed_on_request"`
 }
 
-// RuntimeDependency represents a required dependency
+// RuntimeDependency represents a required dependency.
 type RuntimeDependency struct {
 	FullName         string `json:"full_name"`
 	Version          string `json:"version"`
@@ -105,7 +110,7 @@ type RuntimeDependency struct {
 	DeclaredDirectly bool   `json:"declared_directly"`
 }
 
-// Repo implements the same name formatting as other bottle parsing functions
+// Repo implements the same name formatting as other bottle parsing functions.
 func (rd *RuntimeDependency) Repo() string {
 	repo := rd.FullName                       // start with formula name
 	repo = strings.ReplaceAll(repo, "@", "/") // replace "@" with "/"
@@ -113,7 +118,7 @@ func (rd *RuntimeDependency) Repo() string {
 	return repo
 }
 
-// PkgVersion returns the package version
+// PkgVersion returns the package version.
 func (rd *RuntimeDependency) PkgVersion() string {
 	v := rd.PkgVersionValue
 	if v == "" {
@@ -122,7 +127,7 @@ func (rd *RuntimeDependency) PkgVersion() string {
 	return v
 }
 
-// Tag implements the same tag naming logic as other bottle parsing functions
+// Tag implements the same tag naming logic as other bottle parsing functions.
 func (rd *RuntimeDependency) Tag() string {
 	v := rd.PkgVersion()
 	if rd.Revision != 0 {
@@ -131,7 +136,7 @@ func (rd *RuntimeDependency) Tag() string {
 	return v
 }
 
-// Variation represents an entry in the variations map
+// Variation represents an entry in the variations map.
 type Variation Info
 
 // type Variation struct {
@@ -151,7 +156,7 @@ type Variation Info
 // 	DisabledReason       *string              `json:"disable_reason,omitempty"`
 // }
 
-// HeadDependencies represents the head_dependencies field
+// HeadDependencies represents the head_dependencies field.
 type HeadDependencies struct {
 	BuildDependencies       []string       `json:"build_dependencies"`
 	Dependencies            []string       `json:"dependencies"`
@@ -162,32 +167,31 @@ type HeadDependencies struct {
 	UsesFromMacOSBounds     []*MacOSBounds `json:"uses_from_macos_bounds"`
 }
 
-// Versions represents the available versions
+// Versions represents the available versions.
 type Versions struct {
 	Others map[string]any `json:",inline"`
-	// TODO: remove pointer
-	Stable *string `json:"stable"`
-	Head   *string `json:"head"`
-	Bottle bool    `json:"bottle"`
+	Stable string         `json:"stable"`
+	Head   *string        `json:"head"`
+	Bottle bool           `json:"bottle"`
 }
 
 const (
 	Stable = "stable" // Key used for stable bottles
 )
 
-// Bottle represents the bottle section
+// Bottle represents the bottle section.
 type Bottle struct {
 	Rebuild int                               `json:"rebuild"`
 	RootURL string                            `json:"root_url"`
 	Files   map[platform.Platform]*BottleFile `json:"files"`
 }
 
-// MacOSBounds represents the uses_from_macos_bounds entries
+// MacOSBounds represents the uses_from_macos_bounds entries.
 type MacOSBounds struct {
 	Since string `json:"since"`
 }
 
-// Requirement represents a requirement
+// Requirement represents a requirement.
 type Requirement struct {
 	Name     string   `json:"name"`
 	Cask     any      `json:"cask"`
@@ -209,30 +213,30 @@ type Requirement struct {
 // 	RequirementNameLinuxKernel  RequirementName = "linuxkernel"         // name of requirement specifying Linux kernel version
 // )
 
-// KegOnlyConfig represents the keg_only_reason section
+// KegOnlyConfig represents the keg_only_reason section.
 type KegOnlyConfig struct {
 	Reason      KegOnlyReason `json:"reason"`
 	Explanation string        `json:"explanation"`
 }
 
-// BottleFile defines a bottle.files entry
+// BottleFile defines a bottle.files entry.
 type BottleFile struct {
 	Cellar string `json:"cellar"`
 	URL    string `json:"url"`
 	Sha256 string `json:"sha256"`
 }
 
-// Relocatable reports if the bottle is relocatable
+// Relocatable reports if the bottle is relocatable.
 func (file *BottleFile) Relocatable() bool {
 	return file.Cellar == CellarAny || file.Cellar == CellarAnySkipRelocation
 }
 
 const (
-	CellarAny               = ":any"                 // Signifies bottle is safe to install in the Cellar
-	CellarAnySkipRelocation = ":any_skip_relocation" // Signifies bottle is safe to install in the Cellar without relocation
+	CellarAny               = ":any"                 // Signifies bottle is safe to install in the Cellar.
+	CellarAnySkipRelocation = ":any_skip_relocation" // Signifies bottle is safe to install in the Cellar without relocation.
 )
 
-// String implements fmt.Stringer
+// String implements fmt.Stringer.
 func (info *Info) String() string {
 	marshalled, err := json.MarshalIndent(info, "", "   ")
 	if err != nil {
@@ -241,19 +245,21 @@ func (info *Info) String() string {
 	return string(marshalled)
 }
 
-// Version returns the version of the formula according to Homebrew
+// Version returns the version of the formula according to Homebrew.
 //
-// Pattern: VERSION[_REVISION]
+// Pattern:
+//
+//	VERSION[_REVISION]
 //
 // This version will vary from the formula project's version when
 // the "revision" field is set in the formula, which signals the
-// formula was updated without changing the version being installed
+// formula was updated without changing the version being installed.
 func (info *PlatformInfo) Version() string {
-	if info.Versions.Stable == nil {
-		return "HEAD"
-	}
+	// if info.Versions.Stable == nil {
+	// 	return "HEAD"
+	// }
 
-	tag := *info.Versions.Stable
+	tag := info.Versions.Stable
 	if info.Revision != 0 {
 		tag += fmt.Sprintf("_%d", info.Revision)
 	}
@@ -261,8 +267,8 @@ func (info *PlatformInfo) Version() string {
 	return tag
 }
 
-// PossibleNames returns all possible names for the formula
-// This is a combination of the current name, old names, and any aliases
+// PossibleNames returns all possible names for the formula.
+// This is a combination of the current name, old names, and any aliases.
 func (info *PlatformInfo) PossibleNames() []string {
 	names := []string{
 		info.Name,
@@ -272,7 +278,7 @@ func (info *PlatformInfo) PossibleNames() []string {
 	return names
 }
 
-// ManifestTag produces the tag of the formula's manifest
+// ManifestTag produces the tag of the formula's manifest.
 func (info *PlatformInfo) ManifestTag(key string) (string, error) {
 	bottle := info.Bottle[key]
 	if bottle == nil {
@@ -281,11 +287,20 @@ func (info *PlatformInfo) ManifestTag(key string) (string, error) {
 
 	version := ""
 	if key == Stable {
-		if info.Versions.Stable == nil {
+		if info.Versions.Stable == "" {
 			return "", fmt.Errorf("formula %s does not have a %s version", info.Name, key)
 		}
-		version = *info.Versions.Stable
+		version = info.Versions.Stable
 	}
 
 	return brewfmt.Tag(version, info.Revision, bottle.Rebuild), nil
+}
+
+// Names returns the names of the listed formulae.
+func Names(formulae []*Info) []string {
+	names := make([]string, len(formulae))
+	for i, f := range formulae {
+		names[i] = f.Name
+	}
+	return names
 }

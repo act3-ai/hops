@@ -8,16 +8,15 @@ import (
 
 	"github.com/dustin/go-humanize"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/apis/receipt.brew.sh"
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
-	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/utils"
 )
 
-// Info prints the formula information in pretty format
-func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
+// Info prints the formula information in pretty format.
+func Info(f formula.PlatformFormula, p prefix.Prefix) {
 	// Collect information in advance for readability
 	var isInstalled bool
 	var files int
@@ -26,7 +25,7 @@ func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 
 	var err error
 
-	keg := p.KegPath(f.Name, f.Version())
+	keg := p.KegPath(f.Name(), formula.PkgVersion(f.Version()))
 
 	isInstalled = p.AnyInstalled(f)
 	if isInstalled {
@@ -42,34 +41,36 @@ func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 	}
 
 	versions := []string{}
-	if f.Versions.Stable != nil {
-		stable := *f.Versions.Stable
-		if f.Versions.Bottle {
-			stable += " (bottled)"
-		}
+	if stable := formula.PkgVersion(f.Version()); stable != "" {
+		// TODO:
+		// if f.Versions.Bottle {
+		stable += " (bottled)"
+		// }
 		versions = append(versions, stable)
 	}
-	if f.Versions.Head != nil {
-		versions = append(versions, *f.Versions.Head)
-	}
+	// TODO?
+	// if f.Versions.Head != nil {
+	// 	versions = append(versions, *f.Versions.Head)
+	// }
 	lines := []string{
 		fmt.Sprintf(
 			"%s: %s",
-			o.StyleBold(f.Name), strings.Join(versions, ", ")),
-		f.Desc,
-		o.StyleUnderline(f.Homepage),
+			o.StyleBold(f.Name()), strings.Join(versions, ", ")),
+		f.Info().Desc,
+		o.StyleUnderline(f.Info().Homepage),
 	}
-	if f.Deprecated && f.DeprecationReason != nil {
-		lines = append(lines, fmt.Sprintf("Deprecated because it %s!", *f.DeprecationReason))
-	}
-	if f.Disabled {
-		lines = append(lines, fmt.Sprintf("Disabled because it %s!", *f.DisabledReason))
-	}
+	// TODO: deprecate/disable
+	// if f.Deprecated && f.DeprecationReason != nil {
+	// 	lines = append(lines, fmt.Sprintf("Deprecated because it %s!", *f.DeprecationReason))
+	// }
+	// if f.Disabled {
+	// 	lines = append(lines, fmt.Sprintf("Disabled because it %s!", *f.DisabledReason))
+	// }
 
-	if len(f.ConflictsWith) > 0 {
+	if conflicts := f.Conflicts(); len(conflicts) > 0 {
 		lines = append(lines, "Conflicts with:")
-		for i, name := range f.ConflictsWith {
-			lines = append(lines, fmt.Sprintf("  %s (because %s)", name, f.ConflictsWithReasons[i]))
+		for _, conflict := range conflicts {
+			lines = append(lines, fmt.Sprintf("  %s (because %s)", conflict.Name, conflict.Reason))
 		}
 	}
 
@@ -101,16 +102,16 @@ func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 	}
 
 	lines = append(lines,
-		"From: "+o.StyleUnderline(TapNameToURL(f.Tap)),
-		"License: "+f.License)
+		// "From: "+o.StyleUnderline(TapNameToURL(f.Tap)),
+		"License: "+f.Info().License)
 	o.H1(strings.Join(lines, "\n"))
 
-	platinfo, err := f.ForPlatform(plat)
-	if err != nil {
-		slog.Warn("evaluating platform metadata", o.ErrAttr(err))
-	} else {
-		Deps(platinfo, p)
-	}
+	// platinfo, err := f.ForPlatform(plat)
+	Deps(f, p)
+	// if err != nil {
+	// 	slog.Warn("evaluating platform metadata", o.ErrAttr(err))
+	// } else {
+	// }
 	if caveats := Caveats(f, p); caveats != "" {
 		o.Hai("Caveats\n" + caveats)
 	}
@@ -118,24 +119,24 @@ func Info(f *v1.Info, p prefix.Prefix, plat platform.Platform) {
 	// Analytics are not implemented yet
 }
 
-// Deps prints dependency information
-func Deps(f *v1.PlatformInfo, p prefix.Prefix) {
-	// deps := f.DirectDependencies(plat)
+// Deps prints dependency information.
+func Deps(f formula.PlatformFormula, p prefix.Prefix) {
+	deps := f.Dependencies()
 	lines := []string{}
-	// if len(deps.Build) > 0 {
-	// 	lines = append(lines, "Build: "+formatDependencyList(deps.Build, p))
-	// }
-	if len(f.Dependencies) > 0 {
-		lines = append(lines, "Required: "+formatDependencyList(f.Dependencies, p))
+	if len(deps.Build) > 0 {
+		lines = append(lines, "Build: "+formatDependencyList(deps.Build, p))
 	}
-	if len(f.TestDependencies) > 0 {
-		lines = append(lines, "Test: "+formatDependencyList(f.TestDependencies, p))
+	if len(deps.Required) > 0 {
+		lines = append(lines, "Required: "+formatDependencyList(deps.Required, p))
 	}
-	if len(f.RecommendedDependencies) > 0 {
-		lines = append(lines, "Recommended: "+formatDependencyList(f.RecommendedDependencies, p))
+	if len(deps.Test) > 0 {
+		lines = append(lines, "Test: "+formatDependencyList(deps.Test, p))
 	}
-	if len(f.OptionalDependencies) > 0 {
-		lines = append(lines, "Optional: "+formatDependencyList(f.OptionalDependencies, p))
+	if len(deps.Recommended) > 0 {
+		lines = append(lines, "Recommended: "+formatDependencyList(deps.Recommended, p))
+	}
+	if len(deps.Optional) > 0 {
+		lines = append(lines, "Optional: "+formatDependencyList(deps.Optional, p))
 	}
 	o.Hai("Dependencies\n" + strings.Join(lines, "\n"))
 }
@@ -149,7 +150,7 @@ func formatDependencyList(deps []string, p prefix.Prefix) string {
 	return strings.Join(depnames, ", ")
 }
 
-// FormulaName formats a formula's name based on its installed status
+// FormulaName formats a formula's name based on its installed status.
 func FormulaName(name string, p prefix.Prefix) string {
 	prefixes, err := p.InstalledKegsByName(name)
 	switch {
@@ -163,7 +164,7 @@ func FormulaName(name string, p prefix.Prefix) string {
 	}
 }
 
-// TapNameToURL converts a tap name to its repository URL using Homebrew's tap naming shortcut
+// TapNameToURL converts a tap name to its repository URL using Homebrew's tap naming shortcut.
 func TapNameToURL(name string) string {
 	pieces := strings.SplitN(name, "/", 2)
 	if len(pieces) != 2 {

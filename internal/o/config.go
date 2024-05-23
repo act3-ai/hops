@@ -13,7 +13,7 @@ var (
 )
 
 // EmojiPrefixed returns msg prefixed with the install badge
-// Obeys the NoEmoji and InstallBadge settings
+// Obeys the NoEmoji and InstallBadge settings.
 func EmojiPrefixed(msg string) string {
 	if NoEmoji() {
 		return msg
@@ -21,27 +21,27 @@ func EmojiPrefixed(msg string) string {
 	return InstallBadge() + " " + msg
 }
 
-// NoEmoji reports the NoEmoji setting
+// NoEmoji reports the NoEmoji setting.
 func NoEmoji() bool {
 	return noEmoji
 }
 
-// InstallBadge returns the install badge
+// InstallBadge returns the install badge.
 func InstallBadge() string {
 	return installBadge
 }
 
-// Color reports the color setting
+// Color reports the color setting.
 func Color() bool {
 	return color
 }
 
-// SetNoEmoji sets the NoEmoji setting
+// SetNoEmoji sets the NoEmoji setting.
 func SetNoEmoji(value bool) {
 	noEmoji = value
 }
 
-// SetInstallBadge sets the install badge setting
+// SetInstallBadge sets the install badge setting.
 func SetInstallBadge(value string) {
 	installBadge = value
 }

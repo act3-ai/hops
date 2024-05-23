@@ -6,20 +6,24 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"path/filepath"
 	"strings"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sourcegraph/conc/pool"
 	"oras.land/oras-go/v2"
 	"oras.land/oras-go/v2/content"
-	"oras.land/oras-go/v2/errdef"
+	oraserr "oras.land/oras-go/v2/errdef"
 
 	hopsspec "github.com/act3-ai/hops/internal/apis/annotations.hops.io"
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/bottle"
+	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	brewapi "github.com/act3-ai/hops/internal/brew/api"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/brewfile"
 	"github.com/act3-ai/hops/internal/dependencies"
-	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
+	"github.com/act3-ai/hops/internal/errdef"
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -28,34 +32,40 @@ import (
 
 type copiedBottle struct {
 	repo      oras.GraphTarget
-	info      *v1.Info
+	info      *brewv1.Info
 	indexDesc ocispec.Descriptor
 	index     *ocispec.Index
 }
 
-// Copy represents the action and its options
+// Copy represents the action and its options.
 type Copy struct {
 	*Hops
-	DependencyOptions dependencies.Options
+	// DependencyOptions dependencies.Options
+	DependencyOptions formula.DependencyTags
 
 	File string // path to a Brewfile specifying formulae dependencies
 
-	From          string // source registry for bottles
-	FromOCILayout bool   // use OCI layout directory as source
-	FromPlainHTTP bool   // allow insecure connections to source registry without SSL check
+	From hopsv1.RegistryConfig // source registry for bottles
+	To   hopsv1.RegistryConfig // destination registry for bottles
 
-	To          string // destination registry for bottles
-	ToOCILayout bool   // use OCI layout directory as destination
-	ToPlainHTTP bool   // allow insecure connections to destination registry without SSL check
+	// From          string // source registry for bottles
+	// FromOCILayout bool   // use OCI layout directory as source
+	// FromPlainHTTP bool   // allow insecure connections to source registry without SSL check
+	FromAPIDomain string // HOMEBREW_API_DOMAIN to source metadata from
+	// FromTap       string // Tap source for bottles
+
+	// To          string // destination registry for bottles
+	// ToOCILayout bool   // use OCI layout directory as destination
+	// ToPlainHTTP bool   // allow insecure connections to destination registry without SSL check
 }
 
-// Run runs the action
-func (action *Copy) Run(ctx context.Context, names ...string) error {
-	if action.To == "" {
+// Run runs the action.
+func (action *Copy) Run(ctx context.Context, args []string) error {
+	if action.To.Prefix == "" {
 		return errors.New("empty destination registry")
 	}
 
-	if action.From == "" {
+	if action.From.Prefix == "" {
 		return errors.New("empty source registry")
 	}
 
@@ -66,40 +76,47 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 			return err
 		}
 
-		names = append(names, bf.Formula...)
+		args = append(args, bf.Formula...)
 	}
 
-	o.H1("Copying:\n" + strings.Join(names, " "))
+	o.H1("Copying:\n" + strings.Join(args, " "))
 
-	slog.Debug("copying bottles", slog.Any("names", names))
-
-	// Resolve all formulae
-	formulae, err := action.resolve(ctx, names...)
-	if err != nil {
-		return err
-	}
-
-	auth := action.Hops.AuthClient()
+	names := action.SetAlternateTags(args)
 
 	// Initialize source and destination registries
-	var srcReg bottle.Registry
-	if action.FromOCILayout {
-		srcReg = bottle.NewLocal(action.From)
-	} else {
-		srcReg, err = bottle.NewRegistry(action.From, auth, action.FromPlainHTTP)
+	srcReg, err := hopsRegistry(ctx, action.AuthClient(), &action.From)
+	if err != nil {
+		return fmt.Errorf("initializing source registry: %w", err)
+	}
+
+	dstReg, err := hopsRegistry(ctx, action.AuthClient(), &action.To)
+	if err != nil {
+		return fmt.Errorf("initializing destination registry: %w", err)
+	}
+
+	var formulary formula.Formulary
+	switch action.FromAPIDomain {
+	// Source API data from the source registry (assumes Hops-style bottles)
+	case "":
+		formulary = hopsClient(
+			filepath.Join(action.Config().Cache, "oci"),
+			action.alternateTags,
+			action.MaxGoroutines(),
+			srcReg)
+	// Use the API to source metadata
+	default:
+		formulary, err = brewformulary.FetchV1(ctx,
+			brewapi.NewClient(action.FromAPIDomain),
+			action.Config().Cache, nil)
 		if err != nil {
-			return fmt.Errorf("initializing source registry: %w", err)
+			return err
 		}
 	}
 
-	var dstReg bottle.Registry
-	if action.ToOCILayout {
-		dstReg = bottle.NewLocal(action.To)
-	} else {
-		dstReg, err = bottle.NewRegistry(action.To, auth, action.ToPlainHTTP)
-		if err != nil {
-			return fmt.Errorf("initializing destination registry: %w", err)
-		}
+	// Resolve all formulae
+	formulae, err := action.resolve(ctx, formulary, names)
+	if err != nil {
+		return err
 	}
 
 	// Initialize Bottle sources/destinations
@@ -131,20 +148,14 @@ func (action *Copy) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*v1.Info, error) {
-	index := action.Index()
-	err := index.Load(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	all, err := action.FetchAll(o.H1, index, formulae...)
+func (action *Copy) resolve(ctx context.Context, formulary formula.Formulary, names []string) ([]*brewv1.Info, error) {
+	all, err := formula.FetchAllPlatform(ctx, formulary, names, platform.All)
 	if err != nil {
 		return nil, err
 	}
 
 	o.H1("Fetching dependencies...")
-	deps, err := dependencies.Walk(ctx, apiwalker.New(index, platform.All), all, &action.DependencyOptions)
+	deps, err := dependencies.WalkAll(ctx, formulary, all, &action.DependencyOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +165,32 @@ func (action *Copy) resolve(ctx context.Context, formulae ...string) ([]*v1.Info
 
 	// Combine root formulae with their dependencies in this list
 	all = append(all, dependents...)
-	return all, nil
+	metadata := make([]*brewv1.Info, 0, len(all))
+	for _, f := range all {
+		switch formulary := formulary.(type) {
+		// Grab metadata simply
+		case *brewformulary.V1Cache:
+			md := formulary.Find(f.Name())
+			if md == nil {
+				return nil, errdef.NewErrFormulaNotFound(f.Name())
+			}
+			metadata = append(metadata, md)
+		// Fetch the generalized formula metadata, cast to v1
+		default:
+			base, err := formulary.FetchFormula(ctx, f.Name())
+			if err != nil {
+				return nil, err
+			}
+			switch base := base.(type) {
+			case *formula.V1:
+				metadata = append(metadata, base.SourceV1())
+			default:
+				return nil, fmt.Errorf("no v1 metadata for formula %s", f.Name())
+			}
+		}
+	}
+
+	return metadata, nil
 }
 
 func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copiedBottles []*copiedBottle) error { //nolint:revive
@@ -200,8 +236,8 @@ func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copied
 	for _, f := range copiedBottles {
 		// IMPORTANT
 		// Remove time-sensitive metadata fields
-		f.info.Installed = []v1.InstalledInfo{} // empty "installed" list
-		f.info.TapGitHead = ""                  // remove "tap_git_head" which changes even when formula metadata does not
+		f.info.Installed = []brewv1.InstalledInfo{} // empty "installed" list
+		f.info.TapGitHead = ""                      // remove "tap_git_head" which changes even when formula metadata does not
 
 		// Push metadata for the bottle index
 		routines.Go(func() error {
@@ -254,8 +290,8 @@ func (action *Copy) copy(ctx context.Context, sources []oras.GraphTarget, copied
 	return nil
 }
 
-func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *v1.Info) (ocispec.Descriptor, error) {
-	tag, err := f.ManifestTag(v1.Stable)
+func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *brewv1.Info) (ocispec.Descriptor, error) {
+	tag, err := f.ManifestTag(brewv1.Stable)
 	if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("resolving tag: %w", err)
 	}
@@ -263,7 +299,7 @@ func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *v1.I
 	l := slog.Default().With(slog.String("bottle", f.Name+":"+tag))
 	l.Info("Copying bottle artifacts")
 
-	opts := oras.DefaultExtendedCopyOptions
+	opts := oras.ExtendedCopyOptions{}
 	opts.CopyGraphOptions = logutil.WithLogging(l, slog.LevelInfo, &opts.CopyGraphOptions)
 
 	md, err := oras.ExtendedCopy(ctx, src, tag, dst, "", opts)
@@ -271,7 +307,7 @@ func copyBottleArtifacts(ctx context.Context, src, dst oras.GraphTarget, f *v1.I
 		return ocispec.Descriptor{}, fmt.Errorf("copying bottle %q: %w", f.Name, err)
 	}
 
-	l.Debug("Copied bottle artifacts", logutil.Descriptor(md))
+	l.Debug("Copied bottle artifacts", logutil.DescriptorGroup(md))
 
 	return md, nil
 }
@@ -307,8 +343,8 @@ func platformMetadatManifestOptions(name, version string, plat platform.Platform
 	return opts
 }
 
-// pushMetadata pushes metadata for the given manifest
-func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *v1.Info) (ocispec.Descriptor, error) { //nolint:unparam
+// pushMetadata pushes metadata for the given manifest.
+func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *brewv1.Info) (ocispec.Descriptor, error) { //nolint:unparam
 	l := slog.Default()
 
 	var manifestOptions oras.PackManifestOptions
@@ -332,7 +368,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing platform metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), slog.String("digest", configDesc.Digest.String()))
+		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), logutil.DescriptorGroup(configDesc))
 
 		configDesc.Platform = manifestDesc.Platform // preserve platform
 
@@ -350,7 +386,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing index metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for index", slog.String("digest", configDesc.Digest.String()))
+		l.Debug("Pushed metadata for index", logutil.DescriptorGroup(configDesc))
 
 		manifestOptions = metadatManifestOptions(f.FullName, f.Version(), manifestDesc, configDesc)
 	}
@@ -361,13 +397,13 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		return ocispec.Descriptor{}, err
 	}
 
-	l.Debug("Pushed metadata manifest", slog.String("digest", metadataManifest.Digest.String()))
+	l.Debug("Pushed metadata manifest", logutil.DescriptorGroup(metadataManifest))
 	return metadataManifest, nil
 }
 
 func mustPushMetadataBlob(ctx context.Context, dst oras.Target, mediaType string, metadata []byte) (ocispec.Descriptor, error) {
 	d, err := oras.PushBytes(ctx, dst, mediaType, metadata)
-	if errors.Is(err, errdef.ErrAlreadyExists) {
+	if errors.Is(err, oraserr.ErrAlreadyExists) {
 		d = content.NewDescriptorFromBytes(mediaType, metadata)
 	} else if err != nil {
 		return ocispec.Descriptor{}, fmt.Errorf("pushing metadata blob: %w", err)

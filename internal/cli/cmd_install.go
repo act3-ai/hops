@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// installCmd creates the command
+// installCmd creates the command.
 func installCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Install{Hops: hops}
 
@@ -28,13 +28,22 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 			the installed formulae or, every 30 days, for all formulae.
 
 			Unless HOMEBREW_NO_INSTALL_UPGRADE is set, brew install formula will
-			upgrade formula if it is already installed but outdated.`),
+			upgrade formula if it is already installed but outdated.
+			
+			STANDALONE MODE:
+
+			Hops has an alternate mode to fetch all packages and metadata from a single OCI registry.
+			The default behavior for standalone mode is to install the version tagged "latest".
+			The tag for a formula can be set by using the argument format "<formula>:<tag>".
+			`),
 		Args:              cobra.MinimumNArgs(1),
 		ValidArgsFunction: formulaNames(hops),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return action.Run(cmd.Context(), args...)
 		},
 	}
+
+	withRegistryFlags(cmd, action.Hops)
 
 	cmd.Flags().BoolVar(&action.Force, "force", false, "Install formulae without checking for previously installed keg-only or non-migrated versions. When installing casks, overwrite existing files (binaries and symlinks are excluded, unless originally from the same cask)")
 	cmd.Flags().BoolVar(&action.DryRun, "dry-run", false, "Show what would be installed, but do not actually install anything")
@@ -49,7 +58,7 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// uninstallCmd creates the command
+// uninstallCmd creates the command.
 func uninstallCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Uninstall{Hops: hops}
 
@@ -61,14 +70,14 @@ func uninstallCmd(hops *actions.Hops) *cobra.Command {
 		Args:              cobra.MinimumNArgs(1),
 		ValidArgsFunction: installedFormulae(hops),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return action.Run(cmd.Context(), args...)
+			return action.Run(cmd.Context(), args)
 		},
 	}
 
 	return cmd
 }
 
-// updateCmd creates the command
+// updateCmd creates the command.
 func updateCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Update{Hops: hops}
 	cmd := &cobra.Command{
@@ -84,7 +93,7 @@ func updateCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// upgradeCmd creates the command
+// upgradeCmd creates the command.
 func upgradeCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Upgrade{Hops: hops}
 	cmd := &cobra.Command{
@@ -98,7 +107,7 @@ func upgradeCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// linkCmd creates the command
+// linkCmd creates the command.
 func linkCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Link{Hops: hops}
 	cmd := &cobra.Command{
@@ -124,7 +133,7 @@ func linkCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// unlinkCmd creates the command
+// unlinkCmd creates the command.
 func unlinkCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Unlink{Hops: hops}
 	cmd := &cobra.Command{

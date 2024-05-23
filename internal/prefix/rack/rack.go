@@ -4,15 +4,15 @@ import (
 	"path/filepath"
 )
 
-// Rack represents a rack in the Cellar
+// Rack represents a rack in the Cellar.
 type Rack string
 
-// String implements fmt.Stringer
+// String implements fmt.Stringer.
 func (r Rack) String() string {
 	return string(r)
 }
 
-// Name returns the name of the formula
+// Name implements formula.Namer.
 func (r Rack) Name() string {
 	return filepath.Base(r.String())
 }

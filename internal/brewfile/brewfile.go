@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-// Brewfile represents a "brew bundle" Brewfile
+// Brewfile represents a "brew bundle" Brewfile.
 type Brewfile struct {
 	Tap     []string // Homebrew Taps
 	Formula []string // Homebrew Formulae
@@ -21,7 +21,7 @@ type Brewfile struct {
 	// VSCode    []string
 }
 
-// Load loads a Brewfile
+// Load loads a Brewfile.
 func Load(path string) (*Brewfile, error) {
 	file, err := os.Open(path)
 	if err != nil {
@@ -36,7 +36,7 @@ func Load(path string) (*Brewfile, error) {
 	return bf, nil
 }
 
-// Parse parses a Brewfile from an io.Reader
+// Parse parses a Brewfile from an io.Reader.
 func Parse(r io.Reader) (*Brewfile, error) {
 	bf := &Brewfile{
 		Tap:     []string{},

@@ -7,7 +7,7 @@ import (
 	"github.com/MakeNowJust/heredoc/v2"
 )
 
-// FormulaDeprecateDisableReasons contains known deprecation and disabling reasons
+// FormulaDeprecateDisableReasons contains known deprecation and disabling reasons.
 //
 // https://github.com/Homebrew/brew/blob/master/Library/Homebrew/deprecate_disable.rb
 var FormulaDeprecateDisableReasons = map[string]string{
@@ -26,10 +26,10 @@ var FormulaDeprecateDisableReasons = map[string]string{
 		We can re-package this once upstream has confirmed that they retagged their release`),
 }
 
-// FormulaDeprecateReason describes why a formula was deprecated
+// FormulaDeprecateReason describes why a formula was deprecated.
 type FormulaDeprecateReason string
 
-// UnmarshalJSON implements json.Unmarshaler
+// UnmarshalJSON implements json.Unmarshaler.
 func (r *FormulaDeprecateReason) UnmarshalJSON(b []byte) error {
 	var err error
 	*r, err = reasonUnmarshalJSON[FormulaDeprecateReason](b, formulaDeprecateDisableReasons)
@@ -39,7 +39,7 @@ func (r *FormulaDeprecateReason) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// MarshalJSON implements json.Marshaler
+// MarshalJSON implements json.Marshaler.
 func (r FormulaDeprecateReason) MarshalJSON() ([]byte, error) {
 	b, err := reasonMarshalJSON(r, kegOnlyReasons)
 	if err != nil {
@@ -48,10 +48,10 @@ func (r FormulaDeprecateReason) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-// FormulaDisableReason describes why a formula was disabled
+// FormulaDisableReason describes why a formula was disabled.
 type FormulaDisableReason string
 
-// UnmarshalJSON implements json.Unmarshaler
+// UnmarshalJSON implements json.Unmarshaler.
 func (r *FormulaDisableReason) UnmarshalJSON(b []byte) error {
 	var err error
 	*r, err = reasonUnmarshalJSON[FormulaDisableReason](b, formulaDeprecateDisableReasons)
@@ -61,7 +61,7 @@ func (r *FormulaDisableReason) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// MarshalJSON implements json.Marshaler
+// MarshalJSON implements json.Marshaler.
 func (r FormulaDisableReason) MarshalJSON() ([]byte, error) {
 	b, err := reasonMarshalJSON(r, kegOnlyReasons)
 	if err != nil {
@@ -70,7 +70,7 @@ func (r FormulaDisableReason) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-// formulaDeprecateDisableReasons defines known deprecation and disabling reasons
+// formulaDeprecateDisableReasons defines known deprecation and disabling reasons.
 //
 // https://github.com/Homebrew/brew/blob/master/Library/Homebrew/deprecate_disable.rb
 var formulaDeprecateDisableReasons = map[string]string{
@@ -89,10 +89,10 @@ var formulaDeprecateDisableReasons = map[string]string{
 		We can re-package this once upstream has confirmed that they retagged their release`),
 }
 
-// KegOnlyReason is used for the reason field in keg_only_reason
+// KegOnlyReason is used for the reason field in keg_only_reason.
 type KegOnlyReason string
 
-// UnmarshalJSON implements json.Unmarshaler
+// UnmarshalJSON implements json.Unmarshaler.
 func (r *KegOnlyReason) UnmarshalJSON(b []byte) error {
 	var err error
 	*r, err = reasonUnmarshalJSON[KegOnlyReason](b, kegOnlyReasons)
@@ -102,7 +102,7 @@ func (r *KegOnlyReason) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// MarshalJSON implements json.Marshaler
+// MarshalJSON implements json.Marshaler.
 func (r KegOnlyReason) MarshalJSON() ([]byte, error) {
 	b, err := reasonMarshalJSON(r, kegOnlyReasons)
 	if err != nil {
@@ -111,14 +111,14 @@ func (r KegOnlyReason) MarshalJSON() ([]byte, error) {
 	return b, nil
 }
 
-// knownKegOnlyReasons stores the reason aliases
+// knownKegOnlyReasons stores the reason aliases.
 var kegOnlyReasons = map[string]string{
 	":versioned_formula": "this is an alternate version of another formula.",
 	":provided_by_macos": "macOS already provides this software and installing another version in parallel can cause all kinds of trouble.",
 	":shadowed_by_macos": "macOS provides similar software and installing this software in parallel can cause all kinds of trouble.",
 }
 
-// reasonUnmarshalJSON is a helper for json.Unmarshaler functions
+// reasonUnmarshalJSON is a helper for json.Unmarshaler functions.
 func reasonUnmarshalJSON[T ~string](b []byte, aliases map[string]string) (T, error) {
 	var s string
 	err := json.Unmarshal(b, &s)
@@ -134,7 +134,7 @@ func reasonUnmarshalJSON[T ~string](b []byte, aliases map[string]string) (T, err
 	return T(s), nil
 }
 
-// reasonMarshalJSON is a helper for json.Marshaler functions
+// reasonMarshalJSON is a helper for json.Marshaler functions.
 func reasonMarshalJSON[T ~string](r T, aliases map[string]string) ([]byte, error) {
 	s := string(r)
 

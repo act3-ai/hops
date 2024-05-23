@@ -9,23 +9,30 @@ import (
 
 	"github.com/act3-ai/hops/internal/actions"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
-	"github.com/act3-ai/hops/internal/dependencies"
+	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
+	"github.com/act3-ai/hops/internal/formula"
 )
 
-// AutocompleteFormulae returns an autocompletion function that suggests formula names
+// AutocompleteFormulae returns an autocompletion function that suggests formula names.
 func AutocompleteFormulae(ctx context.Context, action *actions.Hops) func(s string) []string {
 	return func(_ string) []string {
-		index := action.Index()
-		err := index.Load(ctx)
+		index, err := action.Formulary(ctx)
 		if err != nil {
 			cobra.CompErrorln("loading completions: " + err.Error())
 			return []string{}
 		}
-		return index.ListNames()
+
+		switch index := index.(type) {
+		case brewformulary.PreloadedFormulary:
+			return index.ListNames()
+		default:
+			cobra.CompErrorln("completions not available for standalone regsistry mode")
+			return []string{}
+		}
 	}
 }
 
-// CompleteInstalledFormulae returns an autocompletion function that suggests formula names
+// CompleteInstalledFormulae returns an autocompletion function that suggests formula names.
 func CompleteInstalledFormulae(_ context.Context, action *actions.Hops) func(s string) []string {
 	return func(_ string) []string {
 		entries, err := os.ReadDir(action.Prefix().Cellar())
@@ -47,21 +54,21 @@ func CompleteInstalledFormulae(_ context.Context, action *actions.Hops) func(s s
 	}
 }
 
-// formulaNames produces the autocompletion function for formula names
+// formulaNames produces the autocompletion function for formula names.
 func formulaNames(hops *actions.Hops) func(cmd *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return AutocompleteFormulae(cmd.Context(), hops)(toComplete), cobra.ShellCompDirectiveNoFileComp
 	}
 }
 
-// installedFormulae produces the autocompletion function for installed formula names
+// installedFormulae produces the autocompletion function for installed formula names.
 func installedFormulae(hops *actions.Hops) func(cmd *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 	return func(cmd *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return CompleteInstalledFormulae(cmd.Context(), hops)(toComplete), cobra.ShellCompDirectiveNoFileComp
 	}
 }
 
-// withRegistryFlags adds a flag to override the registry field in config
+// withRegistryFlags adds a flag to override the registry field in config.
 func withRegistryFlags(cmd *cobra.Command, action *actions.Hops) {
 	var registry string
 	var plainHTTP bool
@@ -77,8 +84,8 @@ func withRegistryFlags(cmd *cobra.Command, action *actions.Hops) {
 	})
 }
 
-// withDependencyFlags adds dependency resolution flags
-func withDependencyFlags(cmd *cobra.Command, opts *dependencies.Options) {
+// withDependencyFlags adds flags for dependency resolution.
+func withDependencyFlags(cmd *cobra.Command, opts *formula.DependencyTags) {
 	cmd.Flags().BoolVar(&opts.IncludeBuild, "include-build", false, "Include :build dependencies for formula")
 	cmd.Flags().BoolVar(&opts.IncludeOptional, "include-optional", false, "Include :optional dependencies for formula")
 	cmd.Flags().BoolVar(&opts.IncludeTest, "include-test", false, "Include :test dependencies for formula (non-recursive)")

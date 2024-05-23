@@ -11,10 +11,11 @@ import (
 
 	"github.com/bmatcuk/doublestar/v4"
 
+	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
-// LinkedFiles finds all files in the prefix that link into the given kegs
+// LinkedFiles finds all files in the prefix that link into the given kegs.
 func (p Prefix) LinkedFiles(kegs ...string) ([]string, error) {
 	linked := []string{}
 	for _, pdir := range p.MustExistSubdirectories() {
@@ -49,7 +50,7 @@ func (p Prefix) LinkedFiles(kegs ...string) ([]string, error) {
 	return linked, nil
 }
 
-// BrokenLinks finds all broken links in the prefix
+// BrokenLinks finds all broken links in the prefix.
 func (p Prefix) BrokenLinks() ([]string, error) {
 	broken := []string{}
 	for _, pdir := range p.MustExistSubdirectories() {
@@ -87,10 +88,16 @@ func (p Prefix) BrokenLinks() ([]string, error) {
 	return broken, nil
 }
 
-// LinkOptions configure the link step
+// LinkOptions configure the link step.
 type LinkOptions symlink.Options
 
-// Link links a keg from the Cellar into the prefix
+// FormulaLink links a keg from the Cellar into the prefix.
+func (p Prefix) FormulaLink(f formula.Formula, opts *LinkOptions) (int, int, error) {
+	return p.Link(f.Name(), formula.PkgVersion(f.Version()), opts)
+}
+
+// Link links a keg from the Cellar into the prefix.
+//
 // https://github.com/Homebrew/brew/blob/ea2892f8ee58494623fc3c15cc8ce81b9124e6e6/Library/Homebrew/keg.rb
 //
 // TODO: make sure etc and var directories are installed correctly:
@@ -177,7 +184,7 @@ var (
 		return modeLink
 	}
 
-	// shareModeFunc represents Homebrew's rules when linking the directory
+	// shareModeFunc represents Homebrew's rules when linking the directory.
 	shareModeFunc modeFunc = func(path string, _ fs.DirEntry) mode {
 		// Iterate over these, it's easier
 		matchKegSharePaths := func(path string) bool {
@@ -208,7 +215,7 @@ var (
 		}
 	}
 
-	// libModeFunc represents Homebrew's rules when linking the directory
+	// libModeFunc represents Homebrew's rules when linking the directory.
 	libModeFunc modeFunc = func(path string, _ fs.DirEntry) mode {
 		switch {
 		case matches("lib/charset.alias", path):
@@ -235,7 +242,7 @@ var (
 		}
 	}
 
-	// frameworksModeFunc represents Homebrew's rules when linking the directory
+	// frameworksModeFunc represents Homebrew's rules when linking the directory.
 	frameworksModeFunc modeFunc = func(path string, _ fs.DirEntry) mode {
 		switch {
 		case
@@ -284,8 +291,8 @@ var linkedDirectories = []linkedDirectory{
 	},
 }
 
-// linkDir walks all files and directories under the root directory within the keg
-// modeFunc is called for each entry to tells linkDir whether to create the entry, link to it, or skip it
+// linkDir walks all files and directories under the root directory within the keg.
+// modeFunc is called for each entry to tells linkDir whether to create the entry, link to it, or skip it.
 func (p Prefix) linkDir(kegPath string, root string, modeFunc func(path string, d fs.DirEntry) mode, opts *symlink.Options) (int, error) {
 	links := 0
 	return links, fs.WalkDir(os.DirFS(kegPath), root, func(path string, d fs.DirEntry, err error) error {
@@ -350,7 +357,7 @@ func (p Prefix) linkDir(kegPath string, root string, modeFunc func(path string, 
 	})
 }
 
-// handles file linking based on mode m
+// handles file linking based on mode m.
 func linkFile(m mode, src, dst string, opts *symlink.Options) (bool, error) {
 	switch m {
 	case modeSkipFile:
@@ -374,7 +381,7 @@ func linkFile(m mode, src, dst string, opts *symlink.Options) (bool, error) {
 	}
 }
 
-// handles directory linking based on mode m
+// handles directory linking based on mode m.
 func linkDir(m mode, src, dst string, opts *symlink.Options) (bool, error) {
 	switch m {
 	case modeSkipDir:

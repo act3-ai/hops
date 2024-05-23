@@ -2,82 +2,64 @@ package dependencies
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"github.com/xlab/treeprint"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/brew"
+	"github.com/act3-ai/hops/internal/errdef"
+	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Options for dependency evaluation
-type Options struct {
-	SkipRecommended bool
-	IncludeTest     bool
-	IncludeOptional bool
-	IncludeBuild    bool
+// DependencyGraph represents the evaluated dependency graph.
+type DependencyGraph struct {
+	rootKeys      []string                           // list of root formulae
+	dependentKeys []string                           // list of dependency names, ordered
+	formulae      map[string]formula.PlatformFormula // stores dependency information
+	trees         map[string]*treeprint.Node         // stores dependency trees
 }
 
-// DependencyGraph represents the evaluated dependency graph
-type DependencyGraph[T any] struct {
-	store         Store[T]
-	opts          *Options
-	rootKeys      []string                   // list of root formulae
-	dependentKeys []string                   // list of dependency names, ordered
-	info          map[string]T               // stores dependency information
-	trees         map[string]*treeprint.Node // stores dependency trees
-}
-
-// Store represents a searchable source of dependency information
-type Store[T any] interface {
-	Key(entry T) string
-	DirectDependencies(ctx context.Context, entry T, opts *Options) ([]T, error)
-	// Fetch(keys []string) ([]T, error)
-	// DirectDependencies(ctx context.Context, node T, opts *Options) (keys []string, err error)
-}
-
-// Dependents returns the list of computed dependencies
-func (deps DependencyGraph[T]) Dependents() []T {
-	list := make([]T, len(deps.dependentKeys))
+// Dependents returns the list of computed dependencies.
+func (deps DependencyGraph) Dependents() []formula.PlatformFormula {
+	list := make([]formula.PlatformFormula, len(deps.dependentKeys))
 	for i, name := range deps.dependentKeys {
-		list[i] = deps.info[name]
+		list[i] = deps.formulae[name]
 	}
 	return list
 }
 
-// Roots returns the list of computed dependencies
-func (deps *DependencyGraph[T]) Roots() []T {
-	list := make([]T, len(deps.rootKeys))
+// Roots returns the list of computed dependencies.
+func (deps *DependencyGraph) Roots() []formula.PlatformFormula {
+	list := make([]formula.PlatformFormula, len(deps.rootKeys))
 	for i, name := range deps.rootKeys {
-		list[i] = deps.info[name]
+		list[i] = deps.formulae[name]
 	}
 	return list
 }
 
-// Tree returns a printable tree of dependencies
-func (deps *DependencyGraph[T]) Tree(root string) (treeprint.Tree, error) {
+// Tree returns a printable tree of dependencies.
+func (deps *DependencyGraph) Tree(root string) (treeprint.Tree, error) {
 	tree, ok := deps.trees[root]
 	if !ok {
-		return nil, brew.NewErrFormulaNotFound(root)
+		return nil, errdef.NewErrFormulaNotFound(root)
 	}
 	return tree, nil
 }
 
-// Walk evaluates the dependency graph of all root nodes
-func Walk[T any](ctx context.Context, store Store[T], roots []T, opts *Options) (*DependencyGraph[T], error) {
-	deps := &DependencyGraph[T]{
-		store:         store,
-		opts:          opts,
+// WalkPlatform evaluates the dependency graph of all root nodes for a specific platform.
+func Walk(ctx context.Context, store formula.Formulary, roots []formula.PlatformFormula, plat platform.Platform, tags *formula.DependencyTags) (*DependencyGraph, error) {
+	deps := &DependencyGraph{
 		rootKeys:      []string{},
 		dependentKeys: []string{},
-		info:          map[string]T{},
+		formulae:      map[string]formula.PlatformFormula{},
 		trees:         map[string]*treeprint.Node{},
 	}
 
 	for _, f := range roots {
-		deps.rootKeys = append(deps.rootKeys, deps.store.Key(f))
+		deps.rootKeys = append(deps.rootKeys, f.Name())
 
-		_, err := deps.add(ctx, f)
+		_, err := deps.add(ctx, store, f, plat, tags)
 		if err != nil {
 			return deps, err
 		}
@@ -86,9 +68,16 @@ func Walk[T any](ctx context.Context, store Store[T], roots []T, opts *Options) 
 	return deps, nil
 }
 
-// add adds the given Formula to the found dependencies
-func (deps *DependencyGraph[T]) add(ctx context.Context, f T) (*treeprint.Node, error) {
-	key := deps.store.Key(f)
+// WalkAll evaluates the dependency graph of all root nodes.
+//
+// If dependencies vary by platform, all possible dependencies will be included.
+func WalkAll(ctx context.Context, store formula.Formulary, roots []formula.PlatformFormula, tags *formula.DependencyTags) (*DependencyGraph, error) {
+	return Walk(ctx, store, roots, platform.All, tags)
+}
+
+// add adds the given Formula to the found dependencies.
+func (deps *DependencyGraph) add(ctx context.Context, store formula.Formulary, f formula.PlatformFormula, plat platform.Platform, tags *formula.DependencyTags) (*treeprint.Node, error) {
+	key := f.Name()
 
 	// Use trees to check for existence because the tree is added last
 	n, ok := deps.trees[key]
@@ -99,88 +88,45 @@ func (deps *DependencyGraph[T]) add(ctx context.Context, f T) (*treeprint.Node, 
 
 	node := &treeprint.Node{Value: key}
 
-	var children []T
-	var err error
-	if slices.Contains(deps.rootKeys, key) {
-		children, err = deps.store.DirectDependencies(ctx, f, deps.opts)
-	} else {
+	children := f.Dependencies().ForTags(tags)
+
+	if !slices.Contains(deps.rootKeys, key) {
 		deps.dependentKeys = append(deps.dependentKeys, key)
-		// Don't include indirect test dependencies
-		children, err = deps.store.DirectDependencies(ctx, f, deps.opts.withoutTest())
 	}
+
+	childformulae, err := formula.FetchAllPlatform(ctx, store, children, plat)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, d := range children {
-		child, err := deps.add(ctx, d)
-		if err != nil {
-			return nil, err
-		}
+	for _, d := range childformulae {
+		switch d := d.(type) {
+		case formula.PlatformFormula:
+			// Don't include indirect test dependencies
+			child, err := deps.add(ctx, store, d, plat, withoutTest(tags))
+			if err != nil {
+				return nil, err
+			}
 
-		// Append to list of child nodes
-		node.Nodes = append(node.Nodes, child)
+			// Append to list of child nodes
+			node.Nodes = append(node.Nodes, child)
+		default:
+			return nil, fmt.Errorf("no dependency information for formula %s", d.Name())
+		}
 	}
 
-	deps.info[key] = f
+	deps.formulae[key] = f
 	deps.trees[key] = node
 
 	// Return my tree once all my children have been accounted for
 	return node, nil
 }
 
-func (opts *Options) withoutTest() *Options {
-	opts2 := opts.clone()
-	opts2.IncludeTest = false
-	return opts2
-}
-
-func (opts *Options) clone() *Options {
-	return &Options{
-		SkipRecommended: opts.SkipRecommended,
-		IncludeTest:     opts.IncludeTest,
-		IncludeOptional: opts.IncludeOptional,
-		IncludeBuild:    opts.IncludeBuild,
-	}
-}
-
-// ForOptions computes direct dependencies according to opts
-func ForOptions(info *v1.PlatformInfo, opts *Options) []string {
-	deps := slices.Clone(info.Dependencies)
-
-	if !opts.SkipRecommended {
-		deps = append(deps, info.RecommendedDependencies...)
-	}
-	if opts.IncludeBuild {
-		deps = append(deps, info.BuildDependencies...)
-	}
-	if opts.IncludeTest {
-		deps = append(deps, info.TestDependencies...)
-	}
-	if opts.IncludeOptional {
-		deps = append(deps, info.OptionalDependencies...)
-	}
-
-	slices.Sort(deps)           // sort dependencies
-	return slices.Compact(deps) // remove duplicates
-}
-
-// CategorizedDependencies stores dependencies in lists by kind
-type CategorizedDependencies struct {
-	Required    []string
-	Build       []string
-	Test        []string
-	Recommended []string
-	Optional    []string
-}
-
-// ToCategorized converts direct dependencies to a categorized struct
-func ToCategorized(info *v1.PlatformInfo) *CategorizedDependencies {
-	return &CategorizedDependencies{
-		Required:    slices.Clone(info.Dependencies),
-		Build:       slices.Clone(info.BuildDependencies),
-		Test:        slices.Clone(info.TestDependencies),
-		Recommended: slices.Clone(info.RecommendedDependencies),
-		Optional:    slices.Clone(info.OptionalDependencies),
+func withoutTest(tags *formula.DependencyTags) *formula.DependencyTags {
+	return &formula.DependencyTags{
+		IncludeBuild:    tags.IncludeBuild,
+		IncludeTest:     false,
+		SkipRecommended: tags.SkipRecommended,
+		IncludeOptional: tags.IncludeOptional,
 	}
 }

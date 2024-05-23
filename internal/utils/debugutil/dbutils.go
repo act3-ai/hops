@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-// DebugMarshalJSON
+// DebugMarshalJSON is used for debug printing.
 func DebugMarshalJSON(v any) string {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {

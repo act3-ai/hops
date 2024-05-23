@@ -1,6 +1,6 @@
 package v3
 
-// Cask represents a cask's metadata
+// Cask represents a cask's metadata.
 type Cask struct {
 	Token            string             `json:"token"`
 	Name             string             `json:"name"`
@@ -18,12 +18,12 @@ type Cask struct {
 	} `json:"depends_on"`
 }
 
-// CaskArtifact represents an artifact stanza defined by a cask
+// CaskArtifact represents an artifact stanza defined by a cask.
 //
 // https://docs.brew.sh/Cask-Cookbook#stanza-descriptions
 type CaskArtifact map[string][]any
 
-// URLSpec the url_specs entry
+// URLSpec the url_specs entry.
 type URLSpec struct {
 	Verified  string            `json:"verified,omitempty"`
 	Using     string            `json:"using,omitempty"`   // one of "post" or "homebrew_curl"

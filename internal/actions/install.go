@@ -4,32 +4,31 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
-	"path/filepath"
 	"slices"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/sourcegraph/conc/iter"
-	"oras.land/oras-go/v2/registry/remote/retry"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
-	"github.com/act3-ai/hops/internal/bottle"
 	"github.com/act3-ai/hops/internal/dependencies"
-	apiwalker "github.com/act3-ai/hops/internal/dependencies/api"
+	"github.com/act3-ai/hops/internal/errdef"
 	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/formula/bottle"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/pretty"
+	"github.com/act3-ai/hops/internal/utils/iterutil"
 )
 
-// Install represents the action and its options
+// Install represents the action and its options.
 type Install struct {
 	*Hops
 
-	DependencyOptions dependencies.Options
+	DependencyOptions formula.DependencyTags
 
 	platform platform.Platform // store target platform
 
@@ -57,10 +56,15 @@ type Install struct {
 	Overwrite bool
 }
 
-// Run runs the action
-func (action *Install) Run(ctx context.Context, names ...string) error {
-	brew := action.Homebrew()
+// Run runs the action.
+func (action *Install) Run(ctx context.Context, args ...string) error {
 	action.platform = platform.SystemPlatform()
+	names := action.SetAlternateTags(args)
+
+	err := action.autoUpdate(ctx)
+	if err != nil {
+		return err
+	}
 
 	installs, err := action.resolveInstalls(ctx, names)
 	if err != nil {
@@ -72,150 +76,154 @@ func (action *Install) Run(ctx context.Context, names ...string) error {
 		return nil
 	}
 
+	// Exit if there is nothing to install
 	if len(installs) == 0 {
 		return nil
 	}
 
-	store := bottle.NewIndexStore(
-		action.AuthHeaders(),
-		retry.DefaultClient,
-		action.AuthClient(),
-		brew.Cache)
-
-	// Use an iterator to start concurrent installs of each bottle
-	m := iter.Mapper[*v1.Info, string]{MaxGoroutines: action.MaxGoroutines()}
-	results, err := m.MapErr(installs,
-		func(f **v1.Info) (string, error) {
-			return action.run(ctx, store, *f)
-		})
+	// Get bottle registry
+	reg, err := action.BottleRegistry(ctx)
 	if err != nil {
 		return err
 	}
 
-	kegs := []string{}
-	for _, keg := range results {
-		if keg != "" {
-			kegs = append(kegs, keg)
-		}
+	// Download all bottles
+	bottles, err := bottle.FetchAll(ctx, reg, installs)
+	if err != nil {
+		return err
+	}
+
+	// Install the downloaded bottles
+	routines := iter.Iterator[formula.PlatformFormula]{MaxGoroutines: action.MaxGoroutines()}
+	err = iterutil.ForEachIdxErr(routines, installs, func(i int, pf *formula.PlatformFormula) error {
+		// var err error // create local err variable to avoid race
+		btl := bottles[i]
+		return errors.Join(
+			action.run(ctx, *pf, btl),
+			btl.Close(),
+		)
+	})
+	if err != nil {
+		return err
 	}
 
 	// Print stats on the keg's contents
-	o.Hai(fmt.Sprintf("Installed %d formulae in the Cellar:", len(kegs)))
-	pretty.InstallStats(kegs)
+	o.Hai(fmt.Sprintf("Installed %d formulae in the Cellar:", len(installs)))
+	pretty.FormulaInstallStats(action.Prefix(), installs)
 
-	// todo: fix so it does not print caveats of already up-to-date formulae
-	// 3. Finish by printing all caveats again
+	// Finish by printing all caveats again
 	for _, f := range installs {
 		if caveats := pretty.Caveats(f, action.Prefix()); caveats != "" {
-			o.Hai(f.Name + ": Caveats\n" + caveats)
+			o.Hai(f.Name() + ": Caveats\n" + caveats)
 		}
 	}
 
 	return nil
 }
 
-// resolveInstalls resolves the list of formulae that will be installed
-func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]*v1.Info, error) {
-	index := action.Index()
-	err := formula.AutoUpdate(ctx, index, &action.Config().Homebrew.AutoUpdate)
+// resolveInstalls resolves the list of formulae that will be installed.
+func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]formula.PlatformFormula, error) {
+	formulary, err := action.Formulary(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// Resolve direct formulae
-	roots, err := action.FetchAll(o.H1, index, names...)
+	// Fetch directly-requested formulae
+	all, err := formula.FetchAllPlatform(ctx, formulary, names, action.platform)
 	if err != nil {
 		return nil, err
 	}
 
-	roots, skipped, err := filterUninstalled(ctx, roots, formulaInstalled(action.Prefix()))
+	// Filter requested formulae into installed and not installed lists
+	roots, reinstalls, err := prefix.FilterInstalled(action.Prefix(), all)
 	if err != nil {
 		return nil, err
 	}
-	for _, f := range skipped {
-		o.Poo(reinstallHelper(f.Name, f.Version()))
+
+	// Direct user to the reinstall command
+	for _, f := range reinstalls {
+		version := formula.PkgVersion(f.Version())
+		o.Poo(heredoc.Docf(`
+			%s
+			To reinstall %s, run:
+			  hops reinstall %s`,
+			errdef.NewErrFormulaUpToDate(f.Name(), version).Error(),
+			version,
+			f.Name()))
+	}
+
+	// Exit with no error for reinstalls
+	if len(reinstalls) > 0 {
+		return nil, nil
 	}
 
 	// Ignore dependencies
+	// --ignore-dependencies flag
 	if action.IgnoreDependencies {
 		return roots, nil
 	}
 
-	graph, err := dependencies.Walk(ctx,
-		apiwalker.New(index, action.platform),
-		roots,
-		&action.DependencyOptions)
+	// Build dependency graph
+	graph, err := dependencies.Walk(ctx, formulary, roots, action.platform, &action.DependencyOptions)
 	if err != nil {
 		return nil, err
 	}
 
+	// Print all resolved dependencies
 	printFormulae(formula.Names(roots), action.DryRun)
 
-	dependents := graph.Dependents()
-	printDeps(formula.Names(dependents), action.DryRun, action.IgnoreDependencies)
+	// Filter dependent formulae into installed and not installed lists
+	allDeps := graph.Dependents()
+	slog.Debug("Resolved dependencies",
+		slog.Any("dependencies", formula.Names(allDeps)),
+		action.DependencyOptions.LogAttr(),
+	)
+	missingDeps, installedDeps, err := prefix.FilterInstalled(action.Prefix(), allDeps)
+	if err != nil {
+		return nil, err
+	}
+	slog.Debug("Validated dependencies", slog.Any("installed", formula.Names(installedDeps)), slog.Any("missing", formula.Names(missingDeps)))
+
+	printDeps(formula.Names(missingDeps), action.DryRun, action.IgnoreDependencies)
 
 	// Only install dependencies
 	if action.OnlyDependencies {
-		return dependents, nil
+		return missingDeps, nil
 	}
 
 	// Install dependencies and then requested formulae
-	return slices.Concat(dependents, roots), nil
+	return slices.Concat(missingDeps, graph.Roots()), nil
 }
 
-// run is the meat
-func (action *Install) run(ctx context.Context, store *bottle.IndexStore, f *v1.Info) (string, error) {
-	outdated, err := action.Prefix().FormulaOutdated(f)
-	if err != nil {
-		return "", err
-	}
-
-	if !outdated {
-		o.Hai(fmt.Sprintf("%s %s is already installed and up-to-date.", f.FullName, f.Version()))
-		return "", nil
-	}
-
-	b, err := bottle.FromFormula(f, v1.Stable, action.platform)
-	if err != nil {
-		return "", err
-	}
-
-	if !b.CompatibleWithCellar(action.Prefix().Cellar()) {
-		// incompatibleCellarWarning(bottles[i], brew.Cellar())
-		slog.Warn(newIncompatibleCellarError(b.Name, b.File.Cellar, action.Prefix().Cellar()).Error())
-	}
-	slog.Info("Downloading " + store.Source(b))
-
-	// 1. Download bottle to the cache
-	err = store.Download(ctx, b)
-	if err != nil {
-		return "", err
-	}
+// run is the meat.
+func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.Reader) error {
+	l := slog.Default().With(slog.String("formula", f.Name()))
 
 	// 2. Pour bottle to the Cellar
-	slog.Info("Pouring " + b.ArchiveName()) // ex: Pouring cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
-	err = bottle.PourFile(store.Path(b), b, action.Prefix().Cellar())
+	l.Info("Pouring bottle", slog.String("file", formula.BottleFileName(f)))
+	// slog.Info("Pouring " + b.ArchiveName()) // ex: Pouring cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
+	err := action.Prefix().Pour(btl)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	// 3. Link keg to the prefix
-	if !f.KegOnly || action.Force {
-		slog.Info("Linking " + b.Name) // ex: Linking cowsay
+	if !f.IsKegOnly() || action.Force {
+		l.Info("Linking keg", slog.String("keg", action.Prefix().FormulaKegPath(f))) // ex: Linking cowsay
 
 		lnopts := &prefix.LinkOptions{
-			Name:      b.Name,
+			Name:      f.Name(),
 			Overwrite: action.Overwrite,
 			DryRun:    action.DryRun,
 		}
 
-		_, _, err = action.Prefix().Link(f.Name, f.Version(), lnopts)
+		_, _, err = action.Prefix().FormulaLink(f, lnopts)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
 
-	return action.Prefix().KegPath(f.Name, f.Version()), nil
+	return nil
 }
 
 func printFormulae(roots []string, dryrun bool) {
@@ -260,15 +268,4 @@ func printDeps(deps []string, dryrun, ignoredeps bool) {
 	default:
 		o.H1(fmt.Sprintf("Installing %d %s:\n%s", len(deps), dword, dlist))
 	}
-}
-
-func newIncompatibleCellarError(name, wantCellar, cellar string) error {
-	return errors.New(heredoc.Docf(`
-		bottle for %s may be incompatible with your settings
-		  HOMEBREW_CELLAR: %s (yours is %s)
-		  HOMEBREW_PREFIX: %s (yours is %s)`,
-		name,
-		wantCellar, cellar,
-		filepath.Dir(wantCellar), filepath.Dir(cellar),
-	))
 }

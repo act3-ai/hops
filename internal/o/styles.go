@@ -16,13 +16,13 @@ const (
 	X       = "✘"   // "X" mark used to indicate failure
 )
 
-// Defined styles
+// Defined styles.
 var (
-	// Returns width of terminal clamped between 80 and 120
-	// With of 80 is used for non-TTY terminals
+	// Returns width of terminal clamped between 80 and 120.
+	// With of 80 is used for non-TTY terminals.
 	Width = min(utils.TerminalWidth(80), 120)
 
-	output  = termenv.DefaultOutput() // Terminal output profile
+	output  = termenv.DefaultOutput() // Terminal output profile.
 	red     = termenv.ANSIRed
 	yellow  = termenv.ANSIYellow
 	green   = termenv.ANSIGreen
@@ -39,14 +39,14 @@ var (
 	styleMagenta   = output.String().Foreground(magenta)
 )
 
-// Semantic aliases for defined styles
+// Semantic aliases for defined styles.
 var (
 	StyleSuccess = StyleGreen  // semantic name for the green style
 	StyleWarning = StyleYellow // semantic name for the yellow style
 	StyleError   = StyleRed    // semantic name for the red style
 )
 
-// Styles each string
+// Styles each string.
 func StyleEach(style termenv.Style, s []string) []string {
 	styled := make([]string, len(s))
 	copy(styled, s)
@@ -56,42 +56,42 @@ func StyleEach(style termenv.Style, s []string) []string {
 	return styled
 }
 
-// Styles string bold
+// Styles string bold.
 func StyleBold(s string) string {
 	return styleBold.Styled(s)
 }
 
-// Styles string faded
+// Styles string faded.
 func StyleFaint(s string) string {
 	return styleFaint.Styled(s)
 }
 
-// Styles string underlined
+// Styles string underlined.
 func StyleUnderline(s string) string {
 	return styleUnderline.Styled(s)
 }
 
-// Styles string blue
+// Styles string blue.
 func StyleBlue(s string) string {
 	return styleBlue.Styled(s)
 }
 
-// Styles string green
+// Styles string green.
 func StyleGreen(s string) string {
 	return styleGreen.Styled(s)
 }
 
-// Styles string red
+// Styles string red.
 func StyleRed(s string) string {
 	return styleRed.Styled(s)
 }
 
-// Styles string yellow
+// Styles string yellow.
 func StyleYellow(s string) string {
 	return styleYellow.Styled(s)
 }
 
-// Returns log styles for charmbracelet/log
+// Returns log styles for charmbracelet/log.
 func LogStyles() *log.Styles {
 	styles := log.DefaultStyles()
 
@@ -112,7 +112,7 @@ func LogStyles() *log.Styles {
 	return styles
 }
 
-// aliases for internal log utility (avoid import cycles)
+// aliases for internal log utility (avoid import cycles).
 var (
 	ErrKey  = hlog.ErrKey
 	ErrAttr = hlog.ErrAttr

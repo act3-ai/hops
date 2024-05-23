@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// infoCmd creates the command
+// infoCmd creates the command.
 func infoCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Info{Hops: hops}
 	cmd := &cobra.Command{
@@ -32,7 +32,7 @@ func infoCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// searchCmd creates the command
+// searchCmd creates the command.
 func searchCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Search{Hops: hops}
 	text := o.StyleUnderline("text")
@@ -53,7 +53,7 @@ func searchCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// depsCmd creates the command
+// depsCmd creates the command.
 func depsCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Deps{Hops: hops}
 
@@ -88,7 +88,7 @@ func depsCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// leavesCmd creates the command
+// leavesCmd creates the command.
 func leavesCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Leaves{Hops: hops}
 
@@ -108,7 +108,7 @@ func leavesCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// listCmd creates the command
+// listCmd creates the command.
 func listCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.List{Hops: hops}
 

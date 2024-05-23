@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"strings"
 
-	v1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix/keg"
 )
 
-// List represents the action and its options
+// List represents the action and its options.
 type List struct {
 	*Hops
 
@@ -58,7 +58,7 @@ type List struct {
 	// TimeSort bool
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *List) Run(ctx context.Context, names ...string) error {
 	switch {
 	case len(names) > 0:
@@ -97,19 +97,8 @@ func multiple(kegs []keg.Keg) {
 	}
 }
 
-func (action *Hops) resolveNames(ctx context.Context, log func(string), names ...string) ([]*v1.Info, error) {
-	index := action.Index()
-	err := index.Load(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// Resolve direct formulae
-	return action.FetchAll(log, index, names...)
-}
-
-func (action *List) names(ctx context.Context, names []string) error {
-	formulae, err := action.resolveNames(ctx, o.Noop, names...)
+func (action *List) names(ctx context.Context, args []string) error {
+	formulae, err := action.fetchFromArgs(ctx, args, platform.SystemPlatform())
 	if err != nil {
 		return err
 	}

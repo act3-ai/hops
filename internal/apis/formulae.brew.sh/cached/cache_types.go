@@ -12,18 +12,19 @@ import (
 )
 
 const (
-	FormulaNamesFile   = "formula_names.txt"   // FormulaAliasesFile is the name of the formula name cache
-	FormulaAliasesFile = "formula_aliases.txt" // FormulaAliasesFile is the name of the formula aliases cache
+	FormulaNamesFile   = "formula_names.txt"   // FormulaAliasesFile is the name of the formula name cache.
+	FormulaAliasesFile = "formula_aliases.txt" // FormulaAliasesFile is the name of the formula aliases cache.
+	FormulaRenamesFile = "formula_renames.txt" // FormulaAliasesFile is the name of the formula aliases cache.
 )
 
-// FormulaNames represents the contents of the formula names file
+// FormulaNames represents the contents of the formula names file.
 type FormulaNames []string
 
-// FormulaAliases represents the cached formula aliases file
-// Sorted by the second element (the target name)
+// FormulaAliases represents the cached formula aliases file.
+// Sorted by the second element (the target name).
 type FormulaAliases map[string]string
 
-// LoadFormulaNames loads a formula names list from a file
+// LoadFormulaNames loads a formula names list from a file.
 func LoadFormulaNames(file string) (FormulaNames, error) {
 	b, err := os.ReadFile(file)
 	if err != nil {
@@ -39,13 +40,13 @@ func LoadFormulaNames(file string) (FormulaNames, error) {
 	return fn, nil
 }
 
-// Has reports if the name is found in the formula name list
+// Has reports if the name is found in the formula name list.
 func (fn FormulaNames) Has(name string) bool {
 	_, found := slices.BinarySearch(fn, name)
 	return found
 }
 
-// Index reports the index of name in the formula name list, -1 if not found
+// Index reports the index of name in the formula name list, -1 if not found.
 func (fn FormulaNames) Index(name string) int {
 	i, found := slices.BinarySearch(fn, name)
 	if !found {
@@ -54,7 +55,7 @@ func (fn FormulaNames) Index(name string) int {
 	return i
 }
 
-// WriteFormulaNames writes the formula names to file
+// WriteFormulaNames writes the formula names to file.
 func WriteFormulaNames(fn FormulaNames, file string) error {
 	err := os.WriteFile(file, []byte(strings.Join(fn, "\n")+"\n"), 0o644)
 	if err != nil {
@@ -63,7 +64,7 @@ func WriteFormulaNames(fn FormulaNames, file string) error {
 	return nil
 }
 
-// LoadFormulaAliases loads a formula aliases list from a file
+// LoadFormulaAliases loads a formula aliases list from a file.
 func LoadFormulaAliases(file string) (FormulaAliases, error) {
 	f, err := os.Open(file)
 	if err != nil {
@@ -94,7 +95,7 @@ func LoadFormulaAliases(file string) (FormulaAliases, error) {
 	return aliases, nil
 }
 
-// MarshalCSV returns the aliases marshaled to a pipe-delimited CSV
+// MarshalCSV returns the aliases marshaled to a pipe-delimited CSV.
 func (fa FormulaAliases) MarshalCSV() ([]byte, error) {
 	// Write as pipe-delimited CSV
 	buf := new(bytes.Buffer)
@@ -120,7 +121,7 @@ func (fa FormulaAliases) MarshalCSV() ([]byte, error) {
 	return append(buf.Bytes(), []byte("\n")...), nil
 }
 
-// WriteFormulaNames writes the formula names to file
+// WriteFormulaNames writes the formula names to file.
 func WriteFormulaAliases(fa FormulaAliases, file string) error {
 	b, err := fa.MarshalCSV()
 	if err != nil {

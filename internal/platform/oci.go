@@ -6,7 +6,7 @@ import (
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
-// Prefixes for the OCI platform.os.version field
+// Prefixes for the OCI platform.os.version field.
 const (
 	linuxVersion      = "Ubuntu 22.04"
 	sonomaVersion     = "macOS 14"
@@ -18,7 +18,7 @@ const (
 	highSierraVersion = "macOS 10.13"
 )
 
-// Converts platform to OCI platform
+// Converts platform to OCI platform.
 func FromOCI(r *ocispec.Platform) Platform {
 	p := Unsupported
 
@@ -86,7 +86,7 @@ func FromOCI(r *ocispec.Platform) Platform {
 	return p
 }
 
-// ociPlatform converts a Platform to an OCI platform
+// ociPlatform converts a Platform to an OCI platform.
 func (p Platform) ociPlatform() *ocispec.Platform { //nolint:unused
 	var r *ocispec.Platform
 	switch p {
@@ -168,7 +168,7 @@ func (p Platform) ociPlatform() *ocispec.Platform { //nolint:unused
 	return r
 }
 
-// matchOSVersion reports if osVersion matches versionPrefix
+// matchOSVersion reports if osVersion matches versionPrefix.
 func matchOSVersion(versionPrefix, osVersion string) bool {
 	after, found := strings.CutPrefix(osVersion, versionPrefix)
 	if !found {

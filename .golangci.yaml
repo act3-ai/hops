@@ -1,12 +1,19 @@
 linters:
   enable:
     - bodyclose
+    - containedctx
+    - contextcheck
+    - copyloopvar
+    # - depguard
     - dupl
     - errname
     - errorlint
     - exhaustive
+    # - exportloopref
     - gochecknoinits
+    - gocognit
     - gocritic
+    - godot
     - gofmt
     - goimports
     - gosimple
@@ -16,6 +23,7 @@ linters:
     - misspell
     - noctx
     - nolintlint
+    - nosprintfhostport
     - perfsprint
     - prealloc
     - revive
@@ -27,6 +35,7 @@ linters:
     - unparam
     - unused
     - usestdlibvars
+    # - wrapcheck
 
 linters-settings:
   importas:
@@ -38,6 +47,12 @@ linters-settings:
         alias: ocispec
       - pkg: github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1
         alias: hopsv1
+      - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1
+        alias: brewv1
+      - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v2
+        alias: brewv2
+      - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v3
+        alias: brewv3
 
   sloglint:
     # Enforce using attributes only (overrides no-mixed-args, incompatible with kv-only).

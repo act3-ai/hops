@@ -1,4 +1,4 @@
-package bottle
+package prefix
 
 import (
 	"archive/tar"
@@ -10,47 +10,17 @@ import (
 	"path/filepath"
 )
 
-// PourFile pours the bottle downloaded by the store into the cellar
-func PourFile(path string, b *Bottle, cellar string) error {
-	// The path the bottle will be unzipped to
-	kegPath := filepath.Join(cellar, b.KegPath())
-	err := os.RemoveAll(kegPath)
-	if err != nil {
-		return fmt.Errorf("removing old keg: %w", err)
-	}
-
-	// Open the bottle file
-	bottleFile, err := os.Open(path)
-	if err != nil {
-		return fmt.Errorf("opening bottle: %w", err)
-	}
-	defer bottleFile.Close()
-
+// Pour pours a Bottle into the Cellar.
+func (p Prefix) Pour(btl io.Reader) error {
 	// Untar the bottle
-	err = untar(bottleFile, cellar)
-	if err != nil {
-		return fmt.Errorf("pouring bottle: %w", err)
-	}
-
-	return nil
-}
-
-// PourReader pours the bottle into the cellar
-func PourReader(b io.Reader, cellar string) error {
-	// Untar the bottle
-	if err := untar(b, cellar); err != nil {
+	if err := untar(btl, p.Cellar()); err != nil {
 		return fmt.Errorf("pouring bottle: %w", err)
 	}
 	return nil
-}
-
-// CompatibleWithCellar reports if the bottle is compatible with the given cellar
-func (b *Bottle) CompatibleWithCellar(cellar string) bool {
-	return b.File.Relocatable() || string(b.File.Cellar) == cellar
 }
 
 // untar takes a destination path and a reader; a tar reader loops over the tarfile
-// creating the file structure at 'dst' along the way, and writing any files
+// creating the file structure at 'dst' along the way, and writing any files.
 func untar(r io.Reader, dst string) error {
 	gzr, err := gzip.NewReader(r)
 	if err != nil {
