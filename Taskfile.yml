@@ -226,6 +226,7 @@ tasks:
       - task: update-changelog
         vars:
           TAG: "{{.TAG}}"
+      - git add CHANGELOG.md
       - 'git commit -m "chore(changelog): update changelog for tag {{.TAG}}"'
       - git tag "{{.TAG}}"
 
