@@ -176,7 +176,6 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            act3-ai/hops
             ghcr.io/act3-ai/hops
           # generate Docker tags based on the following events/attributes
           tags: |
