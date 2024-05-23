@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - **ci**: Run govulncheck
 - **dependabot**: Force convential commits for dependabot PRs
 - **dependabot**: Assign reviewer to dependabot PRs
+- Allow empty commit for changelog
 
 [0.1.0-beta.0]: https://github.com/act3-ai/hops/tree/v0.1.0-beta.0
 
