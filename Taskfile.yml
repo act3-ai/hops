@@ -171,7 +171,7 @@ tasks:
       KO_DOCKER_REPO: "{{.IMAGE_REPO}}/distroless"
     cmds:
       - tool/ko build -B --image-label version="{{.REV}}" ./cmd/hops
-  
+
   startreg:
     desc: Start a local registry for testing purposes
     cmds:
@@ -180,7 +180,7 @@ tasks:
         echo "# To use the test registry, run the following:"
         echo "export HOPS_REGISTRY=localhost:{{.TEST_REGISTRY_PORT}}"
         echo "export HOPS_REGISTRY_PLAIN_HTTP=true"
-  
+
   stopreg:
     desc: Start a local registry for testing purposes
     cmds:
@@ -191,7 +191,7 @@ tasks:
     deps: [tool:svu]
     cmds:
       - svu
-  
+
   next-beta:
     desc: Print next beta version
     deps: [tool:svu]
@@ -204,7 +204,7 @@ tasks:
     vars:
       VERSION:
         sh: svu
-    cmds:        
+    cmds:
       - git cliff --tag {{.VERSION}}
 
   git-status-clean:
@@ -216,7 +216,7 @@ tasks:
 
   release-tag:
     desc: Create release tag
-    deps: 
+    deps:
       - git-status-clean
       - tool:svu
     requires:
@@ -228,25 +228,36 @@ tasks:
           TAG: "{{.TAG}}"
       - 'git commit -m "chore(changelog): update changelog for tag {{.TAG}}"'
       - git tag "{{.TAG}}"
-  
+
+  release-tag-main:
+    desc: Create main release tag
+    deps:
+      - git-status-clean
+      - tool:svu
+    vars:
+      VERSION:
+        sh: svu
+    cmds:
+      - task: release-tag
+        vars:
+          TAG: "{{.VERSION}}"
+
   release-tag-beta:
     desc: Create beta release tag
-    deps: 
+    deps:
       - git-status-clean
       - tool:svu
     vars:
       VERSION:
         sh: svu prerelease --pre-release=beta
     cmds:
-      - task: update-changelog
+      - task: release-tag
         vars:
           TAG: "{{.VERSION}}"
-      - 'git commit --allow-empty -m "chore(release): create release {{.VERSION}}"'
-      - git tag "{{.VERSION}}"
 
   push-tag-instruction:
     silent: true
-    cmds: 
+    cmds:
       - echo "Run the following to push the release tag:"
       - echo "  git push --tags"
 
