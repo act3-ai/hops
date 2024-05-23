@@ -22,7 +22,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
-// Registry defines the capabilities of Homebrew's registry usage
+// Registry defines the capabilities of Homebrew's registry usage.
 type Registry interface {
 	bottle.ConcurrentRegistry
 }
@@ -31,7 +31,7 @@ type Registry interface {
 //
 // URLs are constructed as:
 //
-// [ARTIFACT_DOMAIN/]BOTTLE_ROOT_URL/BOTTLE_NAME:BOTTLE_VERSION@sha256:BOTTLE_SHA256
+//	[ARTIFACT_DOMAIN/]BOTTLE_ROOT_URL/BOTTLE_NAME:BOTTLE_VERSION@sha256:BOTTLE_SHA256
 type registry struct {
 	headers http.Header  // for GitHub Packages auth
 	HTTP    *http.Client // client for HTTP requests
@@ -41,12 +41,12 @@ type registry struct {
 	artifactDomain string
 }
 
-// NewBottleRegistry creates a new BottleRegistry
+// NewBottleRegistry creates a new BottleRegistry.
 func NewBottleRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) Registry {
 	return newRegistry(headers, client, cache, maxGoroutines, artifactDomain)
 }
 
-// newRegistry creates a new registry
+// newRegistry creates a new registry.
 func newRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) *registry {
 	return &registry{
 		headers: headers,
@@ -58,7 +58,7 @@ func newRegistry(headers http.Header, client *http.Client, cache string, maxGoro
 	}
 }
 
-// Source provides the source for a bottle
+// Source provides the source for a bottle.
 func (store *registry) Source(f formula.PlatformFormula) (string, error) {
 	src := bottleURL(f)
 	if src == "" { // specifies no bottle
@@ -77,7 +77,7 @@ func (store *registry) Source(f formula.PlatformFormula) (string, error) {
 	return src, nil
 }
 
-// bottleURL produces the URL for a bottle
+// bottleURL produces the URL for a bottle.
 func bottleURL(f formula.PlatformFormula) string {
 	btl := f.Bottle()
 	if btl == nil {
@@ -114,18 +114,20 @@ func (store *registry) fetchBottle(ctx context.Context, f formula.PlatformFormul
 	return os.Open(path)
 }
 
-// LinkName returns the name of the symlink to the downloaded bottle .tar.gz file for the formula
+// LinkName returns the name of the symlink to the downloaded bottle .tar.gz file for the formula.
 //
-// Pattern: NAME--VERSION
+// Pattern:
 //
-// Example: cowsay--3.04_1
+//	NAME--VERSION
+//
+// Example:
+//
+//	cowsay--3.04_1
 func linkName(f formula.Formula) string {
 	return f.Name() + "--" + formula.PkgVersion(f.Version())
 }
 
-// func (store *BottleStore) exists()
-
-// lookupCachedFile
+// lookupCachedFile.
 func (store *registry) lookupCachedFile(file, link string) (*os.File, error) {
 	// Create parent directories (also will create the cache directory if it does not exist)
 	err := os.MkdirAll(filepath.Dir(file), 0o775)
@@ -166,7 +168,7 @@ func (store *registry) lookupCachedFile(file, link string) (*os.File, error) {
 	return bottleFile, nil
 }
 
-// Download downloads a bottle
+// Download downloads a bottle.
 func (store *registry) download(ctx context.Context, f formula.PlatformFormula) (string, error) {
 	btl := f.Bottle()
 	if btl == nil {
@@ -280,7 +282,7 @@ func downloadBottleOCI(ctx context.Context, client remote.Client, ref string, w 
 }
 */
 
-// downloadBottleHTTP downloads a bottle using the given
+// downloadBottleHTTP downloads a bottle using the given.
 func downloadBottleHTTP(ctx context.Context, client http.Client, header http.Header, ref string, w io.Writer) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, ref, nil)
 	if err != nil {

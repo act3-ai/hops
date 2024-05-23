@@ -12,7 +12,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
-// successorsForPlatform creates a platform-specific function to list successors used by Hops
+// successorsForPlatform creates a platform-specific function to list successors used by Hops.
 func successorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	if plat == platform.All {
 		return content.Successors
@@ -71,7 +71,7 @@ func successorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	}
 }
 
-// metadataSuccessorsForPlatform creates a platform-specific function to list successors used as metadata by Hops
+// metadataSuccessorsForPlatform creates a platform-specific function to list successors used as metadata by Hops.
 func metadataSuccessorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	if plat == platform.All {
 		return metadataSuccessors
@@ -120,7 +120,7 @@ func metadataSuccessorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	}
 }
 
-// metadataSuccessors lists successors used as metadata by Hops
+// metadataSuccessors lists successors used as metadata by Hops.
 func metadataSuccessors(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) ([]ocispec.Descriptor, error) {
 	switch desc.MediaType {
 	case "application/vnd.docker.distribution.manifest.v2+json",

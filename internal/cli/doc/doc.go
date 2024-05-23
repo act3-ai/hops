@@ -7,7 +7,7 @@ import (
 	"github.com/muesli/termenv"
 )
 
-// Header renders a header as a Markdown h3 if color output is disabled
+// Header renders a header as a Markdown h3 if color output is disabled.
 func Header(s string) string {
 	if termenv.DefaultOutput().EnvNoColor() {
 		// Return Markdown-formatted
@@ -16,7 +16,7 @@ func Header(s string) string {
 	return s
 }
 
-// Code renders an inline Code block as Markdown if color output is disabled
+// Code renders an inline Code block as Markdown if color output is disabled.
 func Code(s string) string {
 	if termenv.DefaultOutput().EnvNoColor() {
 		// Return Markdown-formatted
@@ -25,7 +25,7 @@ func Code(s string) string {
 	return s
 }
 
-// CodeBlock renders a code block as Markdown if color output is disabled
+// CodeBlock renders a code block as Markdown if color output is disabled.
 func CodeBlock(language, s string) string {
 	if termenv.DefaultOutput().EnvNoColor() {
 		// Return Markdown-formatted
@@ -34,7 +34,7 @@ func CodeBlock(language, s string) string {
 	return s
 }
 
-// Footer renders a footer as Markdown if color output is disabled
+// Footer renders a footer as Markdown if color output is disabled.
 func Footer(s string) string {
 	if termenv.DefaultOutput().EnvNoColor() {
 		// Return Markdown-formatted
@@ -51,7 +51,7 @@ func Footer(s string) string {
 	return s
 }
 
-// UList renders an unordered list as Markdown if color output is disabled
+// UList renders an unordered list as Markdown if color output is disabled.
 func UList(defaultPrefix string, items ...string) string {
 	if termenv.DefaultOutput().EnvNoColor() {
 		// Return Markdown-formatted with starting newline
@@ -70,7 +70,7 @@ func UList(defaultPrefix string, items ...string) string {
 	return strings.TrimSuffix(result, "\n")
 }
 
-// OList renders an ordered list as Markdown if color output is disabled
+// OList renders an ordered list as Markdown if color output is disabled.
 func OList(items ...string) string {
 	if termenv.DefaultOutput().EnvNoColor() {
 		// Return Markdown-formatted with starting newline

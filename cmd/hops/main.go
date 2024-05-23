@@ -18,7 +18,7 @@ import (
 	"github.com/act3-ai/hops/internal/cli"
 )
 
-// Retrieves build info
+// Retrieves build info.
 func getVersionInfo() vv.Info {
 	info := vv.Get()
 	if version != "" {

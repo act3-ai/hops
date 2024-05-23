@@ -16,7 +16,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// shellenvCmd creates the command
+// shellenvCmd creates the command.
 func shellenvCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.ShellEnv{Hops: hops}
 	cmd := &cobra.Command{
@@ -56,7 +56,7 @@ func shellenvCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// envCmd creates the command
+// envCmd creates the command.
 func envCmd(hops *actions.Hops) *cobra.Command {
 	return &cobra.Command{
 		Use:   "env",
@@ -71,7 +71,7 @@ func envCmd(hops *actions.Hops) *cobra.Command {
 	}
 }
 
-// prefixCmd creates the command
+// prefixCmd creates the command.
 func prefixCmd(hops *actions.Hops) *cobra.Command {
 	return &cobra.Command{
 		Use:   "prefix",
@@ -81,7 +81,7 @@ func prefixCmd(hops *actions.Hops) *cobra.Command {
 	}
 }
 
-// cellarCmd creates the command
+// cellarCmd creates the command.
 func cellarCmd(hops *actions.Hops) *cobra.Command {
 	return &cobra.Command{
 		Use:   "cellar",
@@ -91,7 +91,7 @@ func cellarCmd(hops *actions.Hops) *cobra.Command {
 	}
 }
 
-// cleanupCmd creates the command
+// cleanupCmd creates the command.
 func cleanupCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Cleanup{Hops: hops}
 	cmd := &cobra.Command{
@@ -126,7 +126,7 @@ func cleanupCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// configCmd creates the command
+// configCmd creates the command.
 func configCmd(hops *actions.Hops) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "config",
@@ -140,7 +140,7 @@ func configCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// configInitCmd creates the command
+// configInitCmd creates the command.
 func configInitCmd(hops *actions.Hops) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",

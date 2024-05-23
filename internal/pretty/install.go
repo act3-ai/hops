@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils"
 )
 
-// InstallStats prints installation stats
+// InstallStats prints installation stats.
 func InstallStats(kegs []string) {
 	var files int
 	var size int64
@@ -36,7 +36,7 @@ func InstallStats(kegs []string) {
 	fmt.Println(o.EmojiPrefixed(msg))
 }
 
-// FormulaInstallStats prints installation stats
+// FormulaInstallStats prints installation stats.
 func FormulaInstallStats[T formula.Formula](p prefix.Prefix, formulae []T) {
 	kegs := make([]string, 0, len(formulae))
 	for _, f := range formulae {

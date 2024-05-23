@@ -5,13 +5,13 @@ import (
 )
 
 const (
-	// AnnotationTab is the annotation key for the bottle Tab
+	// AnnotationTab is the annotation key for the bottle Tab.
 	AnnotationTab = "sh.brew.tab"
 )
 
-// Tab represents the contents of the sh.brew.tab annotation
+// Tab represents the contents of the sh.brew.tab annotation.
 //
-// This annotation is added to each bottle manifest
+// This annotation is added to each bottle manifest.
 type Tab struct {
 	HomebrewVersion     string                      `json:"homebrew_version"`
 	ChangedFiles        []string                    `json:"changed_files"`
@@ -23,7 +23,7 @@ type Tab struct {
 	BuiltOn             BuiltOn                     `json:"built_on"`
 }
 
-// BuiltOn stores build information
+// BuiltOn stores build information.
 type BuiltOn struct {
 	OS            string `json:"os"`
 	OSVersion     string `json:"os_version"`

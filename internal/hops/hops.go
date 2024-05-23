@@ -22,13 +22,13 @@ import (
 	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
-// Client is an interface for combined metadata and bottle stores
+// Client is an interface for combined metadata and bottle stores.
 type Client interface {
 	formula.ConcurrentPlatformFormulary
 	bottle.ConcurrentRegistry
 }
 
-// NewClient creates a Hops formulary
+// NewClient creates a Hops formulary.
 func NewClient(source hopsreg.Registry, cache *hopsreg.Local, alternateTags map[string]string, maxGoroutines int) Client {
 	return &formulary{
 		registry:      source,
@@ -39,7 +39,7 @@ func NewClient(source hopsreg.Registry, cache *hopsreg.Local, alternateTags map[
 	}
 }
 
-// formulary is an OCI registry-backed formulary with caching and concurrency
+// formulary is an OCI registry-backed formulary with caching and concurrency.
 type formulary struct {
 	registry      hopsreg.Registry
 	cache         *hopsreg.Local
@@ -82,7 +82,7 @@ func (store *formulary) FetchPlatformFormulae(ctx context.Context, names []strin
 	})
 }
 
-// fetch fetches general metadata
+// fetch fetches general metadata.
 func (store *formulary) fetch(ctx context.Context, name string) (formula.MultiPlatformFormula, error) {
 	source, err := store.registry.Repository(ctx, name)
 	if err != nil {
@@ -112,7 +112,7 @@ func (store *formulary) fetch(ctx context.Context, name string) (formula.MultiPl
 	return formula.FromV1(data), nil
 }
 
-// fetchPlatform fetches platform metadata
+// fetchPlatform fetches platform metadata.
 func (store *formulary) fetchPlatform(ctx context.Context, name string, plat platform.Platform) (formula.PlatformFormula, error) {
 	source, err := store.registry.Repository(ctx, name)
 	if err != nil {

@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/prefix/keg"
 )
 
-// List represents the action and its options
+// List represents the action and its options.
 type List struct {
 	*Hops
 
@@ -58,7 +58,7 @@ type List struct {
 	// TimeSort bool
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *List) Run(ctx context.Context, names ...string) error {
 	switch {
 	case len(names) > 0:

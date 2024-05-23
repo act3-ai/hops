@@ -8,15 +8,15 @@ import (
 	"oras.land/oras-go/v2"
 )
 
-// ErrKey is the slog attribute key used for errors in log messages
+// ErrKey is the slog attribute key used for errors in log messages.
 const ErrKey = "err"
 
-// ErrAttr produces a slog.Attr for errors
+// ErrAttr produces a slog.Attr for errors.
 func ErrAttr(err error) slog.Attr {
 	return slog.Any(ErrKey, err)
 }
 
-// OCIPlatformValue formats an OCI platform for logging
+// OCIPlatformValue formats an OCI platform for logging.
 func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	if plat == nil {
 		return slog.String("platform", "nil")
@@ -27,7 +27,7 @@ func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	}
 }
 
-// DescriptorGroup formats an OCI descriptor for logging
+// DescriptorGroup formats an OCI descriptor for logging.
 func DescriptorGroup(desc ocispec.Descriptor) slog.Attr {
 	return slog.Attr{
 		Key:   "desc",
@@ -43,7 +43,7 @@ func ociPlatformAttrs(plat ocispec.Platform) []slog.Attr {
 	}
 }
 
-// DescriptorAttrs formats a descriptor as a list of attributes
+// DescriptorAttrs formats a descriptor as a list of attributes.
 func DescriptorAttrs(desc ocispec.Descriptor) []any {
 	attrs := []any{
 		slog.String("mediaType", desc.MediaType),
@@ -69,7 +69,7 @@ func DescriptorAttrs(desc ocispec.Descriptor) []any {
 		slog.String("digest", desc.Digest.String()))
 }
 
-// descriptorAttrs formats a descriptor as a list of attributes
+// descriptorAttrs formats a descriptor as a list of attributes.
 func descriptorAttrs(desc ocispec.Descriptor) []slog.Attr {
 	attrs := []slog.Attr{
 		slog.String("mediaType", desc.MediaType),
@@ -94,7 +94,7 @@ func descriptorAttrs(desc ocispec.Descriptor) []slog.Attr {
 // 	}
 // }
 
-// WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions
+// WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions.
 func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOptions) oras.CopyGraphOptions {
 	dolog := func(ctx context.Context, msg string, desc ocispec.Descriptor) {
 		logger.Log(ctx, level, msg, //nolint:sloglint

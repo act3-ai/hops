@@ -8,67 +8,68 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// General Formula types
+// General Formula types.
 type (
-	// Namer has a name
+	// Namer has a name.
 	Namer interface {
 		Name() string
 	}
 
-	// Versioner has a version
+	// Versioner has a version.
 	Versioner interface {
 		Version() Version
 	}
 
-	// NameVersioner is implemented by all Formula types
+	// NameVersioner is implemented by all Formula types.
 	NameVersioner interface {
 		Namer
 		Versioner
 	}
 )
 
-// Formula types
+// Formula types.
 type (
-	// Formula represents a Homebrew Formula
+	// Formula represents a Homebrew Formula.
 	Formula interface {
 		NameVersioner
-		// Info produces basic information about the Formula
+		// Info produces basic information about the Formula.
 		Info() *Info
 	}
 
-	// MultiPlatformFormula is implemented by formulae that support multiple platforms
+	// MultiPlatformFormula is implemented by formulae that support multiple platforms.
 	MultiPlatformFormula interface {
 		Formula
-		// ForPlatform produces a PlatformFormula for the given platform
+		// ForPlatform produces a PlatformFormula for the given platform.
 		ForPlatform(plat platform.Platform) (PlatformFormula, error)
 	}
 
-	// PlatformFormula represents a Homebrew Formula for a specific platform
+	// PlatformFormula represents a Homebrew Formula for a specific platform.
 	PlatformFormula interface {
 		Formula
-		// Platform produces the platform for this Formula
+		// Platform produces the platform for this Formula.
 		Platform() platform.Platform
-		// SourceInfo produces information about the Formula's source
+		// SourceInfo produces information about the Formula's source.
 		SourceInfo() *SourceInfo
-		// Caveats produces the Formula's caveats, if any
+		// Caveats produces the Formula's caveats, if any.
 		Caveats() string
-		// Dependencies lists dependencies on other Formulae
+		// Dependencies lists dependencies on other Formulae.
 		Dependencies() *TaggedDependencies
-		// SystemDependencies lists dependencies on system software
+		// SystemDependencies lists dependencies on system software.
 		SystemDependencies() *TaggedDependencies
-		// Conflicts lists conflicts with other formulae
+		// Conflicts lists conflicts with other formulae.
 		Conflicts() []Conflict
-		// LinkOverwrite lists links to be overwritten in the prefix
+		// LinkOverwrite lists links to be overwritten in the prefix.
 		LinkOverwrite() []string
-		// IsKegOnly reports whether the Formula is keg-only
+		// IsKegOnly reports whether the Formula is keg-only.
 		IsKegOnly() bool
-		// KegOnlyReason produces the reason why a Formula is keg-only
+		// KegOnlyReason produces the reason why a Formula is keg-only.
 		KegOnlyReason() (reason string)
-		// Requirements lists other system requirements
+		// Requirements lists other system requirements.
 		// Requirements() []any
-		// Service produces the Formula's service, if any
+		// Service produces the Formula's service, if any.
 		Service() *brewv1.Service
-		// Bottle produces information about the Formula's Bottle. Bottle will return nil if the Formula does not provide a Bottle.
+		// Bottle produces information about the Formula's Bottle.
+		// Bottle will return nil if the Formula does not provide a Bottle.
 		Bottle() *Bottle
 	}
 )
@@ -97,11 +98,15 @@ func Names[T Namer](formulae []T) []string {
 	return names
 }
 
-// BottleFileName returns a short name for the downloaded bottle .tar.gz file for the formula
+// BottleFileName returns a short name for the downloaded bottle .tar.gz file for the formula.
 //
-// Pattern: NAME--VERSION[_REVISION][-REBUILD]
+// Pattern:
 //
-// Example: cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
+//	NAME--VERSION[_REVISION][-REBUILD]
+//
+// Example:
+//
+//	cowsay--3.04_1.arm64_sonoma.bottle.tar.gz
 func BottleFileName(f PlatformFormula) string {
 	version := f.Version()
 	return brewfmt.ArchiveFile(

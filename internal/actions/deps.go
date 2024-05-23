@@ -11,7 +11,7 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Deps represents the action and its options
+// Deps represents the action and its options.
 type Deps struct {
 	*Hops
 	Standalone        bool
@@ -19,7 +19,7 @@ type Deps struct {
 	Platform          platform.Platform
 }
 
-// Tree runs the action
+// Tree runs the action.
 func (action *Deps) Run(ctx context.Context, names ...string) error {
 	deps, err := action.eval(ctx, names)
 	if err != nil {
@@ -33,7 +33,7 @@ func (action *Deps) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-// Tree runs the action
+// Tree runs the action.
 func (action *Deps) Tree(ctx context.Context, names ...string) error {
 	deps, err := action.eval(ctx, names)
 	if err != nil {

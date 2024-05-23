@@ -19,7 +19,7 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Images represents the action and its options
+// Images represents the action and its options.
 type Images struct {
 	*Hops
 	DependencyOptions formula.DependencyTags
@@ -29,7 +29,7 @@ type Images struct {
 	NoVerify  bool   // disable tag verification
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Images) Run(ctx context.Context, args ...string) error {
 	// Add Brewfile dependencies if requested
 	if action.File != "" {
@@ -106,7 +106,7 @@ func (action *Images) findDeps(ctx context.Context, args []string) ([]formula.Pl
 	return slices.Concat(dependents, roots), nil
 }
 
-// listImages lists the images for each formula in the index
+// listImages lists the images for each formula in the index.
 func (action *Images) listImages(ctx context.Context, formulae []formula.PlatformFormula) ([]string, error) {
 	// Print no-resolve warning
 	if action.NoResolve || action.NoVerify {

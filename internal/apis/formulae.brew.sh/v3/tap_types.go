@@ -1,6 +1,6 @@
 package v3
 
-// Tap represents a tap's metadata
+// Tap represents a tap's metadata.
 type Tap struct {
 	TapGitHead    string             `json:"tap_git_head"`
 	Aliases       map[string]string  `json:"aliases"`

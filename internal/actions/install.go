@@ -24,7 +24,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils/iterutil"
 )
 
-// Install represents the action and its options
+// Install represents the action and its options.
 type Install struct {
 	*Hops
 
@@ -56,7 +56,7 @@ type Install struct {
 	Overwrite bool
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Install) Run(ctx context.Context, args ...string) error {
 	action.platform = platform.SystemPlatform()
 	names := action.SetAlternateTags(args)
@@ -121,7 +121,7 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	return nil
 }
 
-// resolveInstalls resolves the list of formulae that will be installed
+// resolveInstalls resolves the list of formulae that will be installed.
 func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]formula.PlatformFormula, error) {
 	formulary, err := action.Formulary(ctx)
 	if err != nil {
@@ -195,7 +195,7 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 	return slices.Concat(missingDeps, graph.Roots()), nil
 }
 
-// run is the meat
+// run is the meat.
 func (action *Install) run(_ context.Context, f formula.PlatformFormula, btl io.Reader) error {
 	l := slog.Default().With(slog.String("formula", f.Name()))
 

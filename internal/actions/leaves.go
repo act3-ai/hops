@@ -9,7 +9,7 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Leaves represents the action and its options
+// Leaves represents the action and its options.
 type Leaves struct {
 	*Hops
 
@@ -17,7 +17,7 @@ type Leaves struct {
 	// InstalledAsDependency bool // Only list leaves that were installed as dependencies
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Leaves) Run(ctx context.Context) error {
 	// List all racks
 	kegs, err := action.Prefix().Kegs()

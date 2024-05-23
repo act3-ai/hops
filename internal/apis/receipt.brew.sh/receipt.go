@@ -12,10 +12,10 @@ import (
 	tab "github.com/act3-ai/hops/internal/apis/sh.brew.tab"
 )
 
-// InstallReceiptFile is the name of the file
+// InstallReceiptFile is the name of the file.
 const InstallReceiptFile = "INSTALL_RECEIPT.json"
 
-// InstallReceipt represents the INSTALL_RECEIPT.json file
+// InstallReceipt represents the INSTALL_RECEIPT.json file.
 type InstallReceipt struct {
 	HomebrewVersion       string                      `json:"homebrew_version"`
 	UsedOptions           []any                       `json:"used_options"`
@@ -36,7 +36,7 @@ type InstallReceipt struct {
 	BuiltOn               tab.BuiltOn
 }
 
-// Source section of the receipt
+// Source section of the receipt.
 type Source struct {
 	Spec       string          `json:"spec"`
 	Versions   brewv1.Versions `json:"versions"`
@@ -45,9 +45,9 @@ type Source struct {
 	Tap        string          `json:"tap"`
 }
 
-// Load loads the INSTALL_RECEIPT.json for a keg
+// Load loads the INSTALL_RECEIPT.json for a keg.
 //
-// A return value of nil, nil signifies that no install receipt was found
+// A return value of nil, nil signifies that no install receipt was found.
 func Load(keg string) (*InstallReceipt, error) {
 	b, err := os.ReadFile(filepath.Join(keg, InstallReceiptFile))
 	if errors.Is(err, os.ErrNotExist) {
@@ -65,7 +65,7 @@ func Load(keg string) (*InstallReceipt, error) {
 	return r, nil
 }
 
-// CreateInstallReceipt creates an install receipt for the formula
+// CreateInstallReceipt creates an install receipt for the formula.
 func CreateInstallReceipt(version string, requested []string, info *brewv1.Info) *InstallReceipt {
 	isDep := true
 	for _, r := range requested {
@@ -88,7 +88,7 @@ func CreateInstallReceipt(version string, requested []string, info *brewv1.Info)
 	}
 }
 
-// NewInstallReceipt creates an install receipt for a formula
+// NewInstallReceipt creates an install receipt for a formula.
 func NewInstallReceipt(info *brewv1.Info, tab *tab.Tab, requested bool, hopsVersion string) *InstallReceipt {
 	return &InstallReceipt{
 		HomebrewVersion:       "hops+" + hopsVersion,

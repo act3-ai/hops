@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/prefix"
 )
 
-// Caveats prints formula caveats
+// Caveats prints formula caveats.
 func Caveats(f formula.PlatformFormula, p prefix.Prefix) string {
 	lines := []string{}
 

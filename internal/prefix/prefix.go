@@ -24,15 +24,15 @@ import (
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
 
-// NewErrNoSuchKeg creates an error when a keg is not found
+// NewErrNoSuchKeg creates an error when a keg is not found.
 func (p Prefix) NewErrNoSuchKeg(name string) error {
 	return fmt.Errorf("no such keg: %s", filepath.Join(string(p), name))
 }
 
-// Prefix represents a Homebrew prefix
+// Prefix represents a Homebrew prefix.
 type Prefix string
 
-// String implements fmt.Stringer
+// String implements fmt.Stringer.
 func (p Prefix) String() string {
 	return string(p)
 }
@@ -43,9 +43,9 @@ const (
 	LinuxDefault       Prefix = "/home/linuxbrew/.linuxbrew" // the default prefix on linux
 )
 
-// Default returns the default Homebrew prefix value
-// Matches the behavior of the "$(brew --prefix)" command
-// Obeys the HOMEBREW_PREFIX environment variable to override
+// Default returns the default Homebrew prefix value.
+// Matches the behavior of the "$(brew --prefix)" command.
+// Obeys the HOMEBREW_PREFIX environment variable to override.
 func Default() Prefix {
 	// Allow environment variable to override
 	prefix, ok := os.LookupEnv("HOMEBREW_PREFIX")
@@ -68,12 +68,12 @@ func Default() Prefix {
 	}
 }
 
-// Cellar
+// Cellar.
 func (p Prefix) Cellar() string {
 	return filepath.Join(string(p), "Cellar")
 }
 
-// CompatibleWithCellar reports whether the Formula's Bottle is compatible with the Prefix's Cellar
+// CompatibleWithCellar reports whether the Formula's Bottle is compatible with the Prefix's Cellar.
 func (p Prefix) CompatibleWithCellar(f formula.PlatformFormula) error {
 	want := ""
 	if btl := f.Bottle(); btl != nil {
@@ -82,13 +82,13 @@ func (p Prefix) CompatibleWithCellar(f formula.PlatformFormula) error {
 	got := p.Cellar()
 
 	switch want {
-	// Empty string means Bottle is relocatable (or cannot be checked for compatibility)
+	// Empty string means Bottle is relocatable (or cannot be checked for compatibility).
 	case "":
 		return nil
-	// Compatible with configured Cellar
+	// Compatible with configured Cellar.
 	case got:
 		return nil
-	// Cannot be relocated and is not compatible with configured Cellar
+	// Cannot be relocated and is not compatible with configured Cellar.
 	default:
 		return errors.New(heredoc.Docf(`
 			bottle for %s may be incompatible with your settings
@@ -101,57 +101,57 @@ func (p Prefix) CompatibleWithCellar(f formula.PlatformFormula) error {
 	}
 }
 
-// KegPath
+// KegPath produces the keg for the given name and version.
 func (p Prefix) KegPath(name, version string) string {
 	return filepath.Join(p.Cellar(), name, version)
 }
 
-// KegPath
+// FormulaKegPath produces the keg for a formula.
 func (p Prefix) FormulaKegPath(f formula.Formula) string {
 	return p.KegPath(f.Name(), formula.PkgVersion(f.Version()))
 }
 
-// Opt
+// Opt.
 func (p Prefix) Opt() string {
 	return filepath.Join(string(p), "opt")
 }
 
-// OptRecord
+// OptRecord.
 func (p Prefix) OptRecord(name string) string {
 	return filepath.Join(string(p), "opt", name)
 }
 
-// Library
+// Library.
 func (p Prefix) Library() string {
 	return filepath.Join(string(p), "Library")
 }
 
-// ShimsPath
+// ShimsPath.
 func (p Prefix) ShimsPath() string {
 	return filepath.Join(p.Library(), "Homebrew", "shims")
 }
 
-// DataPath
+// DataPath.
 func (p Prefix) DataPath() string {
 	return filepath.Join(p.Library(), "Homebrew", "data")
 }
 
-// LinkedKegRecords
+// LinkedKegRecords.
 func (p Prefix) LinkedKegRecords() string {
 	return filepath.Join(string(p), "var", "homebrew", "linked")
 }
 
-// PinnedKegRecords
+// PinnedKegRecords.
 func (p Prefix) PinnedKegRecords() string {
 	return filepath.Join(string(p), "var", "homebrew", "pinned")
 }
 
-// Locks
+// Locks.
 func (p Prefix) Locks() string {
 	return filepath.Join(string(p), "var", "homebrew", "locks")
 }
 
-// OptLink
+// OptLink.
 func (p Prefix) OptLink(name, version string, opts *symlink.Options) error {
 	optRecord := p.OptRecord(name)
 
@@ -185,7 +185,7 @@ func (p Prefix) OptLink(name, version string, opts *symlink.Options) error {
 	return nil
 }
 
-// KEG_LINK_DIRECTORIES
+// KegKegLinkDirectories.
 func KegKegLinkDirectories() []string {
 	return []string{
 		"bin", "etc", "include", "lib", "sbin", "share", "var",
@@ -193,19 +193,18 @@ func KegKegLinkDirectories() []string {
 }
 
 var (
-	// KEG_LINK_DIRECTORIES
+	// KegLinkDirectories.
 	KegLinkDirectories = []string{
 		"bin", "etc", "include", "lib", "sbin", "share", "var",
 	}
 
-	// // MUST_EXIST_SUBDIRECTORIES
-	// MustExistSubdirectories = []string{
-	// 	"bin", "etc", "include", "lib", "sbin", "share",
-	// }
+	// MustExistSubdirectories.
+	MustExistSubdirectories = []string{
+		"bin", "etc", "include", "lib", "sbin", "share",
+	}
 
-	// KegSharePaths returns the share paths of a keg (Keg:SHARE_PATHS)
+	// KegSharePaths returns the share paths of a keg (Keg:SHARE_PATHS).
 	// These paths relative to the keg's share directory should always be real directories in the prefix, never symlinks.
-	// Library/Homebrew/keg.rb:118
 	KegSharePaths = []string{
 		"aclocal", "doc", "info", "java", "locale", "man",
 		"man/man1", "man/man2", "man/man3", "man/man4",
@@ -217,7 +216,7 @@ var (
 	}
 )
 
-// MustExistSubdirectories
+// MustExistSubdirectories.
 func (p Prefix) MustExistSubdirectories() []string {
 	return []string{
 		filepath.Join(string(p), "bin"),
@@ -231,7 +230,7 @@ func (p Prefix) MustExistSubdirectories() []string {
 	}
 }
 
-// MustExistDirectories
+// MustExistDirectories.
 func (p Prefix) MustExistDirectories() []string {
 	return append(
 		p.MustExistSubdirectories(),
@@ -239,10 +238,10 @@ func (p Prefix) MustExistDirectories() []string {
 	)
 }
 
-// file extensions for elisp files
+// file extensions for elisp files.
 // elispExtensions = []string{".el", ".elc"}
 
-// file extensions for pyc files
+// file extensions for pyc files.
 var pycExtensions = []string{".pyc", ".pyo"}
 
 func isPycFile(path string) bool {
@@ -252,10 +251,10 @@ func isPycFile(path string) bool {
 	return slices.Contains(pycExtensions, filepath.Ext(path)) && strings.Contains(path, "/site-packages/")
 }
 
-// file extensions for libtool files
+// file extensions for libtool files.
 // libtoolExtensions = []string{".la", ".lai"}
 
-// AnyInstalled reports if any versions of the given formula are installed
+// AnyInstalled reports if any versions of the given formula are installed.
 func (p Prefix) AnyInstalled(f formula.Formula) bool {
 	prefix, err := p.InstalledKegs(f)
 	if err != nil {
@@ -269,7 +268,7 @@ func (p Prefix) InstalledKegs(f formula.Formula) ([]keg.Keg, error) {
 	return p.InstalledKegsByName(f.Name())
 }
 
-// InstalledPrefixes returns all currently installed prefix directories
+// InstalledPrefixes returns all currently installed prefix directories.
 func (p Prefix) InstalledKegsByName(names ...string) ([]keg.Keg, error) {
 	prefixes := []struct {
 		dir   string
@@ -314,7 +313,7 @@ func (p Prefix) InstalledKegsByName(names ...string) ([]keg.Keg, error) {
 	return sortedPrefixes(), nil
 }
 
-// FormulaOutdated reports whether the formula is outdated
+// FormulaOutdated reports whether the formula is outdated.
 func (p Prefix) FormulaOutdated(f formula.Formula) (bool, error) {
 	installedPrefixes, err := p.InstalledKegs(f)
 	if err != nil {
@@ -345,7 +344,7 @@ func (p Prefix) FormulaOutdated(f formula.Formula) (bool, error) {
 	return outdated, nil
 }
 
-// FilterInstalledGeneric categorizes Formulae by install status
+// FilterInstalledGeneric categorizes Formulae by install status.
 func FilterInstalled[T formula.Formula](p Prefix, list []T) (uninstalled []T, installed []T, err error) {
 	for _, entry := range list {
 		missing, err := p.FormulaOutdated(entry)
@@ -361,7 +360,7 @@ func FilterInstalled[T formula.Formula](p Prefix, list []T) (uninstalled []T, in
 	return uninstalled, installed, nil
 }
 
-// FormulaOutdated reports whether the formula is outdated
+// FormulaOutdated reports whether the formula is outdated.
 func (p Prefix) FormulaOutdatedFromName(name, latest string) (bool, error) {
 	installedPrefixes, err := p.InstalledKegsByName(name)
 	if err != nil {
@@ -391,7 +390,7 @@ func (p Prefix) FormulaOutdatedFromName(name, latest string) (bool, error) {
 	return outdated, nil
 }
 
-// Uninstall removes the keg and any symlinks into the keg
+// Uninstall removes the keg and any symlinks into the keg.
 func (p Prefix) Uninstall(kegs ...string) error {
 	links, err := p.LinkedFiles(kegs...)
 	if err != nil {
@@ -423,7 +422,7 @@ func (p Prefix) Uninstall(kegs ...string) error {
 	return nil
 }
 
-// Racks returns the list of available racks
+// Racks returns the list of available racks.
 func (p Prefix) Racks() ([]rack.Rack, error) {
 	racks := []rack.Rack{}
 
@@ -438,7 +437,7 @@ func (p Prefix) Racks() ([]rack.Rack, error) {
 	return racks, nil
 }
 
-// forEachRack iterates over each rack
+// forEachRack iterates over each rack.
 func (p Prefix) forEachRack(fn func(rack fs.DirEntry, kegs []fs.DirEntry)) error {
 	racks, err := os.ReadDir(p.Cellar())
 	if errors.Is(err, os.ErrNotExist) {
@@ -512,7 +511,7 @@ func (p Prefix) forEachRack(fn func(rack fs.DirEntry, kegs []fs.DirEntry)) error
 	return nil
 }
 
-// Kegs returns the list of available kegs
+// Kegs returns the list of available kegs.
 func (p Prefix) Kegs() ([]keg.Keg, error) {
 	ks := []keg.Keg{}
 

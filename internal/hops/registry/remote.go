@@ -12,20 +12,14 @@ import (
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 )
 
-// Remote defines a registry of bottles
+// Remote defines a registry of bottles.
 type Remote struct {
 	registry *remote.Registry
 	path     string
 }
 
-// // OCILayoutStore implements Repository
-// type remoteRepository struct {
-// 	*remote.Repository
-// 	name string
-// }
-
-// NewRegistry initializes
-func NewRegistry(ctx context.Context, prefix string, client remote.Client, plainHTTP bool) (*Remote, error) {
+// NewRemote initializes a remote registry.
+func NewRemote(ctx context.Context, prefix string, client remote.Client, plainHTTP bool) (*Remote, error) {
 	var registry, path string
 
 	// Split registry and path
@@ -55,17 +49,17 @@ func NewRegistry(ctx context.Context, prefix string, client remote.Client, plain
 	}, nil
 }
 
-// Repositories lists bottle repositories
+// Repositories lists bottle repositories.
 func (r *Remote) Repositories(ctx context.Context) ([]string, error) {
 	return registry.Repositories(ctx, r.registry)
 }
 
-// Repository produces a bottle repository
+// Repository produces a bottle repository.
 func (r *Remote) Repository(ctx context.Context, name string) (oras.GraphTarget, error) {
 	return r.repository(ctx, name)
 }
 
-// repository produces a bottle repository
+// repository produces a bottle repository.
 func (r *Remote) repository(ctx context.Context, name string) (*remote.Repository, error) {
 	var ref string
 

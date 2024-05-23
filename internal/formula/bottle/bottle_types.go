@@ -8,27 +8,27 @@ import (
 	"github.com/act3-ai/hops/internal/formula"
 )
 
-// Bottle registry variations
+// Bottle registry variations.
 type (
-	// Registry is a source of Bottles
+	// Registry is a source of Bottles.
 	Registry interface {
 		// FetchBottle fetches a Bottle from the remote location
 		FetchBottle(ctx context.Context, f formula.PlatformFormula) (io.ReadCloser, error)
 	}
 
-	// ConcurrentRegistry is a source of Bottles that supports concurrent fetching
+	// ConcurrentRegistry is a source of Bottles that supports concurrent fetching.
 	ConcurrentRegistry interface {
 		Registry
 		FetchBottles(ctx context.Context, flist []formula.PlatformFormula) ([]io.ReadCloser, error)
 	}
 )
 
-// Fetch fetches a Bottle from the BottleRegistry
+// Fetch fetches a Bottle from the BottleRegistry.
 func Fetch(ctx context.Context, src Registry, f formula.PlatformFormula) (io.ReadCloser, error) {
 	return src.FetchBottle(ctx, f)
 }
 
-// FetchAll fetches Bottles from the BottleRegistry
+// FetchAll fetches Bottles from the BottleRegistry.
 func FetchAll(ctx context.Context, src Registry, formulae []formula.PlatformFormula) ([]io.ReadCloser, error) {
 	// Closes all readers and returns a combined error
 	closeAll := func(readers []io.ReadCloser) error {

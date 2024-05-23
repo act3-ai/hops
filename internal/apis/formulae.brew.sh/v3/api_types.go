@@ -14,7 +14,7 @@ package v3
 //
 // TODO: use the signature to verify Homebrew's API responses
 
-// Response represents the v3 API's response format
+// Response represents the v3 API's response format.
 type Response struct {
 	// Payload is the requested tap's information
 	Payload Tap `json:"payload"`
@@ -23,7 +23,7 @@ type Response struct {
 	Signatures []Signature `json:"signatures"`
 }
 
-// Signature represents the signature field
+// Signature represents the signature field.
 type Signature struct {
 	Protected string            `json:"protected"`
 	Header    map[string]string `json:"header"`

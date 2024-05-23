@@ -10,11 +10,11 @@ import (
 	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
-// Common errors for environment variable loading
+// Common errors for environment variable loading.
 var (
-	// ErrEnvVarNotFound is returned when an environment variable is not found (os.LookupEnv error)
+	// ErrEnvVarNotFound is returned when an environment variable is not found (os.LookupEnv error).
 	ErrEnvVarNotFound = errors.New("environment variable not found")
-	// ErrParseEnvVar is returned when an environment variable is found but cannot be parsed
+	// ErrParseEnvVar is returned when an environment variable is found but cannot be parsed.
 	ErrParseEnvVar = errors.New("error parsing environment variable")
 )
 

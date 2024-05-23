@@ -15,7 +15,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils"
 )
 
-// Info prints the formula information in pretty format
+// Info prints the formula information in pretty format.
 func Info(f formula.PlatformFormula, p prefix.Prefix) {
 	// Collect information in advance for readability
 	var isInstalled bool
@@ -119,7 +119,7 @@ func Info(f formula.PlatformFormula, p prefix.Prefix) {
 	// Analytics are not implemented yet
 }
 
-// Deps prints dependency information
+// Deps prints dependency information.
 func Deps(f formula.PlatformFormula, p prefix.Prefix) {
 	deps := f.Dependencies()
 	lines := []string{}
@@ -150,7 +150,7 @@ func formatDependencyList(deps []string, p prefix.Prefix) string {
 	return strings.Join(depnames, ", ")
 }
 
-// FormulaName formats a formula's name based on its installed status
+// FormulaName formats a formula's name based on its installed status.
 func FormulaName(name string, p prefix.Prefix) string {
 	prefixes, err := p.InstalledKegsByName(name)
 	switch {
@@ -164,7 +164,7 @@ func FormulaName(name string, p prefix.Prefix) string {
 	}
 }
 
-// TapNameToURL converts a tap name to its repository URL using Homebrew's tap naming shortcut
+// TapNameToURL converts a tap name to its repository URL using Homebrew's tap naming shortcut.
 func TapNameToURL(name string) string {
 	pieces := strings.SplitN(name, "/", 2)
 	if len(pieces) != 2 {

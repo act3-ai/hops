@@ -29,7 +29,7 @@ import (
 	"github.com/act3-ai/hops/internal/prefix"
 )
 
-// Hops represents the base action
+// Hops represents the base action.
 type Hops struct {
 	version     string   // version string set by creator
 	ConfigFiles []string // sets the config files to be searched
@@ -53,10 +53,10 @@ type Hops struct {
 	}
 }
 
-// DefaultConcurrency is the default maximum threads for parallel tasks
+// DefaultConcurrency is the default maximum threads for parallel tasks.
 const DefaultConcurrency int = 8
 
-// NewHops creates a new Tool with default values
+// NewHops creates a new Tool with default values.
 func NewHops(version string) *Hops {
 	return &Hops{
 		version:     version,
@@ -66,13 +66,13 @@ func NewHops(version string) *Hops {
 	}
 }
 
-// Version returns the version (overwritten by main.version if needed)
+// Version returns the version (overwritten by main.version if needed).
 func (action *Hops) Version() string {
 	return action.version
 }
 
 // MaxGoroutines produces the maximum number of
-// Goroutines that should be started at a time
+// Goroutines that should be started at a time.
 func (action *Hops) MaxGoroutines() int {
 	if action.Concurrency < 1 {
 		return 1
@@ -80,7 +80,7 @@ func (action *Hops) MaxGoroutines() int {
 	return action.Concurrency
 }
 
-// Homebrew produces the default homebrew client
+// Homebrew produces the default homebrew client.
 func (action *Hops) Homebrew() *brewenv.Environment {
 	if action.brewcfg == nil {
 		var err error
@@ -107,31 +107,31 @@ func (action *Hops) Homebrew() *brewenv.Environment {
 	return action.brewcfg
 }
 
-// Homebrew produces the default homebrew client
+// Prefix produces the configured prefix.
 func (action *Hops) Prefix() prefix.Prefix {
 	return prefix.Prefix(action.Homebrew().Prefix)
 }
 
-// UserAgent produces the tool's user agent string
+// UserAgent produces the tool's user agent string.
 func (action *Hops) UserAgent() string {
 	return "hops/" + action.version
 }
 
-// AddHomebrewOverride adds a configuration override function
+// AddHomebrewOverride adds a configuration override function.
 // The override function will be called when loading
-// homebrew's environment configuration
+// homebrew's environment configuration.
 func (action *Hops) AddHomebrewOverride(overrides ...func(e *brewenv.Environment)) {
 	action.brewOverrides = append(action.brewOverrides, overrides...)
 }
 
-// AddConfigOverride adds a configuration override function
+// AddConfigOverride adds a configuration override function.
 // The override function will be called when loading
-// hops' configuration
+// hops' configuration.
 func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuration)) {
 	action.configOverrides = append(action.configOverrides, overrides...)
 }
 
-// Returns the client used for authentication to OCI repositories
+// Returns the client used for authentication to OCI repositories.
 func (action *Hops) AuthClient() *auth.Client {
 	if action.authClient == nil {
 		// prepare authentication using Docker credentials
@@ -153,7 +153,7 @@ func (action *Hops) AuthClient() *auth.Client {
 	return action.authClient
 }
 
-// Returns the auth headers for HTTP requests
+// Returns the auth headers for HTTP requests.
 func (action *Hops) authHeaders() http.Header {
 	header := http.Header{}
 	// Add the GitHub Packages auth header from Homebrew config
@@ -162,7 +162,7 @@ func (action *Hops) authHeaders() http.Header {
 	return header
 }
 
-// Config returns the Hops CLI configuration
+// Config returns the Hops CLI configuration.
 func (action *Hops) Config() *hopsv1.Configuration {
 	if action.cfg != nil {
 		return action.cfg
@@ -209,7 +209,7 @@ func (action *Hops) Config() *hopsv1.Configuration {
 
 var errNoRegistryConfig = errors.New("no registry configured")
 
-// registry produces the Hops registry from options
+// registry produces the Hops registry from options.
 func (action *Hops) registry(ctx context.Context) (hopsreg.Registry, error) {
 	return hopsRegistry(ctx, action.AuthClient(), &action.Config().Registry)
 }
@@ -221,7 +221,7 @@ func hopsRegistry(ctx context.Context, authClient *auth.Client, cfg *hopsv1.Regi
 	case cfg.OCILayout:
 		return hopsreg.NewLocal(cfg.Prefix), nil
 	default:
-		return hopsreg.NewRegistry(ctx,
+		return hopsreg.NewRemote(ctx,
 			cfg.Prefix,
 			authClient,
 			cfg.PlainHTTP,
@@ -240,7 +240,7 @@ func hopsClient(cache string, alternateTags map[string]string, maxGoroutines int
 }
 
 // SetAlternateVersions sets alternate tags from a list of arguments,
-// and returns the isolated names from the arguments
+// and returns the isolated names from the arguments.
 func (action *Hops) SetAlternateTags(args []string) (names []string) {
 	action.alternateTags = map[string]string{}
 	names = make([]string, 0, len(args))
@@ -252,7 +252,7 @@ func (action *Hops) SetAlternateTags(args []string) (names []string) {
 	return names
 }
 
-// Formulary produces the configured Formulary
+// Formulary produces the configured Formulary.
 func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Formulary
@@ -264,7 +264,7 @@ func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
 	}
 }
 
-// BottleRegistry produces the configured Bottle registry
+// BottleRegistry produces the configured Bottle registry.
 func (action *Hops) BottleRegistry(ctx context.Context) (bottle.Registry, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Registry
@@ -276,7 +276,7 @@ func (action *Hops) BottleRegistry(ctx context.Context) (bottle.Registry, error)
 	}
 }
 
-// hopsClient initializes the configured formula.Formulary/bottle.Registry
+// hopsClient initializes the configured formula.Formulary/bottle.Registry.
 func (action *Hops) hopsClient(ctx context.Context) (hops.Client, error) {
 	if action.hopsclient == nil {
 		cache := filepath.Join(action.Config().Cache, "oci")
@@ -297,7 +297,7 @@ func (action *Hops) hopsClient(ctx context.Context) (hops.Client, error) {
 	return action.hopsclient, nil
 }
 
-// brewFormulary initializes the configured formula.Formulary
+// brewFormulary initializes the configured formula.Formulary.
 func (action *Hops) autoUpdate(ctx context.Context) error {
 	if action.Config().Registry.Prefix != "" {
 		return nil
@@ -306,7 +306,7 @@ func (action *Hops) autoUpdate(ctx context.Context) error {
 	return err
 }
 
-// brewFormulary initializes the configured formula.Formulary
+// brewFormulary initializes the configured formula.Formulary.
 func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewformulary.PreloadedFormulary, error) {
 	if action.brewclient.formulary == nil {
 		slog.Debug("using Homebrew API formulary", //nolint:sloglint
@@ -331,7 +331,7 @@ func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewfor
 	return action.brewclient.formulary, nil
 }
 
-// brewRegistry initializes the configured bottle.Registry
+// brewRegistry initializes the configured bottle.Registry.
 func (action *Hops) brewRegistry() brewreg.Registry {
 	if action.brewclient.registry == nil {
 		slog.Debug("using Homebrew registry", //nolint:sloglint

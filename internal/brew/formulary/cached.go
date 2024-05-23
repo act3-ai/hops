@@ -13,13 +13,13 @@ import (
 	"github.com/act3-ai/hops/internal/formula"
 )
 
-// PreloadedFormulary defines the formulary's capabilities
+// PreloadedFormulary defines the formulary's capabilities.
 type PreloadedFormulary interface {
 	formula.Formulary
 	ListNames() []string
 }
 
-// V1Cache represents formula data cached from the Homebrew API
+// V1Cache represents formula data cached from the Homebrew API.
 type V1Cache struct {
 	mapped  map[string]*brewv1.Info // full contents indexed by name
 	names   []string                // ordered names
@@ -36,7 +36,7 @@ func (index *V1Cache) FetchFormula(_ context.Context, name string) (formula.Mult
 	return formula.FromV1(data), nil
 }
 
-// cacheV1 creates a new Index for a Homebrew API source
+// cacheV1 creates a new Index for a Homebrew API source.
 func cacheV1(index []*brewv1.Info) *V1Cache {
 	a := &V1Cache{
 		mapped:  make(map[string]*brewv1.Info, len(index)),
@@ -60,7 +60,7 @@ func cacheV1(index []*brewv1.Info) *V1Cache {
 	return a
 }
 
-// Find finds a formula
+// Find finds a formula.
 func (index *V1Cache) Find(name string) *brewv1.Info {
 	// Look up the name
 	f, ok := index.mapped[name]
@@ -77,7 +77,7 @@ func (index *V1Cache) Find(name string) *brewv1.Info {
 	return nil
 }
 
-// List produces the contents of the index
+// List produces the contents of the index.
 func (index *V1Cache) List() brewv1.Index {
 	list := make(brewv1.Index, len(index.names))
 	for i, name := range index.names {
@@ -86,12 +86,12 @@ func (index *V1Cache) List() brewv1.Index {
 	return list
 }
 
-// ListNames produces the names in the index
+// ListNames produces the names in the index.
 func (index *V1Cache) ListNames() []string {
 	return slices.Clone(index.names)
 }
 
-// SearchFunc searches the index and returns all formulae hits from the match function
+// SearchFunc searches the index and returns all formulae hits from the match function.
 func (index *V1Cache) SearchFunc(match func(*brewv1.Info) bool) []*brewv1.Info {
 	hits := []*brewv1.Info{}
 	for _, name := range index.names {
@@ -103,7 +103,7 @@ func (index *V1Cache) SearchFunc(match func(*brewv1.Info) bool) []*brewv1.Info {
 	return hits
 }
 
-// Aliases returns the map of aliases
+// Aliases returns the map of aliases.
 func (index *V1Cache) Aliases() map[string]string {
 	return maps.Clone(index.aliases)
 }

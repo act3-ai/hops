@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils"
 )
 
-// ForPlatform produces the "compiled" metadata for the given platform by evaluating its variations
+// ForPlatform produces the "compiled" metadata for the given platform by evaluating its variations.
 func (info *Info) ForPlatform(plat platform.Platform) (*PlatformInfo, error) {
 	base := info.PlatformInfo
 

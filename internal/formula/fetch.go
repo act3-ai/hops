@@ -6,12 +6,12 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Fetch fetches a Formula from the Formulary
+// Fetch fetches a Formula from the Formulary.
 func Fetch(ctx context.Context, src Formulary, name string) (MultiPlatformFormula, error) {
 	return src.FetchFormula(ctx, name)
 }
 
-// FetchAll fetches Formulae from the Formulary
+// FetchAll fetches Formulae from the Formulary.
 func FetchAll(ctx context.Context, src Formulary, names []string) ([]MultiPlatformFormula, error) {
 	switch src := src.(type) {
 	// Call FetchAll for Formulary with support for concurrency
@@ -31,7 +31,7 @@ func FetchAll(ctx context.Context, src Formulary, names []string) ([]MultiPlatfo
 	}
 }
 
-// FetchPlatform fetches a PlatformFormula from the Formulary
+// FetchPlatform fetches a PlatformFormula from the Formulary.
 func FetchPlatform(ctx context.Context, src Formulary, name string, plat platform.Platform) (PlatformFormula, error) {
 	switch src := src.(type) {
 	case PlatformFormulary:
@@ -45,7 +45,7 @@ func FetchPlatform(ctx context.Context, src Formulary, name string, plat platfor
 	}
 }
 
-// FetchAllPlatform fetches PlatformFormulae from the Formulary
+// FetchAllPlatform fetches PlatformFormulae from the Formulary.
 func FetchAllPlatform(ctx context.Context, src Formulary, names []string, plat platform.Platform) ([]PlatformFormula, error) {
 	switch src := src.(type) {
 	case ConcurrentPlatformFormulary:

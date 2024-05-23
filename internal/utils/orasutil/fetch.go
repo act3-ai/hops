@@ -12,7 +12,7 @@ import (
 	"oras.land/oras-go/v2/errdef"
 )
 
-// FetchRead abstracts the fetch/read/verify flow
+// FetchRead abstracts the fetch/read/verify flow.
 func fetchRead(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor, action func(r io.Reader) error) error {
 	rc, err := fetcher.Fetch(ctx, desc)
 	if err != nil {

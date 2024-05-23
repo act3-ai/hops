@@ -156,7 +156,7 @@ func (p *platformFormulaV1) Version() Version {
 	return p.version
 }
 
-// FromV1 produces a Formula from v1 API input
+// FromV1 produces a Formula from v1 API input.
 func FromV1(input *brewv1.Info) MultiPlatformFormula {
 	return &V1{
 		src:     *input,
@@ -174,7 +174,7 @@ func (f *V1) ForPlatform(plat platform.Platform) (PlatformFormula, error) {
 	return PlatformFromV1(plat, pf), nil
 }
 
-// PlatformFromV1 creates a Formula from v1 API input
+// PlatformFromV1 creates a Formula from v1 API input.
 func PlatformFromV1(plat platform.Platform, input *brewv1.PlatformInfo) PlatformFormula {
 	return &platformFormulaV1{
 		src:     *input,

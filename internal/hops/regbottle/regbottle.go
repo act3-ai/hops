@@ -20,14 +20,14 @@ import (
 )
 
 var (
-	// ErrTagNotFound is returned when a tag is not found
+	// ErrTagNotFound is returned when a tag is not found.
 	ErrTagNotFound = fmt.Errorf("tag %w", errdef.ErrNotFound)
 
-	// ErrNoMetadata is returned when metadata is not found
+	// ErrNoMetadata is returned when metadata is not found.
 	ErrNoMetadata = fmt.Errorf("metadata %w", errdef.ErrNotFound)
 )
 
-// BottleIndex represents a versioned bottle
+// BottleIndex represents a versioned bottle.
 type BottleIndex struct {
 	ocispec.Descriptor                                       // descriptor of the index
 	index              *ocispec.Index                        // content of the bottle index
@@ -35,7 +35,7 @@ type BottleIndex struct {
 	platforms          map[platform.Platform]*bottleManifest // maps platform to their respective bottle manifest
 }
 
-// bottleManifest represents a versioned bottle for a platform
+// bottleManifest represents a versioned bottle for a platform.
 type bottleManifest struct {
 	ocispec.Descriptor                     // descriptor of the manifest
 	manifest           *ocispec.Manifest   // content of the bottle manifest
@@ -44,20 +44,20 @@ type bottleManifest struct {
 	// index              *BottleIndex        // backlink to the index containing this manifest
 }
 
-// metadataManifest represents a bottle metadata manifest
+// metadataManifest represents a bottle metadata manifest.
 type metadataManifest struct {
 	ocispec.Descriptor                   // descriptor of the manifest
 	manifest           *ocispec.Manifest // content of the manifest
 	config             *metadataConfig   // descriptor of the config
 }
 
-// metadataManifest represents a bottle metadata config
+// metadataManifest represents a bottle metadata config.
 type metadataConfig struct {
 	ocispec.Descriptor              // descriptor of the config
 	config             *brewv1.Info // content of the config
 }
 
-// ResolveVersion resolves a bottle version
+// ResolveVersion resolves a bottle version.
 func ResolveVersion(ctx context.Context, repo oras.ReadOnlyGraphTarget, version string) (*BottleIndex, error) {
 	d, err := repo.Resolve(ctx, version)
 	if errors.Is(err, errdef.ErrNotFound) {
@@ -72,7 +72,7 @@ func ResolveVersion(ctx context.Context, repo oras.ReadOnlyGraphTarget, version 
 	}, nil
 }
 
-// resolvePlatform resolves the bottle manifest for a platform
+// resolvePlatform resolves the bottle manifest for a platform.
 func resolvePlatform(ctx context.Context, repo oras.ReadOnlyGraphTarget, bottle *BottleIndex, plat platform.Platform) (*bottleManifest, error) {
 	if p, ok := bottle.platforms[plat]; ok {
 		return p, nil
@@ -99,7 +99,7 @@ func resolvePlatform(ctx context.Context, repo oras.ReadOnlyGraphTarget, bottle 
 	return bottle.platforms[plat], nil
 }
 
-// ResolveBottle resolves the bottle artifact from a platform manifest
+// ResolveBottle resolves the bottle artifact from a platform manifest.
 func (btl *BottleIndex) ResolveBottle(ctx context.Context, repo oras.ReadOnlyGraphTarget, plat platform.Platform) (ocispec.Descriptor, error) {
 	bottleManifest, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
@@ -109,7 +109,7 @@ func (btl *BottleIndex) ResolveBottle(ctx context.Context, repo oras.ReadOnlyGra
 	return resolveBottle(ctx, repo, bottleManifest)
 }
 
-// resolveBottle resolves the bottle artifact from a platform manifest
+// resolveBottle resolves the bottle artifact from a platform manifest.
 func resolveBottle(ctx context.Context, repo oras.ReadOnlyGraphTarget, desc *bottleManifest) (ocispec.Descriptor, error) {
 	if desc.bottle != nil {
 		return *desc.bottle, nil
@@ -138,7 +138,7 @@ func resolveBottle(ctx context.Context, repo oras.ReadOnlyGraphTarget, desc *bot
 	return ocispec.Descriptor{}, fmt.Errorf("%s: manifest has no layers with mediaType %s", desc.Descriptor.Digest.Encoded(), hopsspec.MediaTypeBottleArchiveLayer)
 }
 
-// GeneralMetadata returns the full metadata for the bottle
+// GeneralMetadata returns the full metadata for the bottle.
 func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget) (*brewv1.Info, error) {
 	mdman, err := resolveFullMetadata(ctx, repo, btl)
 	if err != nil {
@@ -153,7 +153,7 @@ func (btl *BottleIndex) GeneralMetadata(ctx context.Context, repo oras.ReadOnlyG
 	return fetchMetadataConfig(ctx, repo, mdconfig)
 }
 
-// ResolvePlatformMetadata resolves the platform-specific metadata for a bottle
+// ResolvePlatformMetadata resolves the platform-specific metadata for a bottle.
 func (btl *BottleIndex) ResolvePlatformMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget, plat platform.Platform) (ocispec.Descriptor, error) {
 	pman, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
@@ -168,7 +168,7 @@ func (btl *BottleIndex) ResolvePlatformMetadata(ctx context.Context, repo oras.R
 	return mdman.Descriptor, nil
 }
 
-// PlatformMetadata returns platform-specific metadata for a bottle
+// PlatformMetadata returns platform-specific metadata for a bottle.
 func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget, plat platform.Platform) (*brewv1.PlatformInfo, error) {
 	pman, err := resolvePlatform(ctx, repo, btl, plat)
 	if err != nil {
@@ -201,7 +201,7 @@ func (btl *BottleIndex) PlatformMetadata(ctx context.Context, repo oras.ReadOnly
 	return &info.PlatformInfo, nil
 }
 
-// resolveFullMetadata resolves the bottle metadata manifest for a platform
+// resolveFullMetadata resolves the bottle metadata manifest for a platform.
 func resolveFullMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget, desc *BottleIndex) (*metadataManifest, error) {
 	if desc.metadata != nil {
 		return desc.metadata, nil
@@ -220,7 +220,7 @@ func resolveFullMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget, des
 	return desc.metadata, nil
 }
 
-// resolvePlatformMetadata resolves the bottle metadata manifest for a platform
+// resolvePlatformMetadata resolves the bottle metadata manifest for a platform.
 func resolvePlatformMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget, desc *bottleManifest) (*metadataManifest, error) {
 	if desc.metadata != nil {
 		return desc.metadata, nil
@@ -239,7 +239,7 @@ func resolvePlatformMetadata(ctx context.Context, repo oras.ReadOnlyGraphTarget,
 	return desc.metadata, nil
 }
 
-// resolveMetadataConfig resolves metadata config
+// resolveMetadataConfig resolves metadata config.
 func resolveMetadataConfig(ctx context.Context, repo oras.ReadOnlyGraphTarget, desc *metadataManifest) (*metadataConfig, error) {
 	if desc.manifest == nil {
 		manifest, err := orasutil.FetchDecode[ocispec.Manifest](ctx, repo, desc.Descriptor)
@@ -253,7 +253,7 @@ func resolveMetadataConfig(ctx context.Context, repo oras.ReadOnlyGraphTarget, d
 	return desc.config, nil
 }
 
-// fetchMetadataConfig fetches the metadata config
+// fetchMetadataConfig fetches the metadata config.
 func fetchMetadataConfig(ctx context.Context, repo oras.ReadOnlyGraphTarget, desc *metadataConfig) (*brewv1.Info, error) {
 	if desc.config == nil {
 		config, err := orasutil.FetchDecode[brewv1.Info](ctx, repo, desc.Descriptor)
@@ -267,7 +267,7 @@ func fetchMetadataConfig(ctx context.Context, repo oras.ReadOnlyGraphTarget, des
 	return desc.config, nil
 }
 
-// CopyGeneralMetadata copies all bottle metadata artifacts
+// CopyGeneralMetadata copies all bottle metadata artifacts.
 func CopyGeneralMetadata(ctx context.Context, src oras.ReadOnlyGraphTarget, dst oras.GraphTarget, btl *BottleIndex) error {
 	opts := copyOptions()
 	opts.FindSuccessors = metadataSuccessors
@@ -283,7 +283,7 @@ func CopyGeneralMetadata(ctx context.Context, src oras.ReadOnlyGraphTarget, dst 
 	return nil
 }
 
-// CopyPlatformMetadata copies all bottle artifacts for a given platform
+// CopyPlatformMetadata copies all bottle artifacts for a given platform.
 func CopyPlatformMetadata(ctx context.Context, src oras.ReadOnlyGraphTarget, dst oras.GraphTarget, btl *BottleIndex, plat platform.Platform) error {
 	manifest, err := resolvePlatform(ctx, src, btl, plat)
 	if err != nil {
@@ -304,7 +304,7 @@ func CopyPlatformMetadata(ctx context.Context, src oras.ReadOnlyGraphTarget, dst
 	return nil
 }
 
-// CopyTargetPlatform copies all bottle artifacts for a given platform
+// CopyTargetPlatform copies all bottle artifacts for a given platform.
 func CopyTargetPlatform(ctx context.Context, src oras.ReadOnlyGraphTarget, dst oras.GraphTarget, btl *BottleIndex, plat platform.Platform) error {
 	manifest, err := resolvePlatform(ctx, src, btl, plat)
 	if err != nil {
@@ -326,7 +326,7 @@ func CopyTargetPlatform(ctx context.Context, src oras.ReadOnlyGraphTarget, dst o
 	return nil
 }
 
-// Copy copies all bottle artifacts
+// Copy copies all bottle artifacts.
 func Copy(ctx context.Context, src oras.ReadOnlyGraphTarget, dst oras.GraphTarget, btl *BottleIndex) error {
 	opts := copyOptions()
 	opts.CopyGraphOptions.PreCopy = ensureAllSuccessors(dst)
@@ -342,8 +342,6 @@ func Copy(ctx context.Context, src oras.ReadOnlyGraphTarget, dst oras.GraphTarge
 
 func copyOptions() oras.ExtendedCopyGraphOptions {
 	return oras.ExtendedCopyGraphOptions{
-		// Add logging
-		// CopyGraphOptions: logutil.WithLogging(slog.Default(), slog.LevelDebug, &oras.CopyGraphOptions{}),
 		// Filter predecessors to Hops metadata
 		FindPredecessors: findMetadataPredecessors,
 	}
@@ -352,7 +350,6 @@ func copyOptions() oras.ExtendedCopyGraphOptions {
 type (
 	preCopyFunc        func(ctx context.Context, node ocispec.Descriptor) error
 	findSuccessorsFunc func(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) ([]ocispec.Descriptor, error)
-	// findPredecessorsFunc func(ctx context.Context, src content.ReadOnlyGraphStorage, desc ocispec.Descriptor)
 )
 
 func ensureAllSuccessors(dst oras.Target) preCopyFunc {

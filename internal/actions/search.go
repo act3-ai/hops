@@ -18,7 +18,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// Search represents the action and its options
+// Search represents the action and its options.
 type Search struct {
 	*Hops
 
@@ -49,7 +49,7 @@ type Search struct {
 	// Ubuntu    bool // Search for text in the given database
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Search) Run(ctx context.Context, terms ...string) error {
 	if action.Config().Registry.Prefix == "" {
 		o.Hai("Search is not available for standalone registry mode")
@@ -127,7 +127,7 @@ func (action *Search) Run(ctx context.Context, terms ...string) error {
 	return nil
 }
 
-// parseTerms parses a list of search terms into a list of match functions
+// parseTerms parses a list of search terms into a list of match functions.
 func parseTerms(terms []string) ([]func(s string) bool, error) {
 	matchFuncs := []func(s string) bool{}
 	for _, term := range terms {
@@ -154,18 +154,18 @@ func parseTerms(terms []string) ([]func(s string) bool, error) {
 	return matchFuncs, nil
 }
 
-// alphanumeric is a regex expression to check if a string is alphanumeric
-// also allows for underscore and dash characters
+// alphanumeric is a regex expression to check if a string is alphanumeric.
+// also allows for underscore and dash characters.
 var alphanumeric = regexp.MustCompile("^[a-zA-Z0-9_-]*$")
 
-// isAlphanumeric reports if a string is alphanumeric
-// also allows for underscore and dash characters
+// isAlphanumeric reports if a string is alphanumeric.
+// also allows for underscore and dash characters.
 func isAlphanumeric(s string) bool {
 	return alphanumeric.MatchString(s)
 }
 
-// allAlphanumeric reports if all strings in the list are alphanumeric
-// also allows for underscore and dash characters
+// allAlphanumeric reports if all strings in the list are alphanumeric.
+// also allows for underscore and dash characters.
 func allAlphanumeric(terms []string) bool {
 	for _, term := range terms {
 		if !isAlphanumeric(term) {
@@ -175,7 +175,7 @@ func allAlphanumeric(terms []string) bool {
 	return true
 }
 
-// isInstalled reports if formula with name "name" is installed
+// isInstalled reports if formula with name "name" is installed.
 func isInstalled(cellar, name string) bool {
 	dir := filepath.Join(cellar, name)
 	entries, err := os.ReadDir(dir)

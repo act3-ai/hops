@@ -11,7 +11,7 @@ import (
 	"github.com/act3-ai/hops/internal/pretty"
 )
 
-// Info represents the action and its options
+// Info represents the action and its options.
 type Info struct {
 	*Hops
 
@@ -19,7 +19,7 @@ type Info struct {
 	Platform platform.Platform
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Info) Run(ctx context.Context, args ...string) error {
 	// Default the platform option if action.JSON was not set
 	if action.Platform == "" {

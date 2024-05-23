@@ -7,16 +7,16 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Metadata types
+// Metadata types.
 type (
-	// Info defines the most general information for a Formula
+	// Info defines the most general information for a Formula.
 	Info struct {
 		Desc     string
 		License  string
 		Homepage string
 	}
 
-	// SourceInfo defines source information for a Formula
+	// SourceInfo defines source information for a Formula.
 	SourceInfo struct {
 		URL      string
 		Using    string
@@ -25,35 +25,35 @@ type (
 		Ruby     RubySource
 	}
 
-	// GitSource defines the Git source for a Formula
+	// GitSource defines the Git source for a Formula.
 	GitSource struct {
 		Revision string
 		Tag      string
 		Branch   string
 	}
 
-	// RubySource defines the Ruby source for a Formula
+	// RubySource defines the Ruby source for a Formula.
 	RubySource struct {
 		Path   string
 		Sha256 string
 	}
 
-	// Conflict defines a conflicting package
+	// Conflict defines a conflicting package.
 	Conflict struct {
 		Name   string
 		Reason string
 	}
 
-	// Bottle defines bottle metadata
+	// Bottle defines bottle metadata.
 	Bottle struct {
 		RootURL  string
 		Sha256   string
 		Cellar   string
-		Platform platform.Platform // stores Bottle platform, which can vary from PlatformFormula.Platform() iff the Bottle is for "all" platforms
+		Platform platform.Platform // stores Bottle platform, which can vary from PlatformFormula.Platform() iff the Bottle is for "all" platforms.
 	}
 )
 
-// version is an implementation of Version
+// version is an implementation of Version.
 type version struct {
 	version  string
 	revision int
@@ -75,9 +75,9 @@ func (v *version) Rebuild() int {
 	return v.rebuild
 }
 
-// Dependency types
+// Dependency types.
 type (
-	// DependencyTags defines the available dependency tags
+	// DependencyTags defines the available dependency tags.
 	DependencyTags struct {
 		IncludeBuild    bool
 		IncludeTest     bool
@@ -85,7 +85,7 @@ type (
 		IncludeOptional bool
 	}
 
-	// TaggedDependencies stores dependencies in lists by tag
+	// TaggedDependencies stores dependencies in lists by tag.
 	TaggedDependencies struct {
 		Required    []string
 		Build       []string
@@ -95,7 +95,7 @@ type (
 	}
 )
 
-// // taggedDependencies stores dependencies in lists by tag
+// // taggedDependencies stores dependencies in lists by tag.
 // type taggedDependencies struct {
 // 	required    []string
 // 	build       []string
@@ -104,7 +104,7 @@ type (
 // 	optional    []string
 // }
 
-// ForTags implements Dependencies
+// ForTags implements Dependencies.
 func (deps *TaggedDependencies) ForTags(tags *DependencyTags) []string {
 	result := slices.Clone(deps.Required)
 
@@ -127,7 +127,7 @@ func (deps *TaggedDependencies) ForTags(tags *DependencyTags) []string {
 	return result
 }
 
-// LogAttr formats the tags as a slog.Attr
+// LogAttr formats the tags as a slog.Attr.
 func (deps *DependencyTags) LogAttr() slog.Attr {
 	return slog.Group(
 		"tags",

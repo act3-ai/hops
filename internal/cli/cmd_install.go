@@ -10,7 +10,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// installCmd creates the command
+// installCmd creates the command.
 func installCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Install{Hops: hops}
 
@@ -58,7 +58,7 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// uninstallCmd creates the command
+// uninstallCmd creates the command.
 func uninstallCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Uninstall{Hops: hops}
 
@@ -77,7 +77,7 @@ func uninstallCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// updateCmd creates the command
+// updateCmd creates the command.
 func updateCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Update{Hops: hops}
 	cmd := &cobra.Command{
@@ -93,7 +93,7 @@ func updateCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// upgradeCmd creates the command
+// upgradeCmd creates the command.
 func upgradeCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Upgrade{Hops: hops}
 	cmd := &cobra.Command{
@@ -107,7 +107,7 @@ func upgradeCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// linkCmd creates the command
+// linkCmd creates the command.
 func linkCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Link{Hops: hops}
 	cmd := &cobra.Command{
@@ -133,7 +133,7 @@ func linkCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// unlinkCmd creates the command
+// unlinkCmd creates the command.
 func unlinkCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Unlink{Hops: hops}
 	cmd := &cobra.Command{

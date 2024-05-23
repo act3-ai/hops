@@ -12,7 +12,7 @@ import (
 	"github.com/act3-ai/hops/internal/prefix"
 )
 
-// Link represents the action and its options
+// Link represents the action and its options.
 type Link struct {
 	*Hops
 
@@ -24,7 +24,7 @@ type Link struct {
 	Head      bool // Link the HEAD version of the formula if it is installed
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Link) Run(ctx context.Context, args ...string) error {
 	if action.platform == "" {
 		action.platform = platform.SystemPlatform()
@@ -75,14 +75,14 @@ func (action *Link) Run(ctx context.Context, args ...string) error {
 	return nil
 }
 
-// Unlink represents the action and its options
+// Unlink represents the action and its options.
 type Unlink struct {
 	*Hops
 
 	DryRun bool // List files which would be unlinked without actually unlinking or deleting any files
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Unlink) Run(ctx context.Context, args ...string) error {
 	formulae, err := action.fetchFromArgs(ctx, args, platform.SystemPlatform())
 	if err != nil {

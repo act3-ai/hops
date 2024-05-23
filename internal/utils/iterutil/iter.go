@@ -6,7 +6,7 @@ import (
 	"github.com/sourcegraph/conc/iter"
 )
 
-// ForEachIdxErr wraps iter.ForEachIdx with an error return
+// ForEachIdxErr wraps iter.ForEachIdx with an error return.
 func ForEachIdxErr[T any](iterator iter.Iterator[T], input []T, f func(int, *T) error) error {
 	errs := make([]error, len(input))
 	iterator.ForEachIdx(input, func(i int, t *T) {
@@ -15,7 +15,7 @@ func ForEachIdxErr[T any](iterator iter.Iterator[T], input []T, f func(int, *T) 
 	return errors.Join(errs...)
 }
 
-// ForEachErr wraps iter.ForEach with an error return
+// ForEachErr wraps iter.ForEach with an error return.
 func ForEachErr[T any](iterator iter.Iterator[T], input []T, f func(*T) error) error {
 	errs := make([]error, len(input))
 	iterator.ForEachIdx(input, func(i int, t *T) {

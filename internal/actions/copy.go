@@ -37,7 +37,7 @@ type copiedBottle struct {
 	index     *ocispec.Index
 }
 
-// Copy represents the action and its options
+// Copy represents the action and its options.
 type Copy struct {
 	*Hops
 	// DependencyOptions dependencies.Options
@@ -59,7 +59,7 @@ type Copy struct {
 	// ToPlainHTTP bool   // allow insecure connections to destination registry without SSL check
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Copy) Run(ctx context.Context, args []string) error {
 	if action.To.Prefix == "" {
 		return errors.New("empty destination registry")
@@ -343,7 +343,7 @@ func platformMetadatManifestOptions(name, version string, plat platform.Platform
 	return opts
 }
 
-// pushMetadata pushes metadata for the given manifest
+// pushMetadata pushes metadata for the given manifest.
 func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Descriptor, f *brewv1.Info) (ocispec.Descriptor, error) { //nolint:unparam
 	l := slog.Default()
 

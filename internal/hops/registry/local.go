@@ -13,25 +13,25 @@ import (
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 )
 
-// Local defines a local bottle store
-// The local directory stores oci-layout bottle repository dirs
+// Local defines a local bottle store.
+// The local directory stores oci-layout bottle repository dirs.
 type Local struct {
 	Dir string
 }
 
-// NewLocal initializes a local bottle store
+// NewLocal initializes a local bottle store.
 func NewLocal(dir string) *Local {
 	return &Local{
 		Dir: dir,
 	}
 }
 
-// Repository produces a local bottle repository
+// Repository produces a local bottle repository.
 func (r *Local) Repository(ctx context.Context, name string) (oras.GraphTarget, error) {
 	return r.repository(ctx, name)
 }
 
-// repository produces a local bottle repository
+// repository produces a local bottle repository.
 func (r *Local) repository(ctx context.Context, name string) (*oci.Store, error) {
 	dir := filepath.Join(r.Dir, brewfmt.Repo(name))
 	s, err := oci.NewWithContext(ctx, dir)
@@ -42,7 +42,7 @@ func (r *Local) repository(ctx context.Context, name string) (*oci.Store, error)
 	return s, nil
 }
 
-// Repositories lists bottle repositories
+// Repositories lists bottle repositories.
 func (r *Local) Repositories(_ context.Context) ([]string, error) {
 	entries, err := os.ReadDir(r.Dir)
 	if errors.Is(err, os.ErrNotExist) {

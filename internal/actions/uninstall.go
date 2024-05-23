@@ -9,12 +9,12 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Uninstall represents the action and its options
+// Uninstall represents the action and its options.
 type Uninstall struct {
 	*Hops
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Uninstall) Run(ctx context.Context, args []string) error {
 	formulae, err := action.fetchFromArgs(ctx, args, platform.SystemPlatform())
 	if err != nil {

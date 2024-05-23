@@ -55,13 +55,13 @@ const (
 // 	NameFetcher[*brewv3.Formula]
 // }
 
-// Client makes API requests
+// Client makes API requests.
 type Client struct {
 	HTTPClient *http.Client
 	APIDomain  string
 }
 
-// NewClient initializes a default client
+// NewClient initializes a default client.
 func NewClient(apiDomain string) *Client {
 	return &Client{
 		HTTPClient: retry.NewClient(),
@@ -69,30 +69,30 @@ func NewClient(apiDomain string) *Client {
 	}
 }
 
-// FetchFormulaV1 fetches the v1 API data for the named formula
-// If name does not exist, this function will fail
+// FetchFormulaV1 fetches the v1 API data for the named formula.
+// If name does not exist, this function will fail.
 func (client Client) FetchFormulaV1(ctx context.Context, name string) (io.ReadCloser, error) {
 	return client.fetch(ctx, "formula/"+url.PathEscape(name)+".json")
 }
 
-// FetchFormulaeV1 fetches the v1 API data for all existing formulae
+// FetchFormulaeV1 fetches the v1 API data for all existing formulae.
 func (client Client) FetchFormulaeV1(ctx context.Context) (io.ReadCloser, error) {
 	// https://formulae.brew.sh/docs/api/#list-metadata-for-all-homebrewcore-formulae-or-homebrewcask-casks
 	// GET https://formulae.brew.sh/api/formula.json
 	return client.fetch(ctx, v1formulae)
 }
 
-// FetchFormulaeV2 fetches the v2 API data for all existing formulae
+// FetchFormulaeV2 fetches the v2 API data for all existing formulae.
 func (client Client) FetchFormulaeV2(ctx context.Context) (io.ReadCloser, error) {
 	return client.fetch(ctx, v2formulae)
 }
 
-// FetchCasksV2 fetches the v2 API data for all existing casks
+// FetchCasksV2 fetches the v2 API data for all existing casks.
 func (client Client) FetchCasksV2(ctx context.Context) (io.ReadCloser, error) {
 	return client.fetch(ctx, v2casks)
 }
 
-// FetchCoreV3 fetches the v3 API data for the homebrew/core tap
+// FetchCoreV3 fetches the v3 API data for the homebrew/core tap.
 func (client Client) FetchCoreV3(ctx context.Context) (io.ReadCloser, error) {
 	return client.fetch(ctx, v3core)
 }

@@ -15,12 +15,12 @@ import (
 	"github.com/act3-ai/hops/internal/utils"
 )
 
-// Update represents the action and its options
+// Update represents the action and its options.
 type Update struct {
 	*Hops
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Update) Run(ctx context.Context) error {
 	if action.Config().Registry.Prefix != "" {
 		o.Hai("Update not necessary for standalone registry mode")
@@ -72,7 +72,7 @@ func (action *Update) Run(ctx context.Context) error {
 	return nil
 }
 
-// IsNewerThan reports if n is newer than o by comparing their versions
+// IsNewerThan reports if n is newer than o by comparing their versions.
 func IsNewerThan(n *brewv1.Info, o *brewv1.Info) bool {
 	return semver.Compare(
 		utils.FmtSemver(n.Versions.Stable),

@@ -20,7 +20,7 @@ func (p Prefix) Pour(btl io.Reader) error {
 }
 
 // untar takes a destination path and a reader; a tar reader loops over the tarfile
-// creating the file structure at 'dst' along the way, and writing any files
+// creating the file structure at 'dst' along the way, and writing any files.
 func untar(r io.Reader, dst string) error {
 	gzr, err := gzip.NewReader(r)
 	if err != nil {

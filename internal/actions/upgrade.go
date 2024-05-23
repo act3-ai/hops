@@ -12,12 +12,12 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// Upgrade represents the action and its options
+// Upgrade represents the action and its options.
 type Upgrade struct {
 	*Hops
 }
 
-// Run runs the action
+// Run runs the action.
 func (action *Upgrade) Run(ctx context.Context, args ...string) error {
 	var toCheck []formula.PlatformFormula
 	var err error

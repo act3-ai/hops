@@ -12,7 +12,7 @@ import (
 	"github.com/act3-ai/hops/internal/platform"
 )
 
-// DependencyGraph represents the evaluated dependency graph
+// DependencyGraph represents the evaluated dependency graph.
 type DependencyGraph struct {
 	rootKeys      []string                           // list of root formulae
 	dependentKeys []string                           // list of dependency names, ordered
@@ -20,7 +20,7 @@ type DependencyGraph struct {
 	trees         map[string]*treeprint.Node         // stores dependency trees
 }
 
-// Dependents returns the list of computed dependencies
+// Dependents returns the list of computed dependencies.
 func (deps DependencyGraph) Dependents() []formula.PlatformFormula {
 	list := make([]formula.PlatformFormula, len(deps.dependentKeys))
 	for i, name := range deps.dependentKeys {
@@ -29,7 +29,7 @@ func (deps DependencyGraph) Dependents() []formula.PlatformFormula {
 	return list
 }
 
-// Roots returns the list of computed dependencies
+// Roots returns the list of computed dependencies.
 func (deps *DependencyGraph) Roots() []formula.PlatformFormula {
 	list := make([]formula.PlatformFormula, len(deps.rootKeys))
 	for i, name := range deps.rootKeys {
@@ -38,7 +38,7 @@ func (deps *DependencyGraph) Roots() []formula.PlatformFormula {
 	return list
 }
 
-// Tree returns a printable tree of dependencies
+// Tree returns a printable tree of dependencies.
 func (deps *DependencyGraph) Tree(root string) (treeprint.Tree, error) {
 	tree, ok := deps.trees[root]
 	if !ok {
@@ -75,7 +75,7 @@ func WalkAll(ctx context.Context, store formula.Formulary, roots []formula.Platf
 	return Walk(ctx, store, roots, platform.All, tags)
 }
 
-// add adds the given Formula to the found dependencies
+// add adds the given Formula to the found dependencies.
 func (deps *DependencyGraph) add(ctx context.Context, store formula.Formulary, f formula.PlatformFormula, plat platform.Platform, tags *formula.DependencyTags) (*treeprint.Node, error) {
 	key := f.Name()
 

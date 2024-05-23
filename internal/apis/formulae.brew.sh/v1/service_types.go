@@ -8,7 +8,7 @@ import (
 	"github.com/act3-ai/hops/internal/utils"
 )
 
-// ServiceRunType represents a run type for a service
+// ServiceRunType represents a run type for a service.
 type ServiceRunType string
 
 const (
@@ -17,7 +17,7 @@ const (
 	RunTypeCron      ServiceRunType = "cron"      // cron run type
 )
 
-// ProcessType represents a service's process type
+// ProcessType represents a service's process type.
 type ProcessType string
 
 const (
@@ -25,7 +25,7 @@ const (
 	ProcessTypeBackground  = "background"  // value for background process
 )
 
-// Service represents the service block
+// Service represents the service block.
 //
 // https://docs.brew.sh/Formula-Cookbook#service-block-methods
 type Service struct {
@@ -52,7 +52,7 @@ type Service struct {
 	MacOSLegacyTimers bool        `json:"macos_legacy_timers,omitempty"` // literally only used on the gitlab-runners formula
 }
 
-// RunArgs evaluates the command arguments to run
+// RunArgs evaluates the command arguments to run.
 // The run field is a dynamic type so it needs extra parsing.
 func (s *Service) RunArgs(os string) ([]string, error) {
 	switch v := s.Run.(type) {

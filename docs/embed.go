@@ -9,7 +9,7 @@ import (
 // var GeneralDocumentation embed.FS
 
 // Layout of embedded documentation to surface in the help command
-// and generate in the gendocs command
+// and generate in the gendocs command.
 func Embedded(root *cobra.Command) *embedutil.Documentation {
 	return &embedutil.Documentation{
 		Title:   "hops",

@@ -15,7 +15,7 @@ import (
 	brewapi "github.com/act3-ai/hops/internal/brew/api"
 )
 
-// FetchV1 fetches the v1 index either from the cache or from the API according to its existence and the auto-update configuration
+// FetchV1 fetches the v1 index either from the cache or from the API according to its existence and the auto-update configuration.
 func FetchV1(ctx context.Context, apiclient *brewapi.Client, dir string, autoUpdate *hopsv1.AutoUpdateConfig) (*V1Cache, error) {
 	_, err := os.Stat(formulaeFile(dir))
 	switch {
@@ -46,7 +46,7 @@ func aliasesFile(dir string) string {
 	return filepath.Join(dir, "api", api.CachedFormulaAliasesFile)
 }
 
-// readWriteJSON reads from r while writing to a file at path and simultaneously decoding JSON into type T
+// readWriteJSON reads from r while writing to a file at path and simultaneously decoding JSON into type T.
 func readWriteJSON[T any](path string, r io.Reader) (*T, error) {
 	// Create parent directory
 	if err := os.MkdirAll(filepath.Dir(path), 0o775); err != nil {
@@ -73,7 +73,7 @@ func readWriteJSON[T any](path string, r io.Reader) (*T, error) {
 	return obj, nil
 }
 
-// LoadV1 loads the v1 index from a cache directory
+// LoadV1 loads the v1 index from a cache directory.
 func LoadV1(dir string) (*V1Cache, error) {
 	file := formulaeFile(dir)
 	// Check for existing index file

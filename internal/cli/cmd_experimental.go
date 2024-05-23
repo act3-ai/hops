@@ -11,7 +11,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 )
 
-// copyCmd creates the command
+// copyCmd creates the command.
 func copyCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Copy{
 		Hops: hops,
@@ -53,7 +53,7 @@ func copyCmd(hops *actions.Hops) *cobra.Command {
 	return cmd
 }
 
-// imagesCmd creates the command
+// imagesCmd creates the command.
 func imagesCmd(hops *actions.Hops) *cobra.Command {
 	action := &actions.Images{Hops: hops}
 
