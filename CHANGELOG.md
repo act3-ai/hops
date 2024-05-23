@@ -2,11 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0-beta.2] (2024-05-23)
+
+### Bug Fixes
+
+- Simplify goreleaser config to publish one manifest tag
+- Set up docker and qemu in release workflow
+
 ## [0.1.0-beta.1] (2024-05-23)
 
 ### Bug Fixes
 
 - Remove docker hub image reference
+
+### Miscellaneous Tasks
+
+- **changelog**: Update changelog for tag v0.1.0-beta.1
 
 ## [0.1.0-beta.0] (2024-05-23)
 
@@ -34,6 +45,7 @@ All notable changes to this project will be documented in this file.
 
 - **changelog**: Update changelog for tag v0.1.0-beta.0
 
+[0.1.0-beta.2]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.1..v0.1.0-beta.2
 [0.1.0-beta.1]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.0..v0.1.0-beta.1
 [0.1.0-beta.0]: https://github.com/act3-ai/hops/tree/v0.1.0-beta.0
 
