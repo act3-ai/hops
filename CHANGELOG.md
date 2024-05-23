@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0-beta.1] (2024-05-23)
+
+### Bug Fixes
+
+- Remove docker hub image reference
+
 ## [0.1.0-beta.0] (2024-05-23)
 
 ### Features
@@ -24,5 +30,10 @@ All notable changes to this project will be documented in this file.
 - **dependabot**: Assign reviewer to dependabot PRs
 - Allow empty commit for changelog
 
+### Miscellaneous Tasks
+
+- **changelog**: Update changelog for tag v0.1.0-beta.0
+
+[0.1.0-beta.1]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.0..v0.1.0-beta.1
 [0.1.0-beta.0]: https://github.com/act3-ai/hops/tree/v0.1.0-beta.0
 
