@@ -1,8 +1,8 @@
-# hops Developer Guide
+# Hops Contributing Guide
 
 ## Design Patterns
 
-The CLI's implementation is organized as the following layers:
+The implementation is organized in the following layers:
 
 - [`main` Package](./cmd/hops): Entrypoint of the program
 - [`cli` Package](./internal/cli): CLI commands defined using the [`cobra`](https://pkg.go.dev/github.com/spf13/cobra) framework
@@ -10,7 +10,16 @@ The CLI's implementation is organized as the following layers:
   - Each command defined in the `cli` package runs an "action" in the `actions` package
 - Other Packages: Smaller components of functionality
   - [Internal Packages](./internal): Packages defined for use in this repository
-  - [Public Packages](./pkg): Packages defined for use in this repository and others
+  <!-- - [Public Packages](./pkg): Packages defined for use in this repository and others -->
+
+## Tooling
+
+The following tools are used for local development of Hops:
+
+- [Go](https://go.dev/): build, test, format
+- [Taskfile](https://taskfile.dev/): running tasks
+- [Podman](https://podman.io/): building images and running local container registries
+- [git-cliff](https://git-cliff.org/): version calculation and changelog generation
 
 ## Testing
 
@@ -32,10 +41,6 @@ The `--plain-http` flag is required to use this local registry.
 
 Example:
 
-<!-- 
-HOPS_REGISTRY=localhost:5001/bottles
-HOPS_REGISTRY_PLAIN_HTTP=true
- -->
 ```sh
 # Run a local registry for testing
 podman run --name testreg --rm -d -p 5001:5000 registry:2
@@ -43,8 +48,13 @@ podman run --name testreg --rm -d -p 5001:5000 registry:2
 # Copy the glab Bottle to the local registry
 hops copy glab --to localhost:5001/bottles --to-plain-http
 
-# Install glab from the local registry
+# Install glab from the local registry using flags
 hops xinstall glab --registry localhost:5001/bottles --plain-http
+
+# Install glab from the local registry using environment variables
+export HOPS_REGISTRY=localhost:5001/bottles
+export HOPS_REGISTRY_PLAIN_HTTP=true
+hops xinstall glab
 
 # Stop running the local registry
 podman stop testreg

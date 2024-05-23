@@ -17,6 +17,8 @@ vars:
   ############################################################
   # renovate: datasource=go depName=github.com/elastic/crd-ref-docs
   CRD_REF_DOCS_VERSION: v0.0.12
+  # renovate: datasource=go depName=github.com/caarlos0/svu
+  SVU_VERSION: main
   # renovate: datasource=go depName=github.com/google/ko
   KO_VERSION: v0.15.2
   # renovate: datasource=go depName=github.com/golangci/golangci-lint
@@ -184,6 +186,72 @@ tasks:
     cmds:
       - podman stop {{.TEST_REGISTRY_NAME}}
 
+  version-preview:
+    desc: Print next version
+    deps: [tool:svu]
+    cmds:
+      - svu
+
+  changelog-preview:
+    desc: Preview updated CHANGELOG.md
+    deps: [tool:svu]
+    vars:
+      VERSION:
+        sh: svu
+    cmds:        
+      - git cliff --tag {{.VERSION}}
+
+  git-status-clean:
+    desc: Check Git status
+    internal: true
+    preconditions:
+      - sh: '[ -z "$(git status --porcelain)" ]'
+        msg: Git status unclean
+
+  release-tag:
+    desc: Create release tag
+    deps: 
+      - git-status-clean
+      - tool:svu
+    vars:
+      VERSION:
+        sh: svu
+    prompt: 'Create release tag "{{.VERSION}}"?'
+    cmds:
+      - task: update-changelog
+        vars:
+          TAG: "{{.VERSION}}"
+      - 'git commit -m "chore(release): create release {{.VERSION}}"'
+      - git tag "{{.VERSION}}"
+  
+  release-tag-beta:
+    desc: Create beta release tag
+    deps: 
+      - git-status-clean
+      - tool:svu
+    vars:
+      VERSION:
+        sh: svu prerelease --pre-release=beta
+    cmds:
+      - task: update-changelog
+        vars:
+          TAG: "{{.VERSION}}"
+      - 'git commit -m "chore(release): create release {{.VERSION}}"'
+      - git tag "{{.VERSION}}"
+
+  push-tag-instruction:
+    silent: true
+    cmds: 
+      - echo "Run the following to push the release tag:"
+      - echo "  git push --tags"
+
+  update-changelog:
+    desc: Update CHANGELOG.md
+    requires:
+      vars: [TAG]
+    cmds:
+      - git cliff --tag "{{.TAG}}" -o CHANGELOG.md
+
   # crd-ref-docs: Generates markdown documentation for CRDs
   tool:crd-ref-docs:
     desc: "Install crd-ref-docs CRD documentation generator"
@@ -192,6 +260,15 @@ tasks:
         vars:
           VERSION: "{{.CRD_REF_DOCS_VERSION}}"
           PKG: github.com/elastic/crd-ref-docs
+
+  # svu: manage semantic versions based on git log
+  tool:svu:
+    desc: "Install svu versioning tool"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.SVU_VERSION}}"
+          PKG: github.com/caarlos0/svu
 
   # ko: builds application images for Go projects
   tool:ko:
