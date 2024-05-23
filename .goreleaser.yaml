@@ -76,11 +76,12 @@ dockers:
 
 docker_manifests:
   - id: hops
-    name_template: |
-      ghcr.io/act3-ai/hops:{{ .Version }}
-      ghcr.io/act3-ai/hops:v{{ .Major }}
-      ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}
-      {{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}
+    name_template: ghcr.io/act3-ai/hops:{{ .Version }}
+    # name_template: |
+    #   ghcr.io/act3-ai/hops:{{ .Version }}
+    #   ghcr.io/act3-ai/hops:v{{ .Major }}
+    #   ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}
+    #   {{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}
     image_templates:
       - "ghcr.io/act3-ai/hops:{{ .Version }}-amd64"
       - "ghcr.io/act3-ai/hops:{{ .Version }}-arm64"
