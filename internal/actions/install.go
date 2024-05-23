@@ -82,7 +82,7 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	}
 
 	// Get bottle registry
-	reg, err := action.BottleRegistry()
+	reg, err := action.BottleRegistry(ctx)
 	if err != nil {
 		return err
 	}

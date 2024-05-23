@@ -210,18 +210,18 @@ func (action *Hops) Config() *hopsv1.Configuration {
 var errNoRegistryConfig = errors.New("no registry configured")
 
 // registry produces the Hops registry from options
-func (action *Hops) registry() (hopsreg.Registry, error) {
-	return hopsRegistry(action.AuthClient(), &action.Config().Registry)
+func (action *Hops) registry(ctx context.Context) (hopsreg.Registry, error) {
+	return hopsRegistry(ctx, action.AuthClient(), &action.Config().Registry)
 }
 
-func hopsRegistry(authClient *auth.Client, cfg *hopsv1.RegistryConfig) (hopsreg.Registry, error) {
+func hopsRegistry(ctx context.Context, authClient *auth.Client, cfg *hopsv1.RegistryConfig) (hopsreg.Registry, error) {
 	switch {
 	case cfg.Prefix == "":
 		return nil, errNoRegistryConfig
 	case cfg.OCILayout:
 		return hopsreg.NewLocal(cfg.Prefix), nil
 	default:
-		return hopsreg.NewRegistry(
+		return hopsreg.NewRegistry(ctx,
 			cfg.Prefix,
 			authClient,
 			cfg.PlainHTTP,
@@ -260,30 +260,30 @@ func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
 		return action.brewFormulary(ctx, false)
 	// Hops-style Formulary
 	default:
-		return action.hopsClient()
+		return action.hopsClient(ctx)
 	}
 }
 
 // BottleRegistry produces the configured Bottle registry
-func (action *Hops) BottleRegistry() (bottle.Registry, error) {
+func (action *Hops) BottleRegistry(ctx context.Context) (bottle.Registry, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Registry
 	case "":
 		return action.brewRegistry(), nil
 	// Hops-style Registry
 	default:
-		return action.hopsClient()
+		return action.hopsClient(ctx)
 	}
 }
 
 // hopsClient initializes the configured formula.Formulary/bottle.Registry
-func (action *Hops) hopsClient() (hops.Client, error) {
+func (action *Hops) hopsClient(ctx context.Context) (hops.Client, error) {
 	if action.hopsclient == nil {
 		cache := filepath.Join(action.Config().Cache, "oci")
 		slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix), slog.String("cache", cache))
 
 		// Initialize registry.Registry
-		reg, err := action.registry()
+		reg, err := action.registry(ctx)
 		if err != nil {
 			return nil, err
 		}

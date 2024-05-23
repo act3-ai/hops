@@ -2,16 +2,18 @@ name: Build
 
 on:
   push:
-    branches: 
+    branches:
       - "main"
       - "release/*"
   pull_request:
     branches: ["main"]
-  workflow_call:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('ci-{0}', github.sha) }}
 
 jobs:
   lint:
@@ -37,9 +39,7 @@ jobs:
     #   contents: read
     #   attestations: write
     env:
-      BUILD_ID: hops
       EXECUTABLE: hops
-      VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('ci-{0}', github.sha) }}
       CGO_ENABLED: 0
     outputs:
       artifact-id: ${{ steps.upload.outputs.artifact-id }}
@@ -47,11 +47,11 @@ jobs:
       matrix:
         GOOS:
           - linux
-          - windows
-          - darwin
+          # - windows
+          # - darwin
         GOARCH:
           - amd64
-          - arm64
+          # - arm64
       fail-fast: true
     steps:
       - uses: actions/checkout@v4
@@ -60,19 +60,16 @@ jobs:
           go-version: "1.22"
 
       # Go build
-      - name: Build ${{env.EXECUTABLE}}
+      - name: Build hops
         id: build
         env:
-          EXECUTABLE_PATH: bin/${{env.EXECUTABLE}}
+          EXECUTABLE_PATH: bin/hops
         run: |
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
             -o ${{env.EXECUTABLE_PATH}} \
-            ./cmd/${{env.EXECUTABLE}}
+            ./cmd/hops
           echo "executable-path=${{env.EXECUTABLE_PATH}}" >> $GITHUB_OUTPUT
-      - uses: oras-project/setup-oras@v1
-      - run: |
-          oras manifest push --media-type 
 
       # - uses: actions/attest-build-provenance@v1
       #   id: attest
@@ -82,19 +79,86 @@ jobs:
       - name: Create archive
         id: archive
         env:
-          ARCHIVE_DIR: ${{env.BUILD_ID}}/${{env.VERSION}}
-          ARCHIVE_PATH: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}.tar
+          ARCHIVE_DIR: hops/${{env.VERSION}}
+          ARCHIVE_PATH: hops--${{matrix.GOOS}}--${{matrix.GOARCH}}.tar.gz
         # mv ${{ steps.attest.outputs.bundle-path }} ${{env.ARCHIVE_DIR}}/
         run: |
           mkdir -p ${{env.ARCHIVE_DIR}}/bin/
-          mv ${{ steps.build.outputs.executable-path }} ${{env.ARCHIVE_DIR}}/bin/
+          mv ${{steps.build.outputs.executable-path}} ${{env.ARCHIVE_DIR}}/bin/
           tar -czvf ${{env.ARCHIVE_PATH}} ${{env.ARCHIVE_DIR}}/
           echo "archive-path=${{env.ARCHIVE_PATH}}" >> $GITHUB_OUTPUT
+          echo "executable-path=${{env.ARCHIVE_DIR}}/bin/hops" >> $GITHUB_OUTPUT
 
       - name: Upload build artifact
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: ${{env.BUILD_ID}}--${{matrix.GOOS}}--${{matrix.GOARCH}}
+          name: hops--${{matrix.GOOS}}--${{matrix.GOARCH}}
           path: |
             ${{steps.archive.outputs.archive-path}}
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: go-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # list of Docker images to use as base name for tags
+          images: |
+            act3-ai/hops
+            ghcr.io/act3-ai/hops
+          # generate Docker tags based on the following events/attributes
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # - name: Login to Docker Hub
+      #   if: github.event_name != 'pull_request'
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
+      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hops--linux--amd64
+
+      - name: Unpack build artifact
+        run: |
+          tar -xvf hops--linux--amd64.tar.gz
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          annotations: ${{ steps.meta.outputs.annotations }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            HOPS_EXECUTABLE=hops/${{env.VERSION}}/bin/hops
