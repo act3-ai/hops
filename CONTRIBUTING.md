@@ -141,3 +141,7 @@ git push origin "<release tag>"
 ```
 
 Once the tag has been pushed, the ["Release" workflow](./.github/workflows/release.yml) will run. This workflow runs GoReleaser on the tag.
+
+### Beta Releases
+
+Beta releases are created with versions matching `v0.0.0-beta.0`. Once a series of betas is ready for a stable release, add the beta chain to the `ignore_tags` list in `cliff.toml`.
