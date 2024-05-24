@@ -126,7 +126,7 @@ kos:
     creation_time: "{{.CommitTimestamp}}"
     ko_data_creation_time: "{{.CommitTimestamp}}"
     sbom: spdx
-    # base_import_paths: true
+    base_import_paths: true
 
 report_sizes: true
 
