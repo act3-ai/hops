@@ -10,14 +10,14 @@ updates:
   - package-ecosystem: gomod
     directory: "/"
     commit-message:
-      prefix: "deps(gomod)"
+      prefix: "deps(go.mod)"
     schedule:
       interval: daily
     reviewers: [justenstall]
   - package-ecosystem: docker
     directory: "/"
     commit-message:
-      prefix: "deps(docker)"
+      prefix: "deps(Dockerfile)"
     schedule:
       interval: daily
     reviewers: [justenstall]
