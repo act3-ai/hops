@@ -3,21 +3,21 @@ updates:
   - package-ecosystem: github-actions
     directory: "/"
     commit-message:
-      prefix: "fix(deps)"
+      prefix: "deps(github-actions)"
     schedule:
       interval: daily
     reviewers: [justenstall]
   - package-ecosystem: gomod
     directory: "/"
     commit-message:
-      prefix: "fix(deps)"
+      prefix: "deps(gomod)"
     schedule:
       interval: daily
     reviewers: [justenstall]
   - package-ecosystem: docker
     directory: "/"
     commit-message:
-      prefix: "fix(deps)"
+      prefix: "deps(docker)"
     schedule:
       interval: daily
     reviewers: [justenstall]
