@@ -86,7 +86,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: tests--${{env.VERSION}}
+          name: tests_${{env.VERSION}}
           path: |
             test.out
             cover.out
@@ -134,7 +134,7 @@ jobs:
         id: archive
         env:
           ARCHIVE_DIR: hops/${{env.VERSION}}
-          ARCHIVE_PATH: hops--${{matrix.GOOS}}--${{matrix.GOARCH}}.tar.gz
+          ARCHIVE_PATH: hops_${{matrix.GOOS}}_${{matrix.GOARCH}}.tar.gz
         # mv ${{ steps.attest.outputs.bundle-path }} ${{env.ARCHIVE_DIR}}/
         run: |
           mkdir -p ${{env.ARCHIVE_DIR}}/bin/
@@ -147,7 +147,7 @@ jobs:
         id: upload
         uses: actions/upload-artifact@v4
         with:
-          name: hops--${{matrix.GOOS}}--${{matrix.GOARCH}}
+          name: hops_${{matrix.GOOS}}_${{matrix.GOARCH}}
           path: |
             ${{steps.archive.outputs.archive-path}}
 
@@ -179,10 +179,10 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: hops--linux--amd64
+          name: hops_linux_amd64
       - name: Unpack build artifact
         run: |
-          tar -xvf hops--linux--amd64.tar.gz
+          tar -xvf hops_linux_amd64.tar.gz
 
       # Create image metadata
       - name: Docker meta
