@@ -1,10 +1,8 @@
-name: Build
+name: CI
 
 on:
   push:
-    branches:
-      - "main"
-      - "release/*"
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
@@ -14,7 +12,7 @@ concurrency:
 
 env:
   GO_VERSION: "1.22"
-  VERSION: ${{ github.ref_type == 'tag' && github.ref_name || format('ci-{0}', github.sha) }}
+  VERSION: ${{ github.ref_type == 'tag' && format('ci-{0}', github.ref_name) || format('ci-{0}', github.sha) }}
 
 jobs:
   lint:
