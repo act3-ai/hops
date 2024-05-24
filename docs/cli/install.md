@@ -27,6 +27,13 @@ the installed formulae or, every 30 days, for all formulae.
 Unless HOMEBREW_NO_INSTALL_UPGRADE is set, brew install formula will
 upgrade formula if it is already installed but outdated.
 
+STANDALONE MODE:
+
+Hops has an alternate mode to fetch all packages and metadata from a single OCI registry.
+The default behavior for standalone mode is to install the version tagged "latest".
+The tag for a formula can be set by using the argument format "<formula>:<tag>".
+
+
 ## Usage
 
 ```plaintext
