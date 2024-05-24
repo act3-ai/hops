@@ -201,10 +201,9 @@ tasks:
   
   next-changelog-all:
     desc: Preview updated CHANGELOG.md
-    deps: [tool:svu]
     vars:
       VERSION:
-        sh: svu
+        sh: git cliff --bumped-version
     cmds:
       - git cliff --tag {{.VERSION}}
 
@@ -215,10 +214,9 @@ tasks:
       - sh: '[ -z "$(git status --porcelain)" ]'
         msg: Git status unclean
 
-  release-tag:
-    desc: Create release tag
-    deps:
-      - git-status-clean
+  release-tag-internal:
+    internal: true
+    deps: [git-status-clean]
     requires:
       vars: [TAG]
     env:
@@ -233,19 +231,23 @@ tasks:
       - git add VERSION CHANGELOG.md
       - 'git commit -m "chore(release): {{.TAG}}" -m "$RELEASE_NOTES"'
       - git tag "{{.TAG}}"
-
-  release-tag-main:
-    desc: Create main release tag
-    deps:
-      - git-status-clean
-      - tool:svu
-    vars:
-      VERSION:
-        sh: svu
+  
+  release-tag:
+    desc: Create release tag
+    deps: [git-status-clean]
     cmds:
       - task: release-tag
         vars:
-          TAG: "{{.VERSION}}"
+          TAG:
+            sh: git cliff --bumped-version
+
+  release-tag-*:
+    desc: Create specific release tag
+    deps: [git-status-clean]
+    cmds:
+      - task: release-tag
+        vars:
+          TAG: "{{index .MATCH 0}}"
 
   update-changelog:
     desc: Update CHANGELOG.md
