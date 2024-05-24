@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write # upload archives to GitHub release
   packages: write # push images and packages to ghcr.io
+  # issues: write # close milestones
 
 env:
   GO_VERSION: "1.22"
@@ -18,8 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        # with:
-        #   fetch-depth: 0
+        with:
+          fetch-depth: 0
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
