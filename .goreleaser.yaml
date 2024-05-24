@@ -99,6 +99,7 @@ kos:
     base_image: chainguard/static
     repository: ghcr.io/act3-ai/hops-slim
     base_import_paths: true
+    preserve_import_paths: true
     tags:
       - "{{.Tag}}"
       - "{{if not .Prerelease}}v{{ .Major }}{{end}}"
