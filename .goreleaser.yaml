@@ -104,15 +104,17 @@ dockers:
 kos:
   - id: hops
     build: hops
-    base_image: cgr.dev/chainguard/static
+    base_image: chainguard/static
     labels:
       org.opencontainers.image.title: "hops"
+      org.opencontainers.image.description: "Hops is a Homebrew Bottle installer with a focus on performance and mobility."
       org.opencontainers.image.revision: "{{.FullCommit}}"
       org.opencontainers.image.version: "{{.Version}}"
       org.opencontainers.image.licenses: "MIT"
       org.opencontainers.image.source: "{{.GitURL}}"
       org.opencontainers.image.documentation: "{{.GitURL}}"
       org.opencontainers.image.url: "{{.GitURL}}"
+    # Use hops/distroless path
     repository: ghcr.io/act3-ai/hops/distroless
     platforms:
       - all
@@ -124,7 +126,7 @@ kos:
     creation_time: "{{.CommitTimestamp}}"
     ko_data_creation_time: "{{.CommitTimestamp}}"
     sbom: spdx
-    base_import_paths: true
+    # base_import_paths: true
 
 report_sizes: true
 
@@ -142,7 +144,7 @@ changelog:
       regexp: '^fix(\([[:word:]]+\))??!?: .+$'
       order: 1
     - title: "Dependency bumps"
-      regexp: '^Bump .+$'
+      regexp: "^Bump .+$"
       order: 2
     - title: Others
       order: 999
