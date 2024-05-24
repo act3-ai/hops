@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0-beta.10] (2024-05-24)
+
+### Bug Fixes
+
+- Update goreleaser config
+
 ## [0.1.0-beta.9] (2024-05-24)
 
 ### Bug Fixes
@@ -111,6 +117,7 @@ All notable changes to this project will be documented in this file.
 - Run govulncheck
 - **changelog**: Update changelog for tag v0.1.0-beta.0
 
+[0.1.0-beta.10]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.9..v0.1.0-beta.10
 [0.1.0-beta.9]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.8..v0.1.0-beta.9
 [0.1.0-beta.8]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.7..v0.1.0-beta.8
 [0.1.0-beta.7]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.6..v0.1.0-beta.7
