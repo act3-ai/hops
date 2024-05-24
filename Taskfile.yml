@@ -236,7 +236,7 @@ tasks:
     desc: Create release tag
     deps: [git-status-clean]
     cmds:
-      - task: release-tag
+      - task: release-tag-internal
         vars:
           TAG:
             sh: git cliff --bumped-version
@@ -245,7 +245,7 @@ tasks:
     desc: Create specific release tag
     deps: [git-status-clean]
     cmds:
-      - task: release-tag
+      - task: release-tag-internal
         vars:
           TAG: "{{index .MATCH 0}}"
 
