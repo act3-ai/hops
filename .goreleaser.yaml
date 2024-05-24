@@ -127,3 +127,38 @@ release:
   target_commitish: "{{ .Commit }}"
   make_latest: "{{ not .Prerelease }}"
   name_template: "{{.Tag}}"
+
+brews:
+  - name: hops
+    ids: [default]
+    commit_author:
+      name: buildbot
+      email: buildbot@act3-ace.com
+    commit_msg_template: |
+      fix(hops): updated to {{.Tag}}
+    directory: Formula
+    homepage: https://github.com/act3-ai/hops
+    description: "Homebrew Bottle installer with a focus on performance and mobility."
+    license: "MIT"
+    test: |
+      system "#{bin}/hops --version"
+    extra_install: |
+      generate_completions_from_executable(bin/"hops", "completion")
+
+      # Generate manpages
+      mkdir "man" do
+        system bin/"hops", "gendocs", "man", "."
+        man1.install Dir["*.1"]
+        # man5.install Dir["*.5"]
+      end
+    repository:
+      owner: act3-ai
+      name: homebrew-tap
+      branch: update-hops-{{.Tag}}
+      pull_request:
+        enabled: true
+        base:
+          owner: act3-ai
+          name: homebrew-tap
+      # git:
+      #   private_key: "{{.Env.TAP_DEPLOY_KEY}}"
