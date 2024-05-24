@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] (2024-05-24)
+
+### Bug Fixes
+
+- **dist**: Publish homebrew formula
+
+### Miscellaneous Tasks
+
+- **ko**: Preserve import paths
+
 ## [0.1.1] (2024-05-24)
 
 ### Miscellaneous Tasks
@@ -65,6 +75,7 @@ All notable changes to this project will be documented in this file.
 - **release**: Fix flag
 - **docs**: Generate docs
 
+[0.1.2]: https://github.com/act3-ai/hops/compare/v0.1.1..v0.1.2
 [0.1.1]: https://github.com/act3-ai/hops/compare/v0.1.0..v0.1.1
 [0.1.0]: https://github.com/act3-ai/hops/tree/v0.1.0
 
