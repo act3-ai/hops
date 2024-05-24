@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0-beta.7] (2024-05-24)
+
+### Miscellaneous Tasks
+
+- **release**: Fix flag
+
 ## [0.1.0-beta.6] (2024-05-24)
 
 ### Bug Fixes
@@ -93,6 +99,7 @@ All notable changes to this project will be documented in this file.
 - Run govulncheck
 - **changelog**: Update changelog for tag v0.1.0-beta.0
 
+[0.1.0-beta.7]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.6..v0.1.0-beta.7
 [0.1.0-beta.6]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.5..v0.1.0-beta.6
 [0.1.0-beta.5]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.4..v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.3..v0.1.0-beta.4
