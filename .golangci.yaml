@@ -1,3 +1,7 @@
+# golangci-lint is a fast linters runner for Go.
+#
+# Available linters and settings:
+# https://golangci-lint.run/usage/linters
 linters:
   enable:
     - bodyclose
@@ -21,20 +25,25 @@ linters:
     - importas
     - ineffassign
     - misspell
+    - nilnil
     - noctx
     - nolintlint
     - nosprintfhostport
     - perfsprint
-    - prealloc
+    # - prealloc
+    - predeclared
+    - reassign
     - revive
     - sloglint
     - staticcheck
+    # - tagalign
     - tenv
     - thelper
     - typecheck
     - unparam
     - unused
     - usestdlibvars
+    - unconvert
     # - wrapcheck
 
 linters-settings:
@@ -53,6 +62,17 @@ linters-settings:
         alias: brewv2
       - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v3
         alias: brewv3
+
+  nilnil:
+    checked-types:
+      # - ptr
+      - func
+      - iface
+      - map
+      - chan
+
+  perfsprint:
+    err-error: true
 
   sloglint:
     # Enforce using attributes only (overrides no-mixed-args, incompatible with kv-only).
@@ -73,7 +93,6 @@ linters-settings:
 
   revive:
     ignore-generated-header: true
-    severity: warning
     rules:
       - name: atomic
       - name: unhandled-error
@@ -116,7 +135,12 @@ linters-settings:
     # Put imports beginning with prefix after 3rd-party packages.
     # It's a comma-separated list of prefixes.
     # Default: ""
-    local-prefixes: gitlab.com/act3-ai,github.com/act3-ai
+    local-prefixes: >-
+      github.com/act3-ai,
+      gitlab.com/act3-ai
+  
+  unparam:
+    check-exported: true
 
 issues:
   # uncomment to enable more linting
