@@ -2,96 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.0-beta.10] (2024-05-24)
-
-### Bug Fixes
-
-- Update goreleaser config
-
-## [0.1.0-beta.9] (2024-05-24)
-
-### Bug Fixes
-
-- Release notes again
-
-## [0.1.0-beta.8] (2024-05-24)
-
-### Bug Fixes
-
-- **release**: Update release notes generation
-
-## [0.1.0-beta.7] (2024-05-24)
-
-### Miscellaneous Tasks
-
-- **release**: Fix flag
-
-## [0.1.0-beta.6] (2024-05-24)
-
-### Bug Fixes
-
-- **goreleaser**: Update goreleaser config
-
-## [0.1.0-beta.5] (2024-05-24)
-
-### Bug Fixes
-
-- **goreleaser**: Remove md5 hash from ko image paths
-
-## [0.1.0-beta.4] (2024-05-24)
-
-### Bug Fixes
-
-- Update image labels
-
-### Miscellaneous Tasks
-
-- **Release**: Add fetch-depth 0 to checkout
-
-## [0.1.0-beta.3] (2024-05-24)
-
-### Bug Fixes
-
-- Simplify Goreleaser image build while debugging
-- **release workflow**: Change name
-- **release workflow**: Add login step for ghcr.io before running Goreleaser
-- **lint**: Enable more linters
-- Address lint issues
-- Update commit grouping in release notes
-
-### Documentation
-
-- **CONTRIBUTING.md**: Document release process
-
-### Miscellaneous Tasks
-
-- **repo**: Remove unused gitattributes file
-- Update version name to avoid collisions
-- Update changelog configuration
-- Update dependabot commit messages
-
-## [0.1.0-beta.2] (2024-05-23)
-
-### Bug Fixes
-
-- Simplify goreleaser config to publish one manifest tag
-- Set up docker and qemu in release workflow
-
-### Miscellaneous Tasks
-
-- **changelog**: Update changelog for tag v0.1.0-beta.2
-
-## [0.1.0-beta.1] (2024-05-23)
-
-### Bug Fixes
-
-- Remove docker hub image reference
-
-### Miscellaneous Tasks
-
-- **changelog**: Update changelog for tag v0.1.0-beta.1
-
-## [0.1.0-beta.0] (2024-05-23)
+## [0.1.0] (2024-05-24)
 
 ### Features
 
@@ -111,21 +22,41 @@ All notable changes to this project will be documented in this file.
 - **dependabot**: Force convential commits for dependabot PRs
 - **dependabot**: Assign reviewer to dependabot PRs
 - Allow empty commit for changelog
+- Remove docker hub image reference
+- Simplify goreleaser config to publish one manifest tag
+- Set up docker and qemu in release workflow
+- Simplify Goreleaser image build while debugging
+- **release workflow**: Change name
+- **release workflow**: Add login step for ghcr.io before running Goreleaser
+- **lint**: Enable more linters
+- Address lint issues
+- Update commit grouping in release notes
+- Update image labels
+- **goreleaser**: Remove md5 hash from ko image paths
+- **goreleaser**: Update goreleaser config
+- **release**: Update release notes generation
+- Release notes again
+- Update goreleaser config
+- **versioning**: Do not trim leading "v" in version tags
+- Update cliff config
+
+### Documentation
+
+- **CONTRIBUTING.md**: Document release process
 
 ### Miscellaneous Tasks
 
 - Run govulncheck
 - **changelog**: Update changelog for tag v0.1.0-beta.0
+- **changelog**: Update changelog for tag v0.1.0-beta.1
+- **changelog**: Update changelog for tag v0.1.0-beta.2
+- **repo**: Remove unused gitattributes file
+- Update version name to avoid collisions
+- Update changelog configuration
+- Update dependabot commit messages
+- **Release**: Add fetch-depth 0 to checkout
+- **release**: Fix flag
+- **docs**: Generate docs
 
-[0.1.0-beta.10]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.9..v0.1.0-beta.10
-[0.1.0-beta.9]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.8..v0.1.0-beta.9
-[0.1.0-beta.8]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.7..v0.1.0-beta.8
-[0.1.0-beta.7]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.6..v0.1.0-beta.7
-[0.1.0-beta.6]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.5..v0.1.0-beta.6
-[0.1.0-beta.5]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.4..v0.1.0-beta.5
-[0.1.0-beta.4]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.3..v0.1.0-beta.4
-[0.1.0-beta.3]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.2..v0.1.0-beta.3
-[0.1.0-beta.2]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.1..v0.1.0-beta.2
-[0.1.0-beta.1]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.0..v0.1.0-beta.1
-[0.1.0-beta.0]: https://github.com/act3-ai/hops/tree/v0.1.0-beta.0
+[0.1.0]: https://github.com/act3-ai/hops/tree/v0.1.0
 
