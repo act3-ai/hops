@@ -3,10 +3,8 @@ name: goreleaser
 
 on:
   push:
-    branches:
-      - release/v*
     tags:
-      - v*
+      - "v*"
 
 permissions:
   contents: write # upload archives to GitHub release
