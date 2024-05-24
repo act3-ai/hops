@@ -49,6 +49,6 @@ jobs:
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
-          args: release --clean --release-notes <(git cliff --current --strip header)
+          args: release --clean --release-notes <(git-cliff --current --strip header)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
