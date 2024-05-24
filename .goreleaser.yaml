@@ -161,5 +161,6 @@ brews:
           owner: act3-ai
           name: homebrew-tap
           branch: main
-      # git:
-      #   private_key: "{{.Env.TAP_DEPLOY_KEY}}"
+      git:
+        url: git@github.com:act3-ai/homebrew-tap.git
+        private_key: "{{.Env.TAP_DEPLOY_KEY}}"

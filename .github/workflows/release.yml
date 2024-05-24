@@ -64,3 +64,4 @@ jobs:
           goreleaser release --clean --release-notes <(git-cliff --current --strip header)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
