@@ -100,7 +100,7 @@ kos:
     repository: ghcr.io/act3-ai/hops-slim
     base_import_paths: true
     tags:
-      - "{{.Version}}"
+      - "{{.Tag}}"
       - "{{if not .Prerelease}}v{{ .Major }}{{end}}"
       - "{{if not .Prerelease}}v{{ .Major }}.{{ .Minor }}{{end}}"
       - "{{if not .Prerelease}}latest{{end}}"
@@ -111,7 +111,7 @@ kos:
       org.opencontainers.image.title: "hops"
       org.opencontainers.image.description: "Hops is a Homebrew Bottle installer with a focus on performance and mobility."
       org.opencontainers.image.revision: "{{.FullCommit}}"
-      org.opencontainers.image.version: "{{.Version}}"
+      org.opencontainers.image.version: "{{.Tag}}"
       org.opencontainers.image.licenses: "MIT"
       org.opencontainers.image.source: "{{.GitURL}}"
       org.opencontainers.image.documentation: "{{.GitURL}}"
