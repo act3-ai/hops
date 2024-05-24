@@ -2,15 +2,15 @@
 version: 1
 
 builds:
-  - id: hops
+  - id: default
     main: ./cmd/hops
     binary: bin/hops
     env:
       - CGO_ENABLED=0
     flags:
       - -trimpath
-    # ldflags:
-    #   - "-s -w -X main.version={{.Version}}"
+    ldflags:
+      - -s -w -X main.version={{.Tag}}
     goos:
       - linux
       - windows
@@ -20,91 +20,93 @@ builds:
       - arm64
 
 archives:
-  - id: hops
-    builds:
-      - hops
+  - id: default
+    builds: [default]
     format: tar.gz
-    # this name template makes the OS and Arch compatible with the results of `uname`.
-    name_template: >-
-      {{ .Binary }}_{{ .Os }}_{{ .Arch }}
+    name_template: "{{ .Binary }}_{{ .Os }}_{{ .Arch }}"
     # use zip for windows archives
     format_overrides:
       - goos: windows
         format: zip
 
 dockers:
-  - id: hops
+  # linux/amd64 image
+  - id: hops-amd64
     goos: linux
     goarch: amd64
-    ids:
-      - hops
+    ids: [default]
     image_templates:
-      - "ghcr.io/act3-ai/hops:{{ .Tag }}"
-      - "ghcr.io/act3-ai/hops:v{{ .Major }}"
-      - "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}"
-      - "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}"
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_amd64"
+      - "ghcr.io/act3-ai/hops:v{{ .Major }}_amd64"
+      - "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}_amd64"
+      - "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest_amd64{{end}}"
     build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
       - "--build-arg=HOPS_EXECUTABLE=bin/hops"
-  # - id: hops-amd64
-  #   goos: linux
-  #   goarch: amd64
-  #   ids:
-  #     - hops
-  #   image_templates:
-  #     - "ghcr.io/act3-ai/hops:{{ .Tag }}_amd64"
-  #     - "ghcr.io/act3-ai/hops:v{{ .Major }}_amd64"
-  #     - "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}_amd64"
-  #     - "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest_amd64{{end}}"
-  #   build_flag_templates:
-  #     - "--pull"
-  #     - "--platform=linux/amd64"
-  #     - "--build-arg=HOPS_EXECUTABLE=bin/hops"
-  # - id: hops-arm64
-  #   goos: linux
-  #   goarch: arm64
-  #   ids:
-  #     - hops
-  #   image_templates:
-  #     - "ghcr.io/act3-ai/hops:{{ .Tag }}_arm64"
-  #     - "ghcr.io/act3-ai/hops:v{{ .Major }}_arm64"
-  #     - "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}_arm64"
-  #     - "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest_arm64{{end}}"
-  #   build_flag_templates:
-  #     - "--pull"
-  #     - "--platform=linux/arm64"
-  #     - "--build-arg=HOPS_EXECUTABLE=bin/hops"
+      - "--label=org.opencontainers.image.created={{.CommitDate}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
+  # linux/arm64 image
+  - id: hops-arm64
+    goos: linux
+    goarch: arm64
+    ids: [default]
+    image_templates:
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_arm64"
+      - "ghcr.io/act3-ai/hops:v{{ .Major }}_arm64"
+      - "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}_arm64"
+      - "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest_arm64{{end}}"
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+      - "--build-arg=HOPS_EXECUTABLE=bin/hops"
+      - "--label=org.opencontainers.image.created={{.CommitDate}}"
+      - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+      - "--label=org.opencontainers.image.version={{.Tag}}"
 
-# docker_manifests:
-#   - id: hops
-#     name_template: ghcr.io/act3-ai/hops:{{ .Version }}
-#     # name_template: |
-#     #   ghcr.io/act3-ai/hops:{{ .Version }}
-#     #   ghcr.io/act3-ai/hops:v{{ .Major }}
-#     #   ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}
-#     #   {{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}
-#     image_templates:
-#       - "ghcr.io/act3-ai/hops:{{ .Version }}_amd64"
-#       - "ghcr.io/act3-ai/hops:{{ .Version }}_arm64"
-#   # - id: hops-major
-#   #   name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}"
-#   #   image_templates:
-#   #     - "ghcr.io/act3-ai/hops:{{ .Version }}_amd64"
-#   #     - "ghcr.io/act3-ai/hops:{{ .Version }}_arm64"
-#   # - id: hops-majorminor
-#   #   name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}"
-#   #   image_templates:
-#   #     - "ghcr.io/act3-ai/hops:{{ .Version }}_amd64"
-#   #     - "ghcr.io/act3-ai/hops:{{ .Version }}_arm64"
-#   # - id: hops-latest
-#   #   name_template: "{{if not .Prerelease}}ghcr.io/act3-ai/hops:latest{{end}}"
-#   #   image_templates:
-#   #     - "ghcr.io/act3-ai/hops:{{ .Version }}_amd64"
-#   #     - "ghcr.io/act3-ai/hops:{{ .Version }}_arm64"
+docker_manifests:
+  - id: default
+    skip_push: false
+    name_template: ghcr.io/act3-ai/hops:{{ .Tag }}
+    image_templates:
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_amd64"
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_arm64"
+  - id: major
+    skip_push: auto
+    name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}"
+    image_templates:
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_amd64"
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_arm64"
+  - id: majorminor
+    skip_push: auto
+    name_template: "ghcr.io/act3-ai/hops:v{{ .Major }}.{{ .Minor }}"
+    image_templates:
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_amd64"
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_arm64"
+  - id: latest
+    skip_push: auto
+    name_template: "ghcr.io/act3-ai/hops:latest"
+    image_templates:
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_amd64"
+      - "ghcr.io/act3-ai/hops:{{ .Tag }}_arm64"
 
 kos:
-  - id: hops
-    build: hops
+  - id: hops-slim
+    build: default
+    platforms:
+      - all
     base_image: chainguard/static
+    repository: ghcr.io/act3-ai/hops-slim
+    base_import_paths: true
+    tags:
+      - "{{.Version}}"
+      - "{{if not .Prerelease}}v{{ .Major }}{{end}}"
+      - "{{if not .Prerelease}}v{{ .Major }}.{{ .Minor }}{{end}}"
+      - "{{if not .Prerelease}}latest{{end}}"
+    creation_time: "{{.CommitTimestamp}}"
+    ko_data_creation_time: "{{.CommitTimestamp}}"
+    sbom: spdx
     labels:
       org.opencontainers.image.title: "hops"
       org.opencontainers.image.description: "Hops is a Homebrew Bottle installer with a focus on performance and mobility."
@@ -114,19 +116,6 @@ kos:
       org.opencontainers.image.source: "{{.GitURL}}"
       org.opencontainers.image.documentation: "{{.GitURL}}"
       org.opencontainers.image.url: "{{.GitURL}}"
-    # Use hops/distroless path
-    repository: ghcr.io/act3-ai/hops-slim
-    platforms:
-      - all
-    tags:
-      - "{{.Tag}}"
-      - "v{{ .Major }}"
-      - "v{{ .Major }}.{{ .Minor }}"
-      - "{{if not .Prerelease}}latest{{end}}"
-    creation_time: "{{.CommitTimestamp}}"
-    ko_data_creation_time: "{{.CommitTimestamp}}"
-    sbom: spdx
-    base_import_paths: true
 
 report_sizes: true
 
@@ -136,4 +125,4 @@ release:
   replace_existing_artifacts: true
   target_commitish: "{{ .Commit }}"
   make_latest: "{{ not .Prerelease }}"
-  name_template: "Hops {{.Version}} ({{.CommitDate}})"
+  name_template: "Hops {{.Tag}}"
