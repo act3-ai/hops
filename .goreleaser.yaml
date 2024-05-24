@@ -125,4 +125,4 @@ release:
   replace_existing_artifacts: true
   target_commitish: "{{ .Commit }}"
   make_latest: "{{ not .Prerelease }}"
-  name_template: "Hops {{.Tag}}"
+  name_template: "{{.Tag}}"
