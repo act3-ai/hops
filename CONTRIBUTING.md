@@ -21,6 +21,16 @@ The following tools are used for local development of Hops:
 - [Podman](https://podman.io/): building images and running local container registries
 - [git-cliff](https://git-cliff.org/): version calculation and changelog generation
 
+## Documentation
+
+### CLI Documentation Generation
+
+A `go:generate` directive in [`gen.go`](./gen.go) runs the following CLI command to regenerate CLI docs:
+
+```bash
+NO_COLOR=1 hops gendocs md --only-commands docs/cli/
+```
+
 ## Testing
 
 ### Local Registry
@@ -74,14 +84,60 @@ task test
 
 ## Releasing
 
-The act3-pt CLI contains a `act3-pt ci release` command that automates this process.
+Releases are created with Git tags and distributed with GoReleaser.
 
-## Code Generation
+Once you have run all tests and code generation.
 
-### Generate CLI Documentation (automatically done in CI/CD pipeline)
+Release process, first calculate the version of the next release:
 
-A `go:generate` directive in [`gen.go`](./gen.go) runs the following CLI command to regenerate CLI docs:
+```sh
+# Calculate version of the next release by checking Git log
+git cliff --bumped-version
 
-```bash
-NO_COLOR=1 hops gendocs md --only-commands docs/cli/
+# Save incremented version to environment variable
+# Can use any version, git-cliff version is just a convenience
+VERSION="$(git cliff --bumped-version)"
+
+# Update VERSION file
+echo "$VERSION" >VERSION
+
+# Update CHANGELOG.md
+git cliff --tag "$VERSION" --output CHANGELOG.md
+
+# View release notes for the next version
+# Taskfile shortcut: "task next-changelog"
+git cliff --tag "$VERSION" --unreleased --strip header
+
+# Save next version's release notes to environment variable
+# This is so they can be used in the release commit message
+RELEASE_NOTES="$(git cliff --tag "$VERSION" --unreleased --strip header)"
+
+# Stage VERSION and CHANGELOG.md
+git add VERSION CHANGELOG.md
+
+# Commit VERSION and CHANGELOG.md
+git commit -m "chore(release): $VERSION" -m "$RELEASE_NOTES"
+
+# Create release tag
+git tag "$VERSION"
 ```
+
+Once the release tag has been created, GoReleaser can be run either locally or in a GitHub Action.
+
+Run GoReleaser locally:
+
+```sh
+GITHUB_TOKEN="<token>" goreleaser release --clean
+```
+
+Run in GitHub Actions:
+
+```sh
+# Push any local commits
+git push
+
+# Push the new release tag
+git push origin "<release tag>"
+```
+
+Once the tag has been pushed, the ["Release" workflow](./.github/workflows/release.yml) will run. This workflow runs GoReleaser on the tag.

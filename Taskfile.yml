@@ -186,19 +186,20 @@ tasks:
     cmds:
       - podman stop {{.TEST_REGISTRY_NAME}}
 
-  next:
+  next-version:
     desc: Print next version
-    deps: [tool:svu]
     cmds:
-      - svu
+      - git cliff --bumped-version
 
-  next-beta:
-    desc: Print next beta version
-    deps: [tool:svu]
+  next-changelog:
+    desc: Preview updated CHANGELOG.md
+    vars:
+      VERSION:
+        sh: git cliff --bumped-version
     cmds:
-      - svu prerelease --pre-release=beta
-
-  changelog-preview:
+      - git cliff --tag {{.VERSION}} --unreleased --strip header
+  
+  next-changelog-all:
     desc: Preview updated CHANGELOG.md
     deps: [tool:svu]
     vars:
@@ -218,16 +219,19 @@ tasks:
     desc: Create release tag
     deps:
       - git-status-clean
-      - tool:svu
     requires:
       vars: [TAG]
+    env:
+      RELEASE_NOTES:
+        sh: git cliff --tag "{{.TAG}}" --unreleased --strip header
     prompt: 'Create release tag "{{.TAG}}"?'
     cmds:
+      - echo "{{.TAG}}" > VERSION
       - task: update-changelog
         vars:
           TAG: "{{.TAG}}"
-      - git add CHANGELOG.md
-      - 'git commit -m "chore(changelog): update changelog for tag {{.TAG}}"'
+      - git add VERSION CHANGELOG.md
+      - 'git commit -m "chore(release): {{.TAG}}" -m "$RELEASE_NOTES"'
       - git tag "{{.TAG}}"
 
   release-tag-main:
@@ -243,31 +247,12 @@ tasks:
         vars:
           TAG: "{{.VERSION}}"
 
-  release-tag-beta:
-    desc: Create beta release tag
-    deps:
-      - git-status-clean
-      - tool:svu
-    vars:
-      VERSION:
-        sh: svu prerelease --pre-release=beta
-    cmds:
-      - task: release-tag
-        vars:
-          TAG: "{{.VERSION}}"
-
-  push-tag-instruction:
-    silent: true
-    cmds:
-      - echo "Run the following to push the release tag:"
-      - echo "  git push --tags"
-
   update-changelog:
     desc: Update CHANGELOG.md
     requires:
       vars: [TAG]
     cmds:
-      - git cliff --tag "{{.TAG}}" -o CHANGELOG.md
+      - git cliff --tag "{{.TAG}}" --output CHANGELOG.md
 
   # crd-ref-docs: Generates markdown documentation for CRDs
   tool:crd-ref-docs:
