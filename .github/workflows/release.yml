@@ -1,14 +1,16 @@
-# .github/workflows/release.yml
-name: goreleaser
+name: Release
 
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"
 
 permissions:
   contents: write # upload archives to GitHub release
   packages: write # push images and packages to ghcr.io
+
+env:
+  GO_VERSION: "1.22"
 
 jobs:
   goreleaser:
@@ -21,7 +23,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.22"
+          go-version: ${{ env.GO_VERSION }}
       - name: Set up ko
         uses: ko-build/setup-ko@v0.6
       - name: Set up QEMU
