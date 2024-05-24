@@ -97,10 +97,6 @@ jobs:
   build:
     name: Go build
     runs-on: ubuntu-latest
-    # permissions:
-    #   id-token: write
-    #   contents: read
-    #   attestations: write
     env:
       EXECUTABLE: hops
       CGO_ENABLED: 0
@@ -134,11 +130,6 @@ jobs:
             ./cmd/hops
           echo "executable-path=${{env.EXECUTABLE_PATH}}" >> $GITHUB_OUTPUT
 
-      # - uses: actions/attest-build-provenance@v1
-      #   id: attest
-      #   with:
-      #     subject-path: ${{steps.build.outputs.executable-path}}
-
       - name: Create archive
         id: archive
         env:
@@ -167,39 +158,15 @@ jobs:
     permissions:
       packages: write # to push image to ghcr.io
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          # list of Docker images to use as base name for tags
-          images: |
-            ghcr.io/act3-ai/hops/ci
-          # generate Docker tags based on the following events/attributes
-          # tags: |
-          #   type=schedule
-          #   type=ref,event=branch
-          #   type=ref,event=pr
-          #   type=semver,pattern={{version}}
-          #   type=semver,pattern={{major}}.{{minor}}
-          #   type=semver,pattern={{major}}
-          #   type=sha
-
+      # Set up tools
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # - name: Login to Docker Hub
-      #   if: github.event_name != 'pull_request'
-      #   uses: docker/login-action@v3
-      #   with:
-      #     username: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+      # Authenticate to ghcr.io
       - name: Login to GHCR
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
@@ -208,21 +175,29 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # Download and unpack already-built binary
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
           name: hops--linux--amd64
-
       - name: Unpack build artifact
         run: |
           tar -xvf hops--linux--amd64.tar.gz
 
+      # Create image metadata
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/act3-ai/hops/ci
+
+      # Build and push image
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
-          tags: ghcr.io/act3-ai/hops/${{env.VERSION}}
+          tags: ${{ steps.meta.outputs.tags }}
           annotations: ${{ steps.meta.outputs.annotations }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
