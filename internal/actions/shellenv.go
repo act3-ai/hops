@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -46,11 +47,8 @@ func (action *ShellEnv) Run(_ context.Context) error {
 	if action.Shell == "" {
 		shell, ok := os.LookupEnv("SHELL")
 		if !ok {
-			// This will yell at the user every time the output is evaluated
-			fmt.Println(`echo "ERROR(hops shellenv): SHELL is not set"`)
-			os.Exit(1)
+			return errors.New("SHELL is not set")
 		}
-		// fmt.Printf(`echo "INFO(hops shellenv): SHELL is set to %s"`+"\n", shell)
 		action.Shell = filepath.Base(shell)
 	}
 

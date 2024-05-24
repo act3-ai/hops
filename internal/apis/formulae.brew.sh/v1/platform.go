@@ -46,6 +46,8 @@ func jsonPatch[T any](original, patch T) (*T, error) {
 
 	// Interpret empty configuration as nil
 	if utils.BytesAreEmptyIsh(newjson) {
+		// Returning nil is intentional.
+		// Marshalling a non-nil object produces fields that were not present.
 		return nil, nil
 	}
 

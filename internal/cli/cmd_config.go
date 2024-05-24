@@ -45,11 +45,17 @@ func shellenvCmd(hops *actions.Hops) *cobra.Command {
 		Args:        cobra.MaximumNArgs(1),
 		ValidArgs:   actions.Shells,
 		Annotations: map[string]string{},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		// Use Run instead of RunE, shellenv command handles error output on its own
+		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 {
 				action.Shell = args[0]
 			}
-			return action.Run(cmd.Context())
+			err := action.Run(cmd.Context())
+			if err != nil {
+				// This will yell at the user every time the output is evaluated
+				cmd.Printf(`echo "ERROR(hops shellenv): %s\n"`, err.Error())
+				os.Exit(1)
+			}
 		},
 	}
 

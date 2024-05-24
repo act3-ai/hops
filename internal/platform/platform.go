@@ -33,9 +33,6 @@ func (p Platform) Type() string {
 	return "platform"
 }
 
-// List defines a list of platforms.
-type List []Platform
-
 const (
 	Arm64Sonoma   Platform = "arm64_sonoma"   // macOS Sonoma ARM 64-bit
 	Arm64Ventura  Platform = "arm64_ventura"  // macOS Sonoma ARM 64-bit
@@ -55,30 +52,7 @@ const (
 
 // IsValid reports if s is a valid platform.
 func IsValid(s string) bool {
-	return slices.Contains(append([]Platform{All}, SupportedPlatforms...), Platform(s))
-}
-
-// ValidateAll reports an error if any given strings are an invalid platform.
-func ValidateAll(s ...string) error {
-	var err error
-	for _, p := range s {
-		if !IsValid(p) {
-			err = errors.Join(err, NewErrInvalidPlatform(p))
-		}
-	}
-	return nil
-}
-
-// ParseList parses strings into a List, filtering out invalid platforms in the process.
-func ParseList(s []string) List {
-	l := List{}
-	for _, p := range s {
-		if !IsValid(p) {
-			continue
-		}
-		l = append(l, Platform(p))
-	}
-	return l
+	return slices.Contains(ValidPlatformValues, Platform(s))
 }
 
 // Computed computes the actual included platforms for a Platform value.
@@ -86,7 +60,7 @@ func (p Platform) Computed() []Platform {
 	switch {
 	case !IsValid(p.String()):
 		return nil
-	case Platform(p) == All:
+	case p == All:
 		return SupportedPlatforms
 	default:
 		return []Platform{p}
@@ -105,27 +79,11 @@ func (p Platform) Computed() []Platform {
 // 	}
 // }
 
-// Computed computes the actual included platforms for a list.
-func (l List) Computed() []Platform {
-	plats := []Platform{}
-	for _, p := range l {
-		switch {
-		case !IsValid(p.String()):
-			continue // skip invalid values
-		case Platform(p) == All:
-			return SupportedPlatforms
-		default:
-			plats = append(plats, p)
-		}
-	}
-	return plats
-}
-
 // ValidPlatformValues validates flag values.
 var ValidPlatformValues = append([]Platform{All}, SupportedPlatforms...)
 
 // SupportedPlatforms contains all supported platforms.
-var SupportedPlatforms = List{
+var SupportedPlatforms = []Platform{
 	Arm64Sonoma,
 	Arm64Ventura,
 	Arm64Monterey,
