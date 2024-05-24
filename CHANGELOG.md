@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] (2024-05-24)
+
+### Miscellaneous Tasks
+
+- **image**: Fix CI image tag
+- **build image**: Give publish permissions
+
 ## [0.1.0] (2024-05-24)
 
 ### Features
@@ -58,5 +65,6 @@ All notable changes to this project will be documented in this file.
 - **release**: Fix flag
 - **docs**: Generate docs
 
+[0.1.1]: https://github.com/act3-ai/hops/compare/v0.1.0..v0.1.1
 [0.1.0]: https://github.com/act3-ai/hops/tree/v0.1.0
 
