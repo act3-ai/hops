@@ -198,7 +198,7 @@ tasks:
         sh: git cliff --bumped-version
     cmds:
       - git cliff --tag {{.VERSION}} --unreleased --strip header
-  
+
   next-changelog-all:
     desc: Preview updated CHANGELOG.md
     vars:
@@ -231,7 +231,7 @@ tasks:
       - git add VERSION CHANGELOG.md
       - 'git commit -m "chore(release): {{.TAG}}" -m "$RELEASE_NOTES"'
       - git tag "{{.TAG}}"
-  
+
   release-tag:
     desc: Create release tag
     deps: [git-status-clean]
@@ -248,6 +248,14 @@ tasks:
       - task: release-tag-internal
         vars:
           TAG: "{{index .MATCH 0}}"
+
+  goreleaser:
+    desc: Run GoReleaser
+    deps: [git-status-clean]
+    cmds:
+      - |
+        goreleaser release --clean \
+          --release-notes <(git cliff --current --strip header)
 
   update-changelog:
     desc: Update CHANGELOG.md

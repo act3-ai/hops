@@ -115,7 +115,7 @@ kos:
       org.opencontainers.image.documentation: "{{.GitURL}}"
       org.opencontainers.image.url: "{{.GitURL}}"
     # Use hops/distroless path
-    repository: ghcr.io/act3-ai/hops/distroless
+    repository: ghcr.io/act3-ai/hops-slim
     platforms:
       - all
     tags:
@@ -131,20 +131,9 @@ kos:
 report_sizes: true
 
 release:
-  target_commitish: "{{ .Commit }}"
   prerelease: auto
-
-changelog:
-  use: github
-  groups:
-    - title: Features
-      regexp: '^feat(\([[:word:]]+\))??!?: .+$'
-      order: 0
-    - title: "Fixes"
-      regexp: '^fix(\([[:word:]]+\))??!?: .+$'
-      order: 1
-    - title: "Dependency bumps"
-      regexp: "^Bump .+$"
-      order: 2
-    - title: Others
-      order: 999
+  replace_existing_draft: true
+  replace_existing_artifacts: true
+  target_commitish: "{{ .Commit }}"
+  make_latest: "{{ not .Prerelease }}"
+  name_template: "Hops {{.Version}} ({{.CommitDate}})"
