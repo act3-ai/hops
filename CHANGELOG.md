@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.0-beta.5] (2024-05-24)
+
+### Bug Fixes
+
+- **goreleaser**: Remove md5 hash from ko image paths
+
 ## [0.1.0-beta.4] (2024-05-24)
 
 ### Bug Fixes
@@ -81,6 +87,7 @@ All notable changes to this project will be documented in this file.
 - Run govulncheck
 - **changelog**: Update changelog for tag v0.1.0-beta.0
 
+[0.1.0-beta.5]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.4..v0.1.0-beta.5
 [0.1.0-beta.4]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.3..v0.1.0-beta.4
 [0.1.0-beta.3]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.2..v0.1.0-beta.3
 [0.1.0-beta.2]: https://github.com/act3-ai/hops/compare/v0.1.0-beta.1..v0.1.0-beta.2
