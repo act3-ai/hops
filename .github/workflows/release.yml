@@ -53,11 +53,13 @@ jobs:
       # Do the release stuff
       - name: Generate release notes
         run: |
-          git-cliff --current --strip header --output RELEASE_NOTES.md
+          git-cliff --current --strip header >> $GITHUB_STEP_SUMMARY
+          # RELEASE_NOTES=$(git-cliff --current --strip header)
+          # echo "release-notes=\"$RELEASE_NOTES\"" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run GoReleaser
         run: |
-          goreleaser release --clean --release-notes RELEASE_NOTES.md
+          goreleaser release --clean --release-notes <(git-cliff --current --strip header)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
