@@ -71,13 +71,27 @@ func installedFormulae(hops *actions.Hops) func(cmd *cobra.Command, _ []string, 
 // withRegistryFlags adds a flag to override the registry field in config.
 func withRegistryFlags(cmd *cobra.Command, action *actions.Hops) {
 	var registry string
+	var registryConfig string
 	var plainHTTP bool
+
 	cmd.Flags().StringVarP(&registry, "registry", "r", "", "Registry prefix for bottles")
+
+	cmd.Flags().StringVar(&registryConfig, "registry-config", "", "Path of the authentication file for registry")
+	if err := cmd.MarkFlagFilename("registry-config", "json"); err != nil {
+		cmd.PrintErrln(err.Error())
+	}
+
 	cmd.Flags().BoolVar(&plainHTTP, "plain-http", false, "Allow insecure connections to registry without SSL check")
+
 	action.AddConfigOverride(func(cfg *hopsv1.Configuration) {
 		if registry != "" {
 			cfg.Registry.Prefix = registry
 		}
+
+		if registryConfig != "" {
+			cfg.Registry.Config = registryConfig
+		}
+
 		if cmd.Flags().Lookup("plain-http").Changed {
 			cfg.Registry.PlainHTTP = plainHTTP
 		}

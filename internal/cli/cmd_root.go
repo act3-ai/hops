@@ -1,16 +1,13 @@
 package cli
 
 import (
-	"log/slog"
 	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"github.com/act3-ai/hops/internal/actions"
-	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
 	"github.com/act3-ai/hops/internal/cli/doc"
 	"github.com/act3-ai/hops/internal/o"
@@ -46,8 +43,6 @@ func NewCLI(version string) *cobra.Command {
 	// Style the error prefix red
 	cmd.SetErrPrefix(o.StyleRed(cmd.ErrPrefix()))
 
-	// Add "verbose" and "debug" flags
-	withVerbosityOverrides(hops, cmd)
 	// Add config overrides
 	withConfigOverrides(hops, cmd)
 
@@ -108,18 +103,6 @@ func NewCLI(version string) *cobra.Command {
 	return cmd
 }
 
-// withVerbosityOverrides adds the debug, quiet, and verbose flags to the given command.
-func withVerbosityOverrides(action *actions.Hops, cmd *cobra.Command) {
-	var debug, quiet, verbose int
-	cmd.PersistentFlags().CountVarP(&debug, "debug", "d", "Display any debugging information")
-	cmd.PersistentFlags().CountVarP(&quiet, "quiet", "q", "Make some output more quiet")
-	cmd.PersistentFlags().CountVarP(&verbose, "verbose", "v", "Make some output more verbose")
-	action.AddHomebrewOverride(func(e *brewenv.Environment) {
-		e.Debug = e.Debug || debug > 0
-		e.Verbose = e.Verbose || verbose > 0
-	})
-}
-
 // withConfigOverrides adds config overrides.
 func withConfigOverrides(action *actions.Hops, cmd *cobra.Command) {
 	cmd.PersistentFlags().StringSliceVar(&action.ConfigFiles, "config",
@@ -134,34 +117,4 @@ func withConfigOverrides(action *actions.Hops, cmd *cobra.Command) {
 	cmd.PersistentFlags().Lookup("config").DefValue = strings.Join(cfgfiles, ",")
 	// Add environment variable overrides
 	action.AddConfigOverride(hopsv1.ConfigurationEnvOverrides)
-}
-
-// LogLevel produces the desired slog.Level by parsing the "debug", "verbose", and "quiet" flags.
-//
-// "base" sets the default level, which gets modified by the flags.
-func LogLevel(cmd *cobra.Command, base slog.Level) slog.Level {
-	level := base // start with default level
-
-	// Debug flag increases the the log threshold by a full level
-	debug, err := strconv.Atoi(cmd.Flags().Lookup("debug").Value.String())
-	if err != nil {
-		panic(err)
-	}
-	level -= 4 * slog.Level(debug)
-
-	// Verbose flag lowers the log threshold by one numeric step
-	verbose, err := strconv.Atoi(cmd.Flags().Lookup("verbose").Value.String())
-	if err != nil {
-		panic(err)
-	}
-	level -= 1 * slog.Level(verbose)
-
-	// Verbose flag raises the log threshold by one numeric step
-	quiet, err := strconv.Atoi(cmd.Flags().Lookup("quiet").Value.String())
-	if err != nil {
-		panic(err)
-	}
-	level += 1 * slog.Level(quiet)
-
-	return level
 }

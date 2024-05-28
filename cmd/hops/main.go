@@ -11,6 +11,7 @@ import (
 
 	"github.com/act3-ai/hops/docs"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 
 	commands "gitlab.com/act3-ai/asce/go-common/pkg/cmd"
 	vv "gitlab.com/act3-ai/asce/go-common/pkg/version"
@@ -32,6 +33,8 @@ func main() {
 	root := cli.NewCLI(info.Version) // Create the root command
 	root.SilenceUsage = true         // Silence usage when root is called
 
+	logopts := logutil.WithPersistentVerbosityFlags(root) // Add "quiet", "verbose", and "debug" flags
+
 	// Layout of embedded documentation to surface in the help command
 	// and generate in the gendocs command
 	embeddedDocs := docs.Embedded(root)
@@ -49,13 +52,10 @@ func main() {
 	// Restores the original ANSI processing state on Windows
 	var restoreWindowsANSI func() error
 
-	// Store persistent pre run function to avoid overwriting it
-	persistentPreRun := root.PersistentPreRun
-
 	// The pre run function logs build info and sets the default output writer
-	root.PersistentPreRun = func(cmd *cobra.Command, args []string) {
-		level := cli.LogLevel(cmd, slog.LevelInfo) // parse log level flags
-		// cmd.Println("log level: ", level)
+	root.PersistentPreRun = func(cmd *cobra.Command, _ []string) {
+		level := logopts.LogLevel(slog.LevelInfo) // parse log level flags
+		cmd.Println("log level: ", level)
 		logger := log.NewWithOptions(cmd.OutOrStdout(), log.Options{
 			TimeFormat: time.Kitchen,     // set human-readable time
 			Level:      log.Level(level), // parse verbose/debug flags
@@ -73,12 +73,9 @@ func main() {
 			slog.Error("error enabling ANSI processing", slog.String("error", err.Error()))
 		}
 
+		slog.Debug("Starting logger", slog.String("format", "text"), slog.String("level", level.String()))
 		slog.Debug("Software", slog.String("version", info.Version)) // Log version info
 		slog.Debug("Software details", slog.Any("info", info))       // Log build info
-
-		if persistentPreRun != nil {
-			persistentPreRun(cmd, args)
-		}
 	}
 
 	// The post run function restores the terminal
