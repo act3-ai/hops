@@ -1,4 +1,4 @@
-package v1
+package common
 
 import (
 	"errors"
@@ -11,6 +11,7 @@ import (
 // ServiceRunType represents a run type for a service.
 type ServiceRunType string
 
+// Known run types.
 const (
 	RunTypeImmediate ServiceRunType = "immediate" // immediate run type
 	RunTypeInterval  ServiceRunType = "interval"  // interval run type
@@ -20,6 +21,7 @@ const (
 // ProcessType represents a service's process type.
 type ProcessType string
 
+// Known process types.
 const (
 	ProcessTypeInteractive = "interactive" // value for interactive process
 	ProcessTypeBackground  = "background"  // value for background process
@@ -29,10 +31,21 @@ const (
 //
 // https://docs.brew.sh/Formula-Cookbook#service-block-methods
 type Service struct {
-	Name *struct {
-		MacOS string `json:"macos,omitempty"`
-	} `json:"name,omitempty"`
-	Run                  any               `json:"run"`
+	// Specifies per-OS service name
+	// 2 examples: xinit, dbus
+	// Both only specify a name for "macos"
+	Name map[string]string `json:"name,omitempty"`
+
+	// Run specifies the command to run
+	//
+	// One of three options:
+	// - string: single argument (60 examples)
+	// - []string: list of args (234 examples)
+	// - map[string][]string: map OS to list of args (3 examples)
+	//
+	// Parse as any, require furthing parsing if needed
+	Run any `json:"run"`
+
 	RunType              ServiceRunType    `json:"run_type"`
 	EnvironmentVariables map[string]string `json:"environment_variables,omitempty"`
 	Interval             time.Duration     `json:"interval,omitempty"`
@@ -43,16 +56,27 @@ type Service struct {
 		SuccessfulExit bool `json:"successful_exit,omitempty"`
 		Crashed        bool `json:"crashed,omitempty"` // 1 example
 	} `json:"keep_alive,omitempty"`
-	WorkingDir        string      `json:"working_dir,omitempty"`
-	InputPath         string      `json:"input_path,omitempty"` // 2 examples
-	LogPath           string      `json:"log_path,omitempty"`
-	ErrorLogPath      string      `json:"error_log_path,omitempty"`
-	Sockets           string      `json:"sockets,omitempty"`             // 3 examples
-	ProcessType       ProcessType `json:"process_type,omitempty"`        // seen: background|interactive
-	MacOSLegacyTimers bool        `json:"macos_legacy_timers,omitempty"` // literally only used on the gitlab-runners formula
+	WorkingDir string `json:"working_dir,omitempty"`
+
+	// 2 examples: knot-resolver, knot
+	InputPath string `json:"input_path,omitempty"`
+
+	LogPath string `json:"log_path,omitempty"`
+
+	ErrorLogPath string `json:"error_log_path,omitempty"`
+
+	// 3 examples: bitlbee, launch_socket_server, launchdns
+	Sockets string `json:"sockets,omitempty"`
+
+	// 4 examples
+	// seen: background|interactive
+	ProcessType ProcessType `json:"process_type,omitempty"`
+
+	// 1 example: gitlab-runner
+	MacOSLegacyTimers bool `json:"macos_legacy_timers,omitempty"`
 }
 
-// RunArgs evaluates the command arguments to run.
+// RunArgs evaluates the command arguments to run
 // The run field is a dynamic type so it needs extra parsing.
 func (s *Service) RunArgs(os string) ([]string, error) {
 	switch v := s.Run.(type) {

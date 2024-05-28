@@ -2,7 +2,7 @@
 package formula
 
 import (
-	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	"github.com/act3-ai/hops/internal/apis/formulae.brew.sh/common"
 	v3 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v3"
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/platform"
@@ -67,7 +67,7 @@ type (
 		// Requirements lists other system requirements.
 		// Requirements() []any
 		// Service produces the Formula's service, if any.
-		Service() *brewv1.Service
+		Service() *common.Service
 		// Bottle produces information about the Formula's Bottle.
 		// Bottle will return nil if the Formula does not provide a Bottle.
 		Bottle() *Bottle

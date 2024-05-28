@@ -1,6 +1,7 @@
 package formula
 
 import (
+	"github.com/act3-ai/hops/internal/apis/formulae.brew.sh/common"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -48,7 +49,7 @@ func (p *platformFormulaV1) Bottle() *Bottle {
 }
 
 // Service implements PlatformFormulaWithInfo.
-func (p *platformFormulaV1) Service() *brewv1.Service {
+func (p *platformFormulaV1) Service() *common.Service {
 	return p.src.Service
 }
 
