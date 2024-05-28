@@ -124,14 +124,12 @@ jobs:
       # Go build
       - name: Build hops
         id: build
-        env:
-          EXECUTABLE_PATH: bin/hops
         run: |
           go build \
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
-            -o ${{env.EXECUTABLE_PATH}} \
+            -o bin/hops \
             ./cmd/hops
-          echo "executable-path=${{env.EXECUTABLE_PATH}}" >> $GITHUB_OUTPUT
+          echo "executable-path=bin/hops" >> $GITHUB_OUTPUT
 
       - name: Create archive
         id: archive
@@ -141,7 +139,7 @@ jobs:
         # mv ${{ steps.attest.outputs.bundle-path }} ${{env.ARCHIVE_DIR}}/
         run: |
           mkdir -p ${{env.ARCHIVE_DIR}}/bin/
-          mv ${{steps.build.outputs.executable-path}} ${{env.ARCHIVE_DIR}}/bin/
+          mv bin/hops ${{env.ARCHIVE_DIR}}/bin/
           tar -czvf ${{env.ARCHIVE_PATH}} ${{env.ARCHIVE_DIR}}/
           echo "archive-path=${{env.ARCHIVE_PATH}}" >> $GITHUB_OUTPUT
           echo "executable-path=${{env.ARCHIVE_DIR}}/bin/hops" >> $GITHUB_OUTPUT

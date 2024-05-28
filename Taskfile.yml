@@ -22,7 +22,7 @@ vars:
   # renovate: datasource=go depName=github.com/google/ko
   KO_VERSION: v0.15.2
   # renovate: datasource=go depName=github.com/golangci/golangci-lint
-  GOLANGCILINT_VERSION: v1.58.1
+  GOLANGCILINT_VERSION: v1.58.2
   # renovate: datasource=go depName=golang.org/x/vuln/cmd/govulncheck
   GOVULNCHECK_VERSION: latest
   # renovate: datasource=go depName=go.abhg.dev/doc2go
