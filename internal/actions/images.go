@@ -99,11 +99,11 @@ func (action *Images) findDeps(ctx context.Context, args []string) ([]formula.Pl
 		return nil, err
 	}
 
-	dependents := graph.Dependents()
-	fmt.Printf("Found %d dependencies\n", len(dependents))
+	deps := graph.Dependencies()
+	fmt.Printf("Found %d dependencies\n", len(deps))
 
 	// Combine root formulae with their dependencies in this list
-	return slices.Concat(dependents, roots), nil
+	return slices.Concat(deps, roots), nil
 }
 
 // listImages lists the images for each formula in the index.

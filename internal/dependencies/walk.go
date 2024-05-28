@@ -20,8 +20,8 @@ type DependencyGraph struct {
 	trees         map[string]*treeprint.Node         // stores dependency trees
 }
 
-// Dependents returns the list of computed dependencies.
-func (deps DependencyGraph) Dependents() []formula.PlatformFormula {
+// Dependencies returns the list of computed dependencies.
+func (deps DependencyGraph) Dependencies() []formula.PlatformFormula {
 	list := make([]formula.PlatformFormula, len(deps.dependentKeys))
 	for i, name := range deps.dependentKeys {
 		list[i] = deps.formulae[name]

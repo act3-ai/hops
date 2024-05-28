@@ -122,7 +122,7 @@ The Homebrew organization maintains a central Tap in the Homebrew/homebrew-core 
 2. Find requested formula's information
 3. Download the tagged manifest for the bottle from Homebrew/core OCI registry
 4. Parse the `sh.brew.tab` annotation on the manifest to get list of dependencies
-5. Download each dependent bottle
+5. Download each dependency bottle
 6. Download the requested formula's bottle
 7. Extract all bottle tar.gz files into the Cellar (called "pouring")
 8. Link the created files into the prefix
@@ -145,8 +145,8 @@ sequenceDiagram
   brew -->>+ ghcr: request manifest
   ghcr -->>- cache: cowsay 3.04 manifest
   brew -->> cache: parse sh.brew.tab annotation
-  cache -->> brew: list of bottle dependents
-  loop for each dependent
+  cache -->> brew: list of bottle dependencies
+  loop for each dependency
   brew -->>+ ghcr: request bottle
   ghcr -->>- brew: <name>--<version>.bottle.tar.gz
   end
@@ -175,7 +175,7 @@ Concurrency is more challenging in Ruby than other languages. There are many Rub
 
 ## Other Limitations
 
-Duplicated efforts: downloading the `https://formulae.brew.sh` API data, the bottle manifest (to parse the `sh.brew.tab` annotation) and each dependent bottles' manifests, and finally the bottles themselves, is duplicated work.
+Duplicated efforts: downloading the `https://formulae.brew.sh` API data, the bottle manifest (to parse the `sh.brew.tab` annotation) and each dependency bottles' manifests, and finally the bottles themselves, is duplicated work.
 
 > Look for optimizations in this sequence to request the minimum information necessary
 

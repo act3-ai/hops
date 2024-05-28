@@ -155,16 +155,16 @@ func (action *Copy) resolve(ctx context.Context, formulary formula.Formulary, na
 	}
 
 	o.H1("Fetching dependencies...")
-	deps, err := dependencies.WalkAll(ctx, formulary, all, &action.DependencyOptions)
+	graph, err := dependencies.WalkAll(ctx, formulary, all, &action.DependencyOptions)
 	if err != nil {
 		return nil, err
 	}
 
-	dependents := deps.Dependents()
-	fmt.Printf("Found %d dependencies\n", len(dependents))
+	deps := graph.Dependencies()
+	fmt.Printf("Found %d dependencies\n", len(deps))
 
 	// Combine root formulae with their dependencies in this list
-	all = append(all, dependents...)
+	all = append(all, deps...)
 	metadata := make([]*brewv1.Info, 0, len(all))
 	for _, f := range all {
 		switch formulary := formulary.(type) {

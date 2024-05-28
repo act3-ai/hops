@@ -21,14 +21,14 @@ type Deps struct {
 
 // Tree runs the action.
 func (action *Deps) Run(ctx context.Context, names ...string) error {
-	deps, err := action.eval(ctx, names)
+	graph, err := action.eval(ctx, names)
 	if err != nil {
 		return err
 	}
 
-	dependents := formula.Names(deps.Dependents())
-	slices.Sort(dependents) // this messes up the ordering, but we do not care
-	fmt.Println(strings.Join(dependents, "\n"))
+	deps := formula.Names(graph.Dependencies())
+	slices.Sort(deps) // this messes up the ordering, but we do not care
+	fmt.Println(strings.Join(deps, "\n"))
 
 	return nil
 }

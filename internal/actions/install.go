@@ -178,8 +178,8 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 	// Print all resolved dependencies
 	printFormulae(formula.Names(roots), action.DryRun)
 
-	// Filter dependent formulae into installed and not installed lists
-	allDeps := graph.Dependents()
+	// Filter dependencies into installed and not installed lists
+	allDeps := graph.Dependencies()
 	slog.Debug("Resolved dependencies",
 		slog.Any("dependencies", formula.Names(allDeps)),
 		action.DependencyOptions.LogAttr(),
