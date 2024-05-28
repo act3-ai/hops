@@ -84,12 +84,22 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 	names := action.SetAlternateTags(args)
 
 	// Initialize source and destination registries
-	srcReg, err := hopsRegistry(ctx, action.AuthClient(), &action.From)
+	srcAuth, err := Auth(slog.Default().With("registry", action.From.Prefix), &action.From, action.UserAgent())
+	if err != nil {
+		return fmt.Errorf("getting source registry credentials: %w", err)
+	}
+
+	srcReg, err := hopsRegistry(ctx, srcAuth, &action.From)
 	if err != nil {
 		return fmt.Errorf("initializing source registry: %w", err)
 	}
 
-	dstReg, err := hopsRegistry(ctx, action.AuthClient(), &action.To)
+	dstAuth, err := Auth(slog.Default().With("registry", action.To.Prefix), &action.To, action.UserAgent())
+	if err != nil {
+		return fmt.Errorf("getting destination registry credentials: %w", err)
+	}
+
+	dstReg, err := hopsRegistry(ctx, dstAuth, &action.To)
 	if err != nil {
 		return fmt.Errorf("initializing destination registry: %w", err)
 	}

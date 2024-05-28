@@ -3,8 +3,8 @@ package actions
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,7 +42,6 @@ type Hops struct {
 	// cache for runtime-loaded objects
 	authClient *auth.Client
 	cfg        *hopsv1.Configuration
-	// brewcfg    *brewenv.Environment
 
 	alternateTags map[string]string
 	hopsclient    hops.Client
@@ -104,34 +103,57 @@ func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuratio
 }
 
 // Returns the client used for authentication to OCI repositories.
-func (action *Hops) AuthClient() *auth.Client {
+func (action *Hops) DefaultAuth() (*auth.Client, error) {
 	if action.authClient == nil {
-		// prepare authentication using Docker credentials
-		credStore, err := credentials.NewStoreFromDocker(credentials.StoreOptions{})
+		var err error
+		action.authClient, err = Auth(slog.Default(), &action.cfg.Registry, action.UserAgent())
 		if err != nil {
-			panic(err)
+			return nil, err
 		}
-
-		action.authClient = &auth.Client{
-			Client:     retry.NewClient(),
-			Cache:      auth.NewCache(),
-			Credential: credentials.Credential(credStore), // Use the credentials store
-		}
-		action.authClient.SetUserAgent(action.UserAgent())
-
-		slog.Debug("using docker config", slog.String("file", credStore.ConfigPath()))
 	}
-
-	return action.authClient
+	return action.authClient, nil
 }
 
-// Returns the auth headers for HTTP requests.
-func (action *Hops) authHeaders() http.Header {
-	header := http.Header{}
-	// Add the GitHub Packages auth header from Homebrew config
-	header.Add("Authorization",
-		action.Config().Homebrew.GitHubPackagesAuth())
-	return header
+// Auth produces an auth client.
+func Auth(log *slog.Logger, cfg *hopsv1.RegistryConfig, userAgent string) (*auth.Client, error) {
+	var credStore credentials.Store
+	switch {
+	// Use specified config file
+	case cfg.Config != "":
+		fileStore, err := credentials.NewStore(cfg.Config, credentials.StoreOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("loading registry config: %w", err)
+		}
+
+		log.Debug("using registry config", slog.String("file", fileStore.ConfigPath()))
+		credStore = fileStore
+	// Use Docker credentials
+	default:
+		// prepare authentication using Docker credentials
+		dockerStore, err := credentials.NewStoreFromDocker(credentials.StoreOptions{})
+		if err != nil {
+			return nil, fmt.Errorf("loading docker config: %w", err)
+		}
+
+		log.Debug("using docker config", slog.String("file", dockerStore.ConfigPath()))
+		credStore = dockerStore
+	}
+
+	h, err := cfg.ParseHeaders()
+	if err != nil {
+		return nil, err
+	}
+
+	authClient := &auth.Client{
+		Client:     retry.NewClient(),
+		Cache:      auth.NewCache(),
+		Header:     h,
+		Credential: credentials.Credential(credStore), // Use the credentials store
+	}
+
+	authClient.SetUserAgent(userAgent)
+
+	return authClient, nil
 }
 
 // Config returns the Hops CLI configuration.
@@ -183,7 +205,11 @@ var errNoRegistryConfig = errors.New("no registry configured")
 
 // registry produces the Hops registry from options.
 func (action *Hops) registry(ctx context.Context) (hopsreg.Registry, error) {
-	return hopsRegistry(ctx, action.AuthClient(), &action.Config().Registry)
+	authClient, err := action.DefaultAuth()
+	if err != nil {
+		return nil, err
+	}
+	return hopsRegistry(ctx, authClient, &action.Config().Registry)
 }
 
 func hopsRegistry(ctx context.Context, authClient *auth.Client, cfg *hopsv1.RegistryConfig) (hopsreg.Registry, error) {
@@ -307,9 +333,11 @@ func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewfor
 func (action *Hops) brewRegistry() brewreg.Registry {
 	if action.brewclient.registry == nil {
 		slog.Debug("using Homebrew registry", //nolint:sloglint
+			slog.String("HOMEBREW_BOTTLE_DOMAIN", action.Config().Homebrew.BottleDomain),
 			slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Config().Homebrew.ArtifactDomain))
+
 		action.brewclient.registry = brewreg.NewBottleRegistry(
-			action.authHeaders(),
+			action.Config().Homebrew.GitHubPackagesHeaders(),
 			retry.NewClient(),
 			action.Config().Homebrew.Cache,
 			action.MaxGoroutines(),

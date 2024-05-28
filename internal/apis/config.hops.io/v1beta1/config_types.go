@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"path/filepath"
 	"strconv"
@@ -45,18 +46,11 @@ var (
 
 // Configuration represents the Hops CLI's configuration file.
 type Configuration struct {
-	// Prefix sets the prefix for installing packages.
-	//
-	// Defaults:
-	// 	- darwin/amd64 = "/usr/local"
-	// 	- darwin/arm64 = "/opt/homebrew"
-	// 	- linux/amd64 = "/home/linuxbrew/.linuxbrew"
+	// Path prefix for installed packages. Default value depends on OS/Arch.
 	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty" env:"PREFIX"`
 
-	// Cache sets the path used for caches.
-	//
-	// Default: $XDG_CACHE_HOME/hops
-	Cache string `json:"cache,omitempty" yaml:"cache,omitempty" env:"CACHE"`
+	// Path used for caches.
+	Cache string `json:"cache,omitempty" yaml:"cache,omitempty" env:"CACHE" envDefault:"$XDG_CACHE_HOME/hops"`
 
 	// Configuration shared from Homebrew.
 	Homebrew brewenv.Configuration `json:"homebrew,omitempty" yaml:"homebrew,omitempty" envPrefix:"HOMEBREW_"`
@@ -74,10 +68,10 @@ type RegistryConfig struct {
 	// CAFile string `json:"caFile,omitempty" yaml:"caFile,omitempty" env:"CA_FILE"`
 
 	// DistributionSpec sets OCI distribution spec version and API option for target. options: v1.1-referrers-api, v1.1-referrers-tag
-	// DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty" env:"DISTRIBUTION_SPEC"`
+	DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty" env:"DISTRIBUTION_SPEC"`
 
 	// Headers adds custom headers to requests
-	// Headers []string `json:"headers,omitempty" yaml:"headers,omitempty" env:"HEADERS"`
+	Headers []string `json:"headers,omitempty" yaml:"headers,omitempty" env:"HEADERS"`
 
 	// Insecure	allows connections to SSL registry without certs
 	// Insecure bool `json:"insecure,omitempty" yaml:"insecure,omitempty" env:"INSECURE"`
@@ -93,8 +87,8 @@ type RegistryConfig struct {
 	// PlainHTTP allows insecure connections to registry without SSL check
 	PlainHTTP bool `json:"plainHTTP,omitempty" yaml:"plainHTTP,omitempty" env:"PLAIN_HTTP"`
 
-	// RegistryConfig sets the path of the authentication file for the registry
-	// RegistryConfig string `json:"registryConfig,omitempty" yaml:"registryConfig,omitempty" env:"CONFIG"`
+	// Config sets the path of the authentication file for the registry
+	Config string `json:"config,omitempty" yaml:"config,omitempty" env:"CONFIG"`
 
 	// Resolve sets customized DNS for registry, formatted in host:port:address[:address_port]
 	// Resolve string `json:"resolve,omitempty" yaml:"resolve,omitempty" env:"RESOLVE"`
@@ -108,6 +102,10 @@ func ConfigurationDefault(cfg *Configuration) {
 
 	if cfg.Cache == "" {
 		cfg.Cache = filepath.Join(xdg.CacheHome, "hops")
+	}
+
+	if cfg.Registry.DistributionSpec == "" {
+		cfg.Registry.DistributionSpec = "v1.1-referrers-api"
 	}
 
 	if cfg.Homebrew.API.AutoUpdate.Secs == nil {
@@ -183,16 +181,17 @@ func (cfg *Configuration) LogValue() slog.Value {
 	return slog.StringValue(string(b))
 }
 
-// func (cfg *RegistryConfig) ParseHeaders() (map[string][]string, error) {
-// 	headers := map[string][]string{}
-// 	for _, h := range cfg.Headers {
-// 		name, value, found := strings.Cut(h, ":")
-// 		if !found || strings.TrimSpace(name) == "" {
-// 			// In conformance to the RFC 2616 specification
-// 			// Reference: https://www.rfc-editor.org/rfc/rfc2616#section-4.2
-// 			return nil, fmt.Errorf("invalid header: %q", h)
-// 		}
-// 		headers[name] = append(headers[name], value)
-// 	}
-// 	return headers, nil
-// }
+// ParseHeaders parses the configured HTTP headers.
+func (cfg *RegistryConfig) ParseHeaders() (map[string][]string, error) {
+	headers := map[string][]string{}
+	for _, h := range cfg.Headers {
+		name, value, found := strings.Cut(h, ":")
+		if !found || strings.TrimSpace(name) == "" {
+			// In conformance to the RFC 2616 specification
+			// Reference: https://www.rfc-editor.org/rfc/rfc2616#section-4.2
+			return nil, fmt.Errorf("invalid header: %q", h)
+		}
+		headers[name] = append(headers[name], value)
+	}
+	return headers, nil
+}

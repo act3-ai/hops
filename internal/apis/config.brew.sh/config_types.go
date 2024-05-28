@@ -3,6 +3,7 @@ package brewenv
 import (
 	"errors"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -107,6 +108,13 @@ func (e *Configuration) GitHubPackagesAuth() string {
 	default:
 		return "Bearer QQ=="
 	}
+}
+
+// GitHubPackagesHeaders derives the GitHub Packages auth from the env config.
+func (e *Configuration) GitHubPackagesHeaders() http.Header {
+	h := http.Header{}
+	h.Add("Authorization", e.GitHubPackagesAuth())
+	return h
 }
 
 // APIConfig configures Hops' usage of the Homebrew API.
