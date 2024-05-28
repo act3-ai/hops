@@ -81,6 +81,12 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 		return nil
 	}
 
+	// Verify that all bottles can be poured
+	err = action.Prefix().CanPourBottles(ctx, installs)
+	if err != nil {
+		return err
+	}
+
 	// Get bottle registry
 	reg, err := action.BottleRegistry(ctx)
 	if err != nil {
