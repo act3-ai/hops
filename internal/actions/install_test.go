@@ -20,21 +20,20 @@ func BenchmarkInstall(b *testing.B) {
 			EnvFiles:    []string{},
 			Concurrency: runtime.NumCPU(),
 			cfg: &hopsv1.Configuration{
-				Cache: filepath.Join(tmp, "HOPS_CACHE"),
-				Homebrew: hopsv1.HomebrewAPIConfig{
-					Domain: brewenv.Default.APIDomain,
-					AutoUpdate: hopsv1.AutoUpdateConfig{
-						Disabled: true,
+				Prefix: filepath.Join(tmp, "HOMEBREW_PREFIX"),
+				Cache:  filepath.Join(tmp, "HOPS_CACHE"),
+				Homebrew: brewenv.Configuration{
+					Cache: filepath.Join(tmp, "HOMEBREW_CACHE"),
+					API: brewenv.APIConfig{
+						Domain: brewenv.DefaultAPIDomain,
+						AutoUpdate: brewenv.AutoUpdateConfig{
+							Disabled: true,
+						},
 					},
 				},
 				Registry: hopsv1.RegistryConfig{
 					Prefix: "ghcr.io/homebrew/core",
 				},
-			},
-			brewcfg: &brewenv.Environment{
-				Prefix:    filepath.Join(tmp, "HOMEBREW_PREFIX"),
-				APIDomain: brewenv.Default.APIDomain,
-				Cache:     filepath.Join(tmp, "HOMEBREW_CACHE"),
 			},
 		},
 	}

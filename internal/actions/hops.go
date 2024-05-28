@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/joho/godotenv"
 	"gopkg.in/yaml.v3"
 	"oras.land/oras-go/v2/registry/remote/auth"
 	"oras.land/oras-go/v2/registry/remote/credentials"
@@ -43,7 +42,7 @@ type Hops struct {
 	// cache for runtime-loaded objects
 	authClient *auth.Client
 	cfg        *hopsv1.Configuration
-	brewcfg    *brewenv.Environment
+	// brewcfg    *brewenv.Environment
 
 	alternateTags map[string]string
 	hopsclient    hops.Client
@@ -80,36 +79,9 @@ func (action *Hops) MaxGoroutines() int {
 	return action.Concurrency
 }
 
-// Homebrew produces the default homebrew client.
-func (action *Hops) Homebrew() *brewenv.Environment {
-	if action.brewcfg == nil {
-		var err error
-
-		// Load env files
-		for _, envfile := range action.EnvFiles {
-			err = godotenv.Load(envfile)
-			if err != nil && !errors.Is(err, os.ErrNotExist) {
-				slog.Warn("loading Homebrew environment files", o.ErrAttr(err))
-			}
-		}
-
-		// Initialize the Homebrew object
-		action.brewcfg, err = brewenv.Load()
-		if err != nil {
-			slog.Debug("loading environment config", o.ErrAttr(err))
-		}
-
-		// Override the loaded values
-		for _, override := range action.brewOverrides {
-			override(action.brewcfg)
-		}
-	}
-	return action.brewcfg
-}
-
 // Prefix produces the configured prefix.
 func (action *Hops) Prefix() prefix.Prefix {
-	return prefix.Prefix(action.Homebrew().Prefix)
+	return prefix.Prefix(action.Config().Prefix)
 }
 
 // UserAgent produces the tool's user agent string.
@@ -158,7 +130,7 @@ func (action *Hops) authHeaders() http.Header {
 	header := http.Header{}
 	// Add the GitHub Packages auth header from Homebrew config
 	header.Add("Authorization",
-		action.Homebrew().GitHubPackagesAuth())
+		action.Config().Homebrew.GitHubPackagesAuth())
 	return header
 }
 
@@ -310,17 +282,17 @@ func (action *Hops) autoUpdate(ctx context.Context) error {
 func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewformulary.PreloadedFormulary, error) {
 	if action.brewclient.formulary == nil {
 		slog.Debug("using Homebrew API formulary", //nolint:sloglint
-			slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.Domain))
+			slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.API.Domain))
 
 		// Set auto-update config
-		var upcfg *hopsv1.AutoUpdateConfig
+		var upcfg *brewenv.AutoUpdateConfig
 		if autoUpdate {
-			upcfg = &action.Config().Homebrew.AutoUpdate
+			upcfg = &action.Config().Homebrew.API.AutoUpdate
 		}
 
 		// Load the index
 		index, err := brewformulary.FetchV1(ctx,
-			brewapi.NewClient(action.Config().Homebrew.Domain),
+			brewapi.NewClient(action.Config().Homebrew.API.Domain),
 			action.Config().Cache, upcfg)
 		if err != nil {
 			return nil, err
@@ -335,13 +307,14 @@ func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewfor
 func (action *Hops) brewRegistry() brewreg.Registry {
 	if action.brewclient.registry == nil {
 		slog.Debug("using Homebrew registry", //nolint:sloglint
-			slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Homebrew().ArtifactDomain))
+			slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Config().Homebrew.ArtifactDomain))
 		action.brewclient.registry = brewreg.NewBottleRegistry(
 			action.authHeaders(),
 			retry.NewClient(),
-			action.Homebrew().Cache,
+			action.Config().Homebrew.Cache,
 			action.MaxGoroutines(),
-			action.Homebrew().ArtifactDomain,
+			action.Config().Homebrew.BottleDomain,
+			action.Config().Homebrew.ArtifactDomain,
 		)
 	}
 	return action.brewclient.registry

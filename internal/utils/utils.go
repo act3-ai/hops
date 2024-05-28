@@ -104,3 +104,11 @@ func FilterNil[T any](list []*T) []*T {
 	}
 	return result
 }
+
+// IndexIfOK returns the value at the index if it is a valid index for the slice.
+func IndexIfOK[T any](list []T, i int) (T, bool) {
+	if i >= 0 && i < len(list) {
+		return list[i], true
+	}
+	return *new(T), false
+}

@@ -55,6 +55,11 @@ func IsValid(s string) bool {
 	return slices.Contains(ValidPlatformValues, Platform(s))
 }
 
+// IsMacOS reports if s is macOS.
+func (p Platform) IsMacOS() bool {
+	return slices.Contains(MacOSPlatforms, p)
+}
+
 // Computed computes the actual included platforms for a Platform value.
 func (p Platform) Computed() []Platform {
 	switch {
@@ -96,6 +101,21 @@ var SupportedPlatforms = []Platform{
 	Mojave,
 	HighSierra,
 	X8664Linux,
+}
+
+// MacOSPlatforms contains all known and supported macOS versions.
+var MacOSPlatforms = []Platform{
+	Arm64Sonoma,
+	Arm64Ventura,
+	Arm64Monterey,
+	Arm64BigSur,
+	Sonoma,
+	Ventura,
+	Monterey,
+	BigSur,
+	Catalina,
+	Mojave,
+	HighSierra,
 }
 
 // ARM produces the corresponding ARM version of the platform.

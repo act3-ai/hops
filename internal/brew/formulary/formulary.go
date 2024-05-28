@@ -9,14 +9,14 @@ import (
 	"os"
 	"path/filepath"
 
-	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	api "github.com/act3-ai/hops/internal/apis/formulae.brew.sh"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	brewapi "github.com/act3-ai/hops/internal/brew/api"
 )
 
 // FetchV1 fetches the v1 index either from the cache or from the API according to its existence and the auto-update configuration.
-func FetchV1(ctx context.Context, apiclient *brewapi.Client, dir string, autoUpdate *hopsv1.AutoUpdateConfig) (*V1Cache, error) {
+func FetchV1(ctx context.Context, apiclient *brewapi.Client, dir string, autoUpdate *brewenv.AutoUpdateConfig) (*V1Cache, error) {
 	_, err := os.Stat(formulaeFile(dir))
 	switch {
 	// File does not exist or is unreadable

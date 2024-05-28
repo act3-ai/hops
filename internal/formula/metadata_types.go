@@ -46,10 +46,11 @@ type (
 
 	// Bottle defines bottle metadata.
 	Bottle struct {
-		RootURL  string
-		Sha256   string
-		Cellar   string
-		Platform platform.Platform // stores Bottle platform, which can vary from PlatformFormula.Platform() iff the Bottle is for "all" platforms.
+		RootURL    string
+		Sha256     string
+		Cellar     string
+		Platform   platform.Platform // stores Bottle platform, which can vary from PlatformFormula.Platform() iff the Bottle is for "all" platforms.
+		PourOnlyIf string            // pour_bottle_only_if rule
 	}
 )
 

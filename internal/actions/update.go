@@ -7,7 +7,7 @@ import (
 
 	"golang.org/x/mod/semver"
 
-	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
+	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
 	brewapi "github.com/act3-ai/hops/internal/brew/api"
 	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
@@ -27,7 +27,7 @@ func (action *Update) Run(ctx context.Context) error {
 		return nil
 	}
 
-	apiclient := brewapi.NewClient(action.Config().Homebrew.Domain)
+	apiclient := brewapi.NewClient(action.Config().Homebrew.API.Domain)
 
 	// Only load the cached indexes
 	oldIndex, err := brewformulary.LoadV1(action.Config().Cache)
@@ -38,7 +38,7 @@ func (action *Update) Run(ctx context.Context) error {
 	newIndex, err := brewformulary.FetchV1(ctx,
 		apiclient,
 		action.Config().Cache,
-		&hopsv1.AutoUpdateConfig{
+		&brewenv.AutoUpdateConfig{
 			Secs: new(int), // set refresh seconds to zero
 		})
 	if err != nil {

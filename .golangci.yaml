@@ -47,6 +47,11 @@ linters:
     # - wrapcheck
 
 linters-settings:
+  # godot:
+  #   scope: declarations
+  #   period: true
+  #   capital: false
+
   importas:
     # if set to `true`, force to use alias.
     no-unaliased: true

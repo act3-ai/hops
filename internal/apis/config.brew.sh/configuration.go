@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -20,28 +21,28 @@ import (
 
 // defaultset is the default values as an envmap.
 var defaultset = nfenv.EnvSet{
-	"HOMEBREW_API_DOMAIN": Default.APIDomain,
-	// "HOMEBREW_ARCH":                       Default.Arch,
-	"HOMEBREW_API_AUTO_UPDATE_SECS": strconv.Itoa(Default.APIAutoUpdateSecs),
-	"HOMEBREW_AUTO_UPDATE_SECS":     strconv.Itoa(Default.AutoUpdateSecs),
-	"HOMEBREW_BOTTLE_DOMAIN":        Default.BottleDomain,
-	// "HOMEBREW_BREW_GIT_REMOTE":            Default.BrewGitRemote,
-	"HOMEBREW_CACHE":                      Default.Cache,
-	"HOMEBREW_CLEANUP_MAX_AGE_DAYS":       strconv.Itoa(Default.CleanupMaxAgeDays),
-	"HOMEBREW_CLEANUP_PERIODIC_FULL_DAYS": strconv.Itoa(Default.CleanupPeriodicFullDays),
-	// "HOMEBREW_CORE_GIT_REMOTE":            Default.CoreGitRemote,
-	// "HOMEBREW_CURL_PATH":                  Default.CurlPath,
-	// "HOMEBREW_CURL_RETRIES":               strconv.Itoa(Default.CurlRetries),
-	// "HOMEBREW_FAIL_LOG_LINES":      strconv.Itoa(Default.FailLogLines),
-	// "HOMEBREW_GIT_PATH":            Default.GitPath,
-	"HOMEBREW_INSTALL_BADGE": Default.InstallBadge,
-	// "HOMEBREW_LIVECHECK_WATCHLIST": Default.LivecheckWatchlist,
-	// "HOMEBREW_LOGS":                Default.Logs,
-	// "HOMEBREW_MAKE_JOBS":           strconv.Itoa(Default.MakeJobs),
-	// "HOMEBREW_PIP_INDEX_URL":       Default.PIPIndexURL,
-	// "HOMEBREW_SSH_CONFIG_PATH":     Default.SSHConfigPath,
-	// "HOMEBREW_SVN":                 Default.SVN,
-	// "HOMEBREW_TEMP":                Default.Temp,
+	"HOMEBREW_API_DOMAIN":                 DefaultAPIDomain,
+	"HOMEBREW_ARCH":                       DefaultArch,
+	"HOMEBREW_API_AUTO_UPDATE_SECS":       strconv.Itoa(DefaultAPIAutoUpdateSecs),
+	"HOMEBREW_AUTO_UPDATE_SECS":           strconv.Itoa(DefaultAutoUpdateSecs),
+	"HOMEBREW_BOTTLE_DOMAIN":              DefaultBottleDomain,
+	"HOMEBREW_BREW_GIT_REMOTE":            DefaultBrewGitRemote,
+	"HOMEBREW_CACHE":                      DefaultCache,
+	"HOMEBREW_CLEANUP_MAX_AGE_DAYS":       strconv.Itoa(DefaultCleanupMaxAgeDays),
+	"HOMEBREW_CLEANUP_PERIODIC_FULL_DAYS": strconv.Itoa(DefaultCleanupPeriodicFullDays),
+	"HOMEBREW_CORE_GIT_REMOTE":            DefaultCoreGitRemote,
+	"HOMEBREW_CURL_PATH":                  DefaultCurlPath,
+	"HOMEBREW_CURL_RETRIES":               strconv.Itoa(DefaultCurlRetries),
+	"HOMEBREW_FAIL_LOG_LINES":             strconv.Itoa(DefaultFailLogLines),
+	"HOMEBREW_GIT_PATH":                   DefaultGitPath,
+	"HOMEBREW_INSTALL_BADGE":              DefaultInstallBadge,
+	"HOMEBREW_LIVECHECK_WATCHLIST":        DefaultLivecheckWatchlist,
+	"HOMEBREW_LOGS":                       DefaultLogs,
+	"HOMEBREW_MAKE_JOBS":                  strconv.Itoa(DefaultMakeJobs),
+	"HOMEBREW_PIP_INDEX_URL":              DefaultPIPIndexURL,
+	"HOMEBREW_SSH_CONFIG_PATH":            DefaultSSHConfigPath,
+	"HOMEBREW_SVN":                        DefaultSVN,
+	"HOMEBREW_TEMP":                       DefaultTemp,
 }
 
 // DefaultEnvironmentFiles returns the default files to load the environment config from.
@@ -74,7 +75,7 @@ func Load() (*Environment, error) {
 		if _, ok := os.LookupEnv(k); !ok {
 			err := os.Setenv(k, v)
 			if err != nil {
-				return Default, fmt.Errorf("filtering environment: %w", err)
+				return nil, fmt.Errorf("filtering environment: %w", err)
 			}
 		}
 	}
@@ -82,33 +83,8 @@ func Load() (*Environment, error) {
 	e := &Environment{}
 	_, err := nfenv.UnmarshalFromEnviron(e)
 	if err != nil {
-		return Default, fmt.Errorf("loading environment: %w", err)
+		return nil, fmt.Errorf("loading environment: %w", err)
 	}
-
-	// TODO: move these to the default EnvSet as functions
-	if e.Developer {
-		e.AutoUpdateSecs = env.Int("HOMEBREW_AUTO_UPDATE_SECS", 3600)
-	}
-	// if e.NoInstallFromAPI {
-	// 	e.AutoUpdateSecs = env.Int("HOMEBREW_AUTO_UPDATE_SECS", 300)
-	// }
-
-	if e.DockerRegistryToken != "" {
-		e.DockerRegistryBasicAuthToken = e.DockerRegistryToken
-	}
-
-	// unimplemented:
-	// HOMEBREW_FORCE_BREWED_CA_CERTIFICATES
-	// If set, always use a Homebrew-installed `ca-certificates` rather than the system version. Automatically set if the system version is too old.
-	// HOMEBREW_FORCE_BREWED_CURL
-	// If set, always use a Homebrew-installed `curl`(1) rather than the system version. Automatically set if the system version of `curl` is too old.
-	// HOMEBREW_FORCE_BREWED_GIT
-	// If set, always use a Homebrew-installed `git`(1) rather than the system version. Automatically set if the system version of `git` is too old.
-
-	// if e.Developer {
-	// 	// Default value flips if developer mode is on
-	// 	e.SorbetRuntime = env.NotEmpty("HOMEBREW_SORBET_RUNTIME")
-	// }
 
 	return e, nil
 }
@@ -483,7 +459,7 @@ type Environment struct {
 
 	// HOMEBREW_SYSTEM_ENV_TAKES_PRIORITY
 	// If set in Homebrew’s system-wide environment file (`/etc/homebrew/brew.env`), the system-wide environment file will be loaded last to override any prefix or user settings.
-	SystemEnvTakesPriority bool `json:"HOMEBREW_SYSTEM_ENV_TAKES_PRIORITY" env:"HOMEBREW_SYSTEM_ENV_TAKES_PRIORITY"`
+	// SystemEnvTakesPriority bool `json:"HOMEBREW_SYSTEM_ENV_TAKES_PRIORITY" env:"HOMEBREW_SYSTEM_ENV_TAKES_PRIORITY"`
 
 	// HOMEBREW_SUDO_THROUGH_SUDO_USER
 	// If set, Homebrew will use the `SUDO_USER` environment variable to define the user to `sudo`(8) through when running `sudo`(8).
@@ -546,31 +522,6 @@ func (e *Environment) String() string {
 	return strings.Join(vals, "\n")
 }
 
-// unused:
-// func defaultLivecheckWatchlist() string {
-// 	if _, ok := os.LookupEnv("XDG_CONFIG_HOME"); ok {
-// 		return filepath.Join(xdg.ConfigHome, "homebrew", "livecheck_watchlist.txt")
-// 	}
-// 	return filepath.Join(xdg.Home, ".homebrew", "livecheck_watchlist.txt")
-// }
-
-// unused:
-// func defaultLogs() string {
-// 	_, ok := os.LookupEnv("XDG_CACHE_HOME")
-// 	if runtime.GOOS == "darwin" && !ok {
-// 		return filepath.Join(xdg.Home, "Library", "Logs", "Homebrew")
-// 	}
-// 	return filepath.Join(xdg.CacheHome, "Homebrew", "logs")
-// }
-
-// unused:
-// func defaultTemp() string {
-// 	if runtime.GOOS == "darwin" {
-// 		return "/private/tmp"
-// 	}
-// 	return "/tmp"
-// }
-
 // GitHubPackagesAuth derives the GitHub Packages auth from the env config.
 //
 // From: https://github.com/Homebrew/brew/blob/master/Library/Homebrew/brew.sh
@@ -589,88 +540,51 @@ func (e *Environment) AddGitHubPackagesAuthHeader(req http.Request) {
 	req.Header.Set("Authorization", e.GitHubPackagesAuth())
 }
 
-// Default is the default values.
-var Default = &Environment{
-	APIDomain: "https://formulae.brew.sh/api",
-	// Arch:                         "native",
-	ArtifactDomain:    "",
-	APIAutoUpdateSecs: 450,
-	AutoUpdateSecs:    86400,
-	// Autoremove:                   false,
-	// Bat:                          false,
-	// BatConfigPath:                "",
-	// BatTheme:                     "",
-	// Bootsnap:                     false,
-	BottleDomain: "https://ghcr.io/v2/homebrew/core",
-	// BrewGitRemote:                "https://github.com/Homebrew/brew",
-	// Browser:                      "",
-	Cache: filepath.Join(xdg.CacheHome, "Homebrew"),
-	// CaskOpts:                     "",
-	CleanupMaxAgeDays:       120,
-	CleanupPeriodicFullDays: 30,
-	// Color:                        false,
-	// CoreGitRemote:                "https://github.com/Homebrew/homebrew-core",
-	// CurlPath:                     "curl",
-	// CurlRetries:                  3,
-	// CurlVerbose:                  false,
-	// Curlrc:                       "",
-	Debug:     false,
-	Developer: false,
-	// DisableLoadFormula:           false,
-	// Display:                      "",
-	// DisplayInstallTimes:          false,
-	DockerRegistryBasicAuthToken: "",
-	DockerRegistryToken:          "",
-	// Editor:                       "",
-	// HomebrewEvalAll:              false,
-	// FailLogLines:                 15,
-	// ForbiddenLicenses:          []string{},
-	// ForceBrewedCACertificates:  false,
-	// ForceBrewedCurl:            false,
-	// ForceBrewedGit:             false,
-	// ForceVendorRuby:            false,
-	// GitEmail:                   "",
-	// GitName:                    "",
-	// GitPath:                    "git",
-	// GitHubAPIToken:             "",
-	// GitHubPackagesToken:        "",
-	// GitHubPackagesUser:         "",
-	InstallBadge: "🌼", // env.Or("HOMEBREW_INSTALL_BADGE", "🍺",
-	// LivecheckWatchlist:         defaultLivecheckWatchlist(),
-	// Logs:                       defaultLogs(),
-	// MakeJobs:                   runtime.NumCPU(),
-	// NoAnalytics:                false,
-	// NoAutoUpdate:               false,
-	// NoBootsnap:                 false,
-	// NoCleanupFormulae:          []string{},
-	// NoColor:                    false,
-	NoEmoji: false,
-	// NoEnvHints:                 false,
-	// NoGitHubAPI:                false,
-	// NoInsecureRedirect:         false,
-	// NoInstallCleanup:           false,
-	// NoInstallFromAPI:           false,
-	NoInstallUpgrade:           false,
-	NoInstalledDependentsCheck: false,
-	NoUpdateReportNew:          false,
-	// PIPIndexURL:                "https://pypi.org/simple",
-	// Pry:                        false,
-	// UpgradeGreedy:              false,
-	// SimulateMacOSOnLinux:       false,
-	// SkipOrLaterBottles:         false,
-	// SorbetRuntime:              false,
-	// SSHConfigPath:              filepath.Join(xdg.Home, ".ssh", "config"),
-	// SVN:                        "svn",
-	SystemEnvTakesPriority: false,
-	// SudoThroughSudoUser:    false,
-	// Temp:                   defaultTemp(),
-	// UpdateToTag:            false,
-	Verbose: false,
-	// VerboseUsingDots:       false,
-	// SudoAskpass:            false,
-	// AllProxy:               "",
-	// FTPProxy:               "",
-	// HTTPProxy:              "",
-	// HTTPSProxy:             "",
-	// NoProxy:                []string{},
+var (
+	//revive:disable:exported
+	DefaultAPIDomain               = "https://formulae.brew.sh/api"
+	DefaultArch                    = "native"
+	DefaultAPIAutoUpdateSecs       = 450
+	DefaultAutoUpdateSecs          = 86400
+	DefaultBottleDomain            = "https://ghcr.io/v2/homebrew/core"
+	DefaultBrewGitRemote           = "https://github.com/Homebrew/brew"
+	DefaultCache                   = filepath.Join(xdg.CacheHome, "Homebrew")
+	DefaultCleanupMaxAgeDays       = 120
+	DefaultCleanupPeriodicFullDays = 30
+	DefaultCoreGitRemote           = "https://github.com/Homebrew/homebrew-core"
+	DefaultCurlPath                = "curl"
+	DefaultCurlRetries             = 3
+	DefaultFailLogLines            = 15
+	DefaultGitPath                 = "git"
+	DefaultInstallBadge            = "🍺"
+	DefaultLivecheckWatchlist      = defaultLivecheckWatchlist()
+	DefaultLogs                    = defaultLogs()
+	DefaultMakeJobs                = runtime.NumCPU()
+	DefaultPIPIndexURL             = "https://pypi.org/simple"
+	DefaultSSHConfigPath           = filepath.Join(xdg.Home, ".ssh", "config")
+	DefaultSVN                     = "svn"
+	DefaultTemp                    = defaultTemp()
+	//revive:enable:exported
+)
+
+func defaultLivecheckWatchlist() string {
+	if _, ok := os.LookupEnv("XDG_CONFIG_HOME"); ok {
+		return filepath.Join(xdg.ConfigHome, "homebrew", "livecheck_watchlist.txt")
+	}
+	return filepath.Join(xdg.Home, ".homebrew", "livecheck_watchlist.txt")
+}
+
+func defaultLogs() string {
+	_, ok := os.LookupEnv("XDG_CACHE_HOME")
+	if runtime.GOOS == "darwin" && !ok {
+		return filepath.Join(xdg.Home, "Library", "Logs", "Homebrew")
+	}
+	return filepath.Join(xdg.CacheHome, "Homebrew", "logs")
+}
+
+func defaultTemp() string {
+	if runtime.GOOS == "darwin" {
+		return "/private/tmp"
+	}
+	return "/tmp"
 }

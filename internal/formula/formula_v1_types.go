@@ -226,11 +226,17 @@ func bottleFromV1(plat platform.Platform, input *brewv1.PlatformInfo) *Bottle {
 		return nil
 	}
 
+	pourOnlyIf := ""
+	if input.PourBottleOnlyIf != nil {
+		pourOnlyIf = *input.PourBottleOnlyIf
+	}
+
 	bottle := &Bottle{
-		RootURL:  stable.RootURL,
-		Sha256:   file.Sha256,
-		Cellar:   file.Cellar,
-		Platform: fplat,
+		RootURL:    stable.RootURL,
+		Sha256:     file.Sha256,
+		Cellar:     file.Cellar,
+		Platform:   fplat,
+		PourOnlyIf: pourOnlyIf,
 	}
 
 	// Set Cellar ot empty string if relocatable

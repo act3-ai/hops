@@ -2,18 +2,16 @@ package v1beta1
 
 import (
 	"encoding/json"
-	"errors"
 	"log/slog"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/adrg/xdg"
 
 	"github.com/act3-ai/hops/internal/apis/apiutil"
-	"github.com/act3-ai/hops/internal/o"
+	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
+	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/utils/env"
 )
 
@@ -47,37 +45,45 @@ var (
 
 // Configuration represents the Hops CLI's configuration file.
 type Configuration struct {
+	// Prefix sets the prefix for installing packages.
+	//
+	// Defaults:
+	// 	- darwin/amd64 = "/usr/local"
+	// 	- darwin/arm64 = "/opt/homebrew"
+	// 	- linux/amd64 = "/home/linuxbrew/.linuxbrew"
+	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty" env:"PREFIX"`
+
 	// Cache sets the path used for caches.
 	//
 	// Default: $XDG_CACHE_HOME/hops
-	Cache string `json:"cache,omitempty" yaml:"cache,omitempty"`
+	Cache string `json:"cache,omitempty" yaml:"cache,omitempty" env:"CACHE"`
 
-	// Configures Hops' usage of Homebrew's sources.
-	Homebrew HomebrewAPIConfig `json:"homebrew,omitempty" yaml:"homebrew,omitempty"`
+	// Configuration shared from Homebrew.
+	Homebrew brewenv.Configuration `json:"homebrew,omitempty" yaml:"homebrew,omitempty" envPrefix:"HOMEBREW_"`
 
 	// Registry configures a Hops-compatible registry for Bottles.
-	Registry RegistryConfig `json:"registry,omitempty" yaml:"registry,omitempty"`
+	Registry RegistryConfig `json:"registry,omitempty" yaml:"registry,omitempty" envPrefix:"REGISTRY_"`
 }
 
 // RegistryConfig configures a Hops-compatible registry for Bottles.
 type RegistryConfig struct {
 	// Prefix is the prefix for all Bottle repositories
-	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
+	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty" env:",inline"`
 
 	// CAFile sets the server certificate authority file for the remote registry
-	// CAFile string `json:"caFile,omitempty" yaml:"caFile,omitempty"`
+	// CAFile string `json:"caFile,omitempty" yaml:"caFile,omitempty" env:"CA_FILE"`
 
 	// DistributionSpec sets OCI distribution spec version and API option for target. options: v1.1-referrers-api, v1.1-referrers-tag
-	// DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty"`
+	// DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty" env:"DISTRIBUTION_SPEC"`
 
 	// Headers adds custom headers to requests
-	// Headers []string `json:"headers,omitempty" yaml:"headers,omitempty"`
+	// Headers []string `json:"headers,omitempty" yaml:"headers,omitempty" env:"HEADERS"`
 
 	// Insecure	allows connections to SSL registry without certs
-	// Insecure bool `json:"insecure,omitempty" yaml:"insecure,omitempty"`
+	// Insecure bool `json:"insecure,omitempty" yaml:"insecure,omitempty" env:"INSECURE"`
 
 	// OCILayout sets the registry as an OCI image layout
-	OCILayout bool `json:"ociLayout,omitempty" yaml:"ociLayout,omitempty"`
+	OCILayout bool `json:"ociLayout,omitempty" yaml:"ociLayout,omitempty" env:"OCI_LAYOUT"`
 
 	// // Username sets the registry username
 	// Username string
@@ -85,53 +91,32 @@ type RegistryConfig struct {
 	// Password string
 
 	// PlainHTTP allows insecure connections to registry without SSL check
-	PlainHTTP bool `json:"plainHTTP,omitempty" yaml:"plainHTTP,omitempty"`
+	PlainHTTP bool `json:"plainHTTP,omitempty" yaml:"plainHTTP,omitempty" env:"PLAIN_HTTP"`
 
 	// RegistryConfig sets the path of the authentication file for the registry
-	// RegistryConfig string `json:"registryConfig,omitempty" yaml:"registryConfig,omitempty"`
+	// RegistryConfig string `json:"registryConfig,omitempty" yaml:"registryConfig,omitempty" env:"CONFIG"`
 
 	// Resolve sets customized DNS for registry, formatted in host:port:address[:address_port]
-	// Resolve string `json:"resolve,omitempty" yaml:"resolve,omitempty"`
-}
-
-// AutoUpdateConfig configures auto-updates for a formula index.
-type AutoUpdateConfig struct {
-	Disabled bool `json:"disabled,omitempty" yaml:"disabled,omitempty"`
-	Secs     *int `json:"secs,omitempty" yaml:"secs,omitempty"`
-}
-
-// DefaultAutoUpdateSecs is the default auto-update seconds value.
-const DefaultAutoUpdateSecs = 86400
-
-// HomebrewAPIConfig configures Hops' usage of the Homebrew API.
-type HomebrewAPIConfig struct {
-	// // Disables the Homebrew API. If enabled, the Homebrew API is queried for available formulae. Formulae defined in the indexes configured for Hops will supersede Homebrew's API.
-	// //
-	// // Default: false
-	// Disabled bool `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-
-	// Domain to use for the Homebrew API. Overrides Homebrew's HOMEBREW_API_DOMAIN value.
-	//
-	// Default: https://formulae.brew.sh/api
-	Domain string `json:"domain,omitempty" yaml:"domain,omitempty"`
-
-	// Configure auto-update behavior
-	AutoUpdate AutoUpdateConfig `json:"autoUpdate,omitempty" yaml:"autoUpdate,omitempty"`
+	// Resolve string `json:"resolve,omitempty" yaml:"resolve,omitempty" env:"RESOLVE"`
 }
 
 // ConfigurationDefault defaults the object's fields.
 func ConfigurationDefault(cfg *Configuration) {
+	if cfg.Prefix == "" {
+		cfg.Prefix = prefix.Default().String()
+	}
+
 	if cfg.Cache == "" {
 		cfg.Cache = filepath.Join(xdg.CacheHome, "hops")
 	}
 
-	if cfg.Homebrew.AutoUpdate.Secs == nil {
-		cfg.Homebrew.AutoUpdate.Secs = new(int)
-		*(cfg.Homebrew.AutoUpdate.Secs) = DefaultAutoUpdateSecs
+	if cfg.Homebrew.API.AutoUpdate.Secs == nil {
+		cfg.Homebrew.API.AutoUpdate.Secs = new(int)
+		*(cfg.Homebrew.API.AutoUpdate.Secs) = brewenv.DefaultAutoUpdateSecs
 	}
 
-	if cfg.Homebrew.Domain == "" {
-		cfg.Homebrew.Domain = "https://formulae.brew.sh/api"
+	if cfg.Homebrew.API.Domain == "" {
+		cfg.Homebrew.API.Domain = "https://formulae.brew.sh/api"
 	}
 
 	// Do not default the registry prefix
@@ -146,31 +131,32 @@ func ConfigurationDefault(cfg *Configuration) {
 
 // ConfigurationEnvOverrides overrides the configuration with environment variables.
 func ConfigurationEnvOverrides(cfg *Configuration) {
+	cfg.Prefix = env.OneOfString([]string{
+		ConfigurationEnvPrefix + "_PREFIX",
+		"HOMEBREW_PREFIX",
+	}, cfg.Prefix)
+
 	cfg.Cache = env.String(
 		ConfigurationEnvPrefix+"_CACHE",
 		cfg.Cache)
 
-	// cfg.Homebrew.Disabled = env.Bool(
-	// 	ConfigurationEnvPrefix+"_API_DISABLED",
-	// 	cfg.Homebrew.Disabled)
-
-	cfg.Homebrew.Domain = env.OneOfString([]string{
-		ConfigurationEnvPrefix + "_API_DOMAIN",
+	cfg.Homebrew.API.Domain = env.OneOfString([]string{
+		ConfigurationEnvPrefix + "_HOMEBREW_API_DOMAIN",
 		"HOMEBREW_API_DOMAIN",
-	}, cfg.Homebrew.Domain)
+	}, cfg.Homebrew.API.Domain)
 
-	cfg.Homebrew.AutoUpdate.Disabled = env.OneOfOr([]string{
-		ConfigurationEnvPrefix + "_API_AUTOUPDATE_DISABLED",
+	cfg.Homebrew.API.AutoUpdate.Disabled = env.OneOfOr([]string{
+		ConfigurationEnvPrefix + "_HOMEBREW_NO_AUTO_UPDATE",
 		"HOMEBREW_NO_AUTO_UPDATE",
 	},
-		cfg.Homebrew.AutoUpdate.Disabled,
+		cfg.Homebrew.API.AutoUpdate.Disabled,
 		strconv.ParseBool)
 
-	cfg.Homebrew.AutoUpdate.Secs = env.OneOfOr([]string{
-		ConfigurationEnvPrefix + "_API_AUTOUPDATE_DISABLED",
-		"HOMEBREW_NO_AUTO_UPDATE",
+	cfg.Homebrew.API.AutoUpdate.Secs = env.OneOfOr([]string{
+		ConfigurationEnvPrefix + "_HOMEBREW_API_AUTO_UPDATE_SECS",
+		"HOMEBREW_API_AUTO_UPDATE_SECS",
 	},
-		cfg.Homebrew.AutoUpdate.Secs, func(envVal string) (*int, error) {
+		cfg.Homebrew.API.AutoUpdate.Secs, func(envVal string) (*int, error) {
 			val, err := strconv.Atoi(envVal)
 			return &val, err
 		})
@@ -188,37 +174,13 @@ func (cfg *Configuration) String() string {
 	return string(marshalled)
 }
 
-// // LogValuer implements slog.LogValuer.
-// func (cfg *Configuration) LogValue() slog.Value {
-// 	b, err := json.Marshal(cfg)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return slog.StringValue(string(b))
-// }
-
-// ShouldAutoUpdate returns true if an auto update should be run.
-func (au *AutoUpdateConfig) ShouldAutoUpdate(file string) bool {
-	info, err := os.Stat(file)
+// LogValuer implements slog.LogValuer.
+func (cfg *Configuration) LogValue() slog.Value {
+	b, err := json.Marshal(cfg)
 	if err != nil {
-		if !errors.Is(err, os.ErrNotExist) {
-			// Means file is unreadable, log the error
-			slog.Info("checking cached index", o.ErrAttr(err), slog.String("path", file))
-		}
-		// Return true if file does not exist or was unreadable
-		return true
+		panic(err)
 	}
-
-	// Return false if auto-updating is disabled
-	// This is only obeyed once we know we have a formula index to use
-	if au.Disabled {
-		return false
-	}
-
-	// Return true if the index has not been updated in a
-	// longer period of time than the user has configured
-	return au.Secs != nil &&
-		int(time.Since(info.ModTime()).Seconds()) >= *au.Secs
+	return slog.StringValue(string(b))
 }
 
 // func (cfg *RegistryConfig) ParseHeaders() (map[string][]string, error) {

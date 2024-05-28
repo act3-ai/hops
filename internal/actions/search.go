@@ -22,31 +22,9 @@ import (
 type Search struct {
 	*Hops
 
-	// Formulae bool // Search for formulae
-	// Casks    bool // Search for casks
-
 	// Search for formulae with a description matching text
 	// and casks with a name or description matching text
 	Desc bool
-
-	// // Evaluate all available formulae and casks,
-	// // whether installed or not, to search their
-	// // descriptions. Implied if HOMEBREW_EVAL_ALL
-	// // is set
-	// EvalAll bool
-
-	// // These options from the brew search command are just signals to open a browser link
-	// PullRequest bool // Search for GitHub pull requests containing text
-	// Open        bool // Search for only open GitHub pull requests
-	// Closed      bool // Search for only closed GitHub pull requests
-	// Repology  bool // Search for text in the given database
-	// MacPorts  bool // Search for text in the given database
-	// Fink      bool // Search for text in the given database
-	// OpenSUSE  bool // Search for text in the given database
-	// Fedora    bool // Search for text in the given database
-	// ArchLinux bool // Search for text in the given database
-	// Debian    bool // Search for text in the given database
-	// Ubuntu    bool // Search for text in the given database
 }
 
 // Run runs the action.
@@ -63,7 +41,7 @@ func (action *Search) Run(ctx context.Context, terms ...string) error {
 
 	// Load the index
 	index, err := brewformulary.FetchV1(ctx,
-		brewapi.NewClient(action.Config().Homebrew.Domain),
+		brewapi.NewClient(action.Config().Homebrew.API.Domain),
 		action.Config().Cache, nil)
 	if err != nil {
 		return err
@@ -85,16 +63,6 @@ func (action *Search) Run(ctx context.Context, terms ...string) error {
 				if match(f.Desc) {
 					return true
 				}
-				// } else {
-				// 	// Check against all possible names
-				// 	// Cannot use same check as the "Find" function because
-				// 	// the search term can be a regex pattern
-				// 	for _, name := range f.PossibleNames() {
-				// 		if match(name) {
-				// 			return true
-				// 		}
-				// 	}
-				// }
 			}
 			return false
 		})

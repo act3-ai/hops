@@ -44,15 +44,7 @@ const (
 )
 
 // Default returns the default Homebrew prefix value.
-// Matches the behavior of the "$(brew --prefix)" command.
-// Obeys the HOMEBREW_PREFIX environment variable to override.
 func Default() Prefix {
-	// Allow environment variable to override
-	prefix, ok := os.LookupEnv("HOMEBREW_PREFIX")
-	if ok && prefix != "" {
-		return Prefix(prefix)
-	}
-
 	switch runtime.GOOS {
 	case "darwin":
 		if runtime.GOARCH == "arm64" {
@@ -66,6 +58,18 @@ func Default() Prefix {
 		// Other platform just return Linux, it will error out elsewhere if needed
 		return LinuxDefault
 	}
+}
+
+// EnvOrDefault returns the Homebrew prefix value
+// set by the HOMEBREW_PREFIX environment variable
+// or the default Homebrew prefix value.
+func EnvOrDefault() Prefix {
+	// Allow environment variable to override
+	prefix, ok := os.LookupEnv("HOMEBREW_PREFIX")
+	if ok && prefix != "" {
+		return Prefix(prefix)
+	}
+	return Default()
 }
 
 // Cellar.

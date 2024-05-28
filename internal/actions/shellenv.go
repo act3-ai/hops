@@ -42,7 +42,7 @@ type ShellEnv struct {
 
 // Run runs the action.
 func (action *ShellEnv) Run(_ context.Context) error {
-	brew := action.Homebrew()
+	prefix := action.Config().Prefix
 
 	if action.Shell == "" {
 		shell, ok := os.LookupEnv("SHELL")
@@ -52,11 +52,11 @@ func (action *ShellEnv) Run(_ context.Context) error {
 		action.Shell = filepath.Base(shell)
 	}
 
-	brewRepository := brew.Prefix
-	bin := filepath.Join(brew.Prefix, "bin")
-	sbin := filepath.Join(brew.Prefix, "bin")
-	manpath := filepath.Join(brew.Prefix, "share", "man")
-	infopath := filepath.Join(brew.Prefix, "share", "info")
+	brewRepository := prefix
+	bin := filepath.Join(prefix, "bin")
+	sbin := filepath.Join(prefix, "bin")
+	manpath := filepath.Join(prefix, "share", "man")
+	infopath := filepath.Join(prefix, "share", "info")
 	backtick := "`"
 
 	// Check if environment is already modified.
@@ -90,7 +90,7 @@ func (action *ShellEnv) Run(_ context.Context) error {
 			fish_add_path -gP %q %q;
 			! set -q MANPATH; and set MANPATH ''; set -gx MANPATH %q $MANPATH;
 			! set -q INFOPATH; and set INFOPATH ''; set -gx INFOPATH %q $INFOPATH;`,
-			brew.Prefix,
+			prefix,
 			action.Prefix().Cellar(),
 			brewRepository,
 			bin, sbin,

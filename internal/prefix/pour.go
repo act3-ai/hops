@@ -3,12 +3,72 @@ package prefix
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"path/filepath"
+
+	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	"github.com/act3-ai/hops/internal/formula"
+	"github.com/act3-ai/hops/internal/platform/macos"
 )
+
+// CanPourBottle verifies that the PlatformFormula's bottle can be poured.
+func (p Prefix) CanPourBottle(ctx context.Context, f formula.PlatformFormula) error {
+	fmt.Println(f.Name() + ".pour_bottle_only_if = " + f.Bottle().PourOnlyIf)
+	switch f.Bottle().PourOnlyIf {
+	// Bottle can always be poured
+	case "":
+		return nil
+	// Bottle can be poured with the default prefix
+	case brewv1.PourBottleConditionDefaultPrefix:
+		if p != Default() {
+			return errors.New(
+				"cannot pour bottle for " + f.Name() +
+					`: incompatible prefix`)
+		}
+		return nil
+	// Bottle can be poured with the XCode Command Line Tools installed
+	case brewv1.PourBottleConditionCLTInstalled:
+		// skip check on non-macOS systems
+		if !f.Platform().IsMacOS() {
+			return nil
+		}
+
+		ok, err := macos.CLTInstalled(ctx)
+		switch {
+		// Could not check
+		case err != nil:
+			return err
+		// CLT are not installed
+		case !ok:
+			return errors.New(
+				"cannot pour bottle for " + f.Name() +
+					`: XCode Command Line Tools are not installed`)
+		// CLT are installed
+		default:
+			return nil
+		}
+	// Custom rule, skip the rule while warning
+	default:
+		slog.Warn(`Skipping unknown "pour_bottle_only_if" condition`,
+			slog.String("bottle", f.Name()),
+			slog.String("condition", f.Bottle().PourOnlyIf))
+		return nil
+	}
+}
+
+// CanPourBottles verifies that all formulae's bottles can be poured.
+func (p Prefix) CanPourBottles(ctx context.Context, formulae []formula.PlatformFormula) error {
+	var err error
+	for _, f := range formulae {
+		err = errors.Join(err, p.CanPourBottle(ctx, f))
+	}
+	return err
+}
 
 // Pour pours a Bottle into the Cellar.
 func (p Prefix) Pour(btl io.Reader) error {

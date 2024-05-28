@@ -69,9 +69,9 @@ func envCmd(hops *actions.Hops) *cobra.Command {
 		Short: "Show environment config",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, _ []string) {
-			cmd.Println("# Homebrew configuration:")
-			cmd.Println(hops.Homebrew())
-			cmd.Println("# Hops configuration:")
+			// cmd.Println("# Homebrew configuration:")
+			// cmd.Println(hops.Config())
+			// cmd.Println("# Hops configuration:")
 			cmd.Println(hops.Config())
 		},
 	}
