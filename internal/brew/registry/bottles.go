@@ -32,40 +32,56 @@ type Registry interface {
 // URLs are constructed as:
 //
 //	[ARTIFACT_DOMAIN/]BOTTLE_ROOT_URL/BOTTLE_NAME:BOTTLE_VERSION@sha256:BOTTLE_SHA256
+//
+// With HOMEBREW_BOTTLE_DOMAIN:
+//
+//	[ARTIFACT_DOMAIN/]BOTTLE_DOMAIN/BOTTLE_NAME:BOTTLE_VERSION@sha256:BOTTLE_SHA256
 type registry struct {
-	headers http.Header  // for GitHub Packages auth
-	HTTP    *http.Client // client for HTTP requests
-	// OCI           remote.Client // client for OCI requests
-	cache          string // cache directory
+	headers        http.Header  // for GitHub Packages auth
+	HTTP           *http.Client // client for HTTP requests
+	cache          string       // cache directory
 	maxGoroutines  int
+	bottleDomain   string
 	artifactDomain string
 }
 
 // NewBottleRegistry creates a new BottleRegistry.
-func NewBottleRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) Registry {
-	return newRegistry(headers, client, cache, maxGoroutines, artifactDomain)
+func NewBottleRegistry(
+	headers http.Header,
+	client *http.Client,
+	cache string,
+	maxGoroutines int,
+	bottleDomain,
+	artifactDomain string,
+) Registry {
+	return newRegistry(headers, client, cache, maxGoroutines, bottleDomain, artifactDomain)
 }
 
 // newRegistry creates a new registry.
-func newRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, artifactDomain string) *registry {
+func newRegistry(headers http.Header, client *http.Client, cache string, maxGoroutines int, bottleDomain, artifactDomain string) *registry {
 	return &registry{
-		headers: headers,
-		HTTP:    client,
-		// OCI:     regClient,
+		headers:        headers,
+		HTTP:           client,
 		cache:          cache,
 		maxGoroutines:  maxGoroutines,
+		bottleDomain:   bottleDomain,
 		artifactDomain: artifactDomain,
 	}
 }
 
 // Source provides the source for a bottle.
 func (store *registry) Source(f formula.PlatformFormula) (string, error) {
-	src := bottleURL(f)
-	if src == "" { // specifies no bottle
+	root, path := bottleURL(f)
+	if path == "" { // specifies no bottle
 		return "", nil
 	}
+	if store.bottleDomain != "" {
+		// Replace default bottle domain with configured bottle domain
+		root = store.bottleDomain
+	}
+
 	if store.artifactDomain != "" {
-		srcURL, err := url.Parse(src)
+		srcURL, err := url.Parse(root + path)
 		if err != nil {
 			return "", fmt.Errorf("parsing URL to replace domain with HOMEBREW_ARTIFACT_DOMAIN: %w", err)
 		}
@@ -74,19 +90,17 @@ func (store *registry) Source(f formula.PlatformFormula) (string, error) {
 		// This join does not support query or fragment additions
 		return store.artifactDomain + "/" + srcURL.Path, nil
 	}
-	return src, nil
+	return root + path, nil
 }
 
 // bottleURL produces the URL for a bottle.
-func bottleURL(f formula.PlatformFormula) string {
+func bottleURL(f formula.PlatformFormula) (string, string) {
 	btl := f.Bottle()
 	if btl == nil {
-		return ""
+		return "", ""
 	}
-
-	// replace default root URL with configured root
-	src := btl.RootURL + "/" + brewfmt.Repo(f.Name()) + "/blobs/sha256:" + btl.Sha256
-	return src
+	path := "/" + brewfmt.Repo(f.Name()) + "/blobs/sha256:" + btl.Sha256
+	return btl.RootURL, path
 }
 
 // FetchBottle implements formula.BottleRegistry.
