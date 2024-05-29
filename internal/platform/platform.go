@@ -200,36 +200,43 @@ var (
 )
 
 // SelectManifest selects the most viable manifest from an OCI image index.
-// The returned index will be -1 if a compatible image is not found.
 // The selected platform will not exceed the constraint.
 func SelectManifest(index *ocispec.Index, constraint Platform) (ocispec.Descriptor, error) {
-	sel := SelectManifestIndex(index, constraint)
-	if sel < 0 {
-		return ocispec.Descriptor{}, errors.New("no manifest in index matches platform " + constraint.String())
+	sel, err := selectManifestIndex(index, constraint)
+	if err != nil {
+		return ocispec.Descriptor{}, err
 	}
 
-	// Return select manifest
+	// Return selected manifest
 	return index.Manifests[sel], nil
 }
 
-// SelectManifestIndex selects the most viable manifest from an OCI image index.
+// selectManifestIndex selects the most viable manifest from an OCI image index.
 // The returned index will be -1 if a compatible image is not found.
 // The selected platform will not exceed the constraint.
-func SelectManifestIndex(index *ocispec.Index, constraint Platform) int {
-	// HACK:
-	// Homebrew does not correctly publish bottles for the "all" platform.
-	// If there is a single manifest, assume it is for the "all" platform.
-	if len(index.Manifests) == 1 {
-		return 0
-	}
+func selectManifestIndex(index *ocispec.Index, constraint Platform) (int, error) {
+	switch len(index.Manifests) {
+	case 0:
+		return -1, errors.New("selecting manifest: no manifests in index")
+	case 1:
+		// HACK:
+		// Homebrew does not correctly publish bottles for the "all" platform.
+		// If there is a single manifest, assume it is for the "all" platform.
+		return 0, nil
+	default:
+		// check for manifest with matching refname
+		candidates := make([]Platform, len(index.Manifests))
+		for i, manifest := range index.Manifests {
+			candidates[i] = FromOCI(manifest.Platform)
+		}
 
-	// check for manifest with matching refname
-	candidates := make([]Platform, len(index.Manifests))
-	for i, manifest := range index.Manifests {
-		candidates[i] = FromOCI(manifest.Platform)
-	}
+		sel := SelectIndex(candidates, constraint)
+		if sel < 0 {
+			return -1, errors.New("selecting manifest: no manifest for platform " + constraint.String())
+		}
 
-	return SelectIndex(candidates, constraint)
+		return sel, nil
+	}
 }
 
 // SelectIndex selects the most viable platform from a list of candidate platforms.

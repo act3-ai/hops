@@ -86,14 +86,14 @@ func resolvePlatform(ctx context.Context, repo oras.ReadOnlyGraphTarget, bottle 
 		bottle.index = index
 	}
 
-	sel := platform.SelectManifestIndex(bottle.index, plat)
-	if sel < 0 {
-		return nil, fmt.Errorf("selecting platform: no manifest for platform %s", plat)
+	sel, err := platform.SelectManifest(bottle.index, plat)
+	if err != nil {
+		return nil, err
 	}
 
 	// Return selected manifest
 	bottle.platforms[plat] = &bottleManifest{
-		Descriptor: bottle.index.Manifests[sel],
+		Descriptor: sel,
 		// index:      bottle,
 	}
 	return bottle.platforms[plat], nil
