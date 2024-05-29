@@ -105,11 +105,21 @@ func ConfigurationEnvOverrides(cfg *Configuration) {
 
 	cfg.Cache = env.String(ConfigurationEnvPrefix+"_CACHE", cfg.Cache)
 
-	cfg.Registry.Prefix = env.String(ConfigurationEnvPrefix+"_REGISTRY", cfg.Registry.Prefix)
-	cfg.Registry.PlainHTTP = env.Bool(ConfigurationEnvPrefix+"_REGISTRY_PLAIN_HTTP", cfg.Registry.PlainHTTP)
+	// Override registry fields
+	RegistryConfigEnvOverrides(ConfigurationEnvPrefix+"_REGISTRY", &cfg.Registry)
 
 	// Override Homebrew fields
 	brewenv.ConfigurationEnvOverrides(&cfg.Homebrew)
+}
+
+// RegistryConfigEnvOverrides overrides the configuration with environment variables.
+func RegistryConfigEnvOverrides(envPrefix string, cfg *RegistryConfig) {
+	cfg.Prefix = env.String(envPrefix, cfg.Prefix)
+	cfg.Headers = env.StringSlice(envPrefix+"_HEADERS", cfg.Headers, ",")
+	cfg.Insecure = env.Bool(envPrefix+"_INSECURE", cfg.Insecure)
+	cfg.OCILayout = env.Bool(envPrefix+"_OCI_LAYOUT", cfg.OCILayout)
+	cfg.PlainHTTP = env.Bool(envPrefix+"_PLAIN_HTTP", cfg.PlainHTTP)
+	cfg.Config = env.String(envPrefix+"_CONFIG", cfg.Config)
 }
 
 // String implements fmt.Stringer.
