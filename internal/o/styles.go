@@ -28,6 +28,7 @@ var (
 	green   = termenv.ANSIGreen
 	blue    = termenv.ANSIBlue
 	magenta = termenv.ANSIMagenta
+	cyan    = termenv.ANSICyan
 
 	styleBold      = output.String().Bold()
 	styleUnderline = output.String().Underline()
@@ -94,6 +95,7 @@ func StyleYellow(s string) string {
 // Returns log styles for charmbracelet/log.
 func LogStyles() *log.Styles {
 	styles := log.DefaultStyles()
+	arrow := lipgloss.NewStyle().SetString(Arrow)
 
 	styles.Levels[log.ErrorLevel] = lipgloss.NewStyle().
 		SetString("Error:").
@@ -101,13 +103,16 @@ func LogStyles() *log.Styles {
 	styles.Levels[log.WarnLevel] = lipgloss.NewStyle().
 		SetString("Warning:").
 		Foreground(lipgloss.ANSIColor(yellow))
-	styles.Levels[log.InfoLevel] = lipgloss.NewStyle().SetString(Arrow).Foreground(lipgloss.ANSIColor(blue))
-	styles.Levels[log.DebugLevel] = lipgloss.NewStyle().
-		SetString(Arrow).
+	styles.Levels[log.InfoLevel] = arrow.
+		Foreground(lipgloss.ANSIColor(blue))
+	styles.Levels[log.DebugLevel] = arrow.
 		Foreground(lipgloss.ANSIColor(magenta))
+	styles.Levels[log.Level(logutil.LevelTrace)] = arrow.
+		Foreground(lipgloss.ANSIColor(cyan))
 
 	// Add a custom style for key err/error
-	styles.Keys[logutil.ErrKey] = lipgloss.NewStyle().Foreground(lipgloss.ANSIColor(red))
+	styles.Keys[logutil.ErrKey] = lipgloss.NewStyle().
+		Foreground(lipgloss.ANSIColor(red))
 
 	return styles
 }

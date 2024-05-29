@@ -377,9 +377,9 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		if err != nil {
 			return ocispec.Descriptor{}, fmt.Errorf("pushing platform metadata: %w", err)
 		}
-		l.Debug("Pushed metadata for platform", logutil.OCIPlatformValue(manifestDesc.Platform), logutil.DescriptorGroup(configDesc))
+		configDesc.Platform = manifestDesc.Platform // set platform field on config descriptor
 
-		configDesc.Platform = manifestDesc.Platform // preserve platform
+		l.Debug("Pushed metadata for platform", logutil.DescriptorGroup(configDesc))
 
 		manifestOptions = platformMetadatManifestOptions(f.FullName, f.Version(), plat, manifestDesc, configDesc)
 	} else {

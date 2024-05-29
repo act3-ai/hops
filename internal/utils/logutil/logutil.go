@@ -6,17 +6,26 @@ import (
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2"
+
+	"gitlab.com/act3-ai/asce/go-common/pkg/version"
+
+	"github.com/act3-ai/hops/internal/utils"
 )
 
-// ErrKey is the slog attribute key used for errors in log messages.
+const (
+	LevelTrace   = slog.LevelDebug * 2 // trace = double debug
+	LevelVerbose = slog.LevelInfo - 1  // verbose = one step more verbose than info
+)
+
+// ErrKey is the key used for errors in [log/slog] attributes.
 const ErrKey = "err"
 
-// ErrAttr produces a slog.Attr for errors.
+// ErrAttr produces a [log/slog.Attr] for errors.
 func ErrAttr(err error) slog.Attr {
 	return slog.Any(ErrKey, err)
 }
 
-// OCIPlatformValue formats an OCI platform for logging.
+// OCIPlatformValue formats an [ocispec.Platform] as a [log/slog.Attr].
 func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	if plat == nil {
 		return slog.String("platform", "nil")
@@ -27,7 +36,7 @@ func OCIPlatformValue(plat *ocispec.Platform) slog.Attr {
 	}
 }
 
-// DescriptorGroup formats an OCI descriptor for logging.
+// DescriptorGroup formats an [ocispec.Descriptor] as a [log/slog.Attr].
 func DescriptorGroup(desc ocispec.Descriptor) slog.Attr {
 	return slog.Attr{
 		Key:   "desc",
@@ -45,28 +54,7 @@ func ociPlatformAttrs(plat ocispec.Platform) []slog.Attr {
 
 // DescriptorAttrs formats a descriptor as a list of attributes.
 func DescriptorAttrs(desc ocispec.Descriptor) []any {
-	attrs := []any{
-		slog.String("mediaType", desc.MediaType),
-	}
-
-	if desc.ArtifactType != "" {
-		attrs = append(attrs, slog.String("artifactType", desc.ArtifactType))
-	}
-
-	if desc.Annotations != nil {
-		if v, ok := desc.Annotations[ocispec.AnnotationTitle]; ok {
-			attrs = append(attrs, slog.String("annotations."+ocispec.AnnotationTitle, v))
-		}
-	}
-
-	if desc.Platform != nil {
-		attrs = append(attrs, OCIPlatformValue(desc.Platform))
-	}
-
-	// Add size and digest last for more readability
-	return append(attrs,
-		slog.Int64("size", desc.Size),
-		slog.String("digest", desc.Digest.String()))
+	return utils.ToAny(descriptorAttrs(desc))
 }
 
 // descriptorAttrs formats a descriptor as a list of attributes.
@@ -76,23 +64,19 @@ func descriptorAttrs(desc ocispec.Descriptor) []slog.Attr {
 		slog.String("digest", desc.Digest.String()),
 		slog.Int64("size", desc.Size),
 	}
+	if desc.ArtifactType != "" {
+		attrs = append(attrs, slog.String("artifactType", desc.ArtifactType))
+	}
+	if desc.Annotations != nil {
+		if v, ok := desc.Annotations[ocispec.AnnotationTitle]; ok {
+			attrs = append(attrs, slog.String("annotations."+ocispec.AnnotationTitle, v))
+		}
+	}
 	if desc.Platform != nil {
 		attrs = append(attrs, OCIPlatformValue(desc.Platform))
 	}
 	return attrs
 }
-
-// // PlainDescriptor returns a plain descriptor that contains only MediaType, Digest and
-// // Size.
-// //
-// // From: https://github.com/oras-project/oras-go/blob/main/internal/descriptor/descriptor.go
-// func PlainDescriptor(desc ocispec.Descriptor) ocispec.Descriptor {
-// 	return ocispec.Descriptor{
-// 		MediaType: desc.MediaType,
-// 		Digest:    desc.Digest,
-// 		Size:      desc.Size,
-// 	}
-// }
 
 // WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions.
 func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOptions) oras.CopyGraphOptions {
@@ -105,8 +89,6 @@ func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOpti
 	onCopySkipped := opts.OnCopySkipped
 	opts.OnCopySkipped = func(ctx context.Context, desc ocispec.Descriptor) error {
 		dolog(ctx, "Skipped copy for artifact", desc)
-
-		// fmt.Println(debugutil.DebugMarshalJSON(desc))
 
 		if onCopySkipped != nil {
 			return onCopySkipped(ctx, desc)
@@ -130,4 +112,15 @@ func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOpti
 		return nil
 	}
 	return *opts
+}
+
+// VersionAttrs formats version info as a list of [log/slog.Attr].
+func VersionAttrs(info version.Info) []slog.Attr {
+	attrs := []slog.Attr{
+		slog.String("version", info.Version),
+		slog.String("commit", info.Commit),
+		slog.Bool("dirty", info.Dirty),
+		slog.String("built", info.Built),
+	}
+	return attrs
 }

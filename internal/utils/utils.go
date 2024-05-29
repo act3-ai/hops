@@ -112,3 +112,12 @@ func IndexIfOK[T any](list []T, i int) (T, bool) {
 	}
 	return *new(T), false
 }
+
+// ToAny casts a slice to []any.
+func ToAny[T any](list []T) []any {
+	anyList := make([]any, len(list))
+	for i := range list {
+		anyList[i] = list[i]
+	}
+	return anyList
+}
