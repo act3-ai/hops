@@ -216,11 +216,15 @@ func hopsRegistry(ctx context.Context, authClient *auth.Client, cfg *hopsv1.Regi
 	case cfg.OCILayout:
 		return hopsreg.NewLocal(cfg.Prefix), nil
 	default:
-		return hopsreg.NewRemote(ctx,
+		reg, err := hopsreg.NewRemote(ctx,
 			cfg.Prefix,
 			authClient,
 			cfg.PlainHTTP,
 		)
+		if err != nil {
+			return nil, err
+		}
+		return reg, nil
 	}
 }
 

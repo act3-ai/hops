@@ -37,6 +37,7 @@ func NewRemote(ctx context.Context, prefix string, client remote.Client, plainHT
 	}
 	reg.Client = client
 	reg.PlainHTTP = plainHTTP
+	reg.SkipReferrersGC = true
 
 	err = reg.Ping(ctx)
 	if err != nil {
