@@ -10,11 +10,15 @@ type Version interface {
 }
 
 // PkgVersion is a helper for producing the package version.
-func PkgVersion(v Version) string {
+func PkgVersion(obj Versioner) string {
+	v := obj.Version()
 	return brewfmt.PkgVersion(v.Upstream(), v.Revision())
 }
 
 // Tag is a helper for producing the bottle tag.
-func Tag(v Version) string {
+func Tag(obj Versioner) string {
+	v := obj.Version()
 	return brewfmt.Tag(v.Upstream(), v.Revision(), v.Rebuild())
 }
+
+// func ParseVersion() (version string, packageRevision, bottleRebuild int)

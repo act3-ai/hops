@@ -93,7 +93,7 @@ type LinkOptions symlink.Options
 
 // FormulaLink links a keg from the Cellar into the prefix.
 func (p Prefix) FormulaLink(f formula.Formula, opts *LinkOptions) (links, files int, err error) {
-	return p.Link(f.Name(), formula.PkgVersion(f.Version()), opts)
+	return p.Link(f.Name(), formula.PkgVersion(f), opts)
 }
 
 // Link links a keg from the Cellar into the prefix.

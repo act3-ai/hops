@@ -138,7 +138,7 @@ func (store *registry) fetchBottle(ctx context.Context, f formula.PlatformFormul
 //
 //	cowsay--3.04_1
 func linkName(f formula.Formula) string {
-	return f.Name() + "--" + formula.PkgVersion(f.Version())
+	return f.Name() + "--" + formula.PkgVersion(f)
 }
 
 // lookupCachedFile.

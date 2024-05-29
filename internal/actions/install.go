@@ -148,7 +148,7 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 
 	// Direct user to the reinstall command
 	for _, f := range reinstalls {
-		version := formula.PkgVersion(f.Version())
+		version := formula.PkgVersion(f)
 		o.Poo(heredoc.Docf(`
 			%s
 			To reinstall %s, run:

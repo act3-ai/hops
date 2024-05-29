@@ -26,7 +26,7 @@ func Info(f formula.PlatformFormula, p prefix.Prefix) {
 
 	var err error
 
-	keg := p.KegPath(f.Name(), formula.PkgVersion(f.Version()))
+	keg := p.KegPath(f.Name(), formula.PkgVersion(f))
 
 	isInstalled = p.AnyInstalled(f)
 	if isInstalled {
@@ -42,7 +42,7 @@ func Info(f formula.PlatformFormula, p prefix.Prefix) {
 	}
 
 	versions := []string{}
-	if stable := formula.PkgVersion(f.Version()); stable != "" {
+	if stable := formula.PkgVersion(f); stable != "" {
 		// TODO:
 		// if f.Versions.Bottle {
 		stable += " (bottled)"

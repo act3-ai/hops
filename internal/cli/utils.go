@@ -126,11 +126,11 @@ func (ds *DistributionSpec) String() string {
 func withRegistryFlags(cmd *cobra.Command, prefix, description string, opts *hopsv1.RegistryConfig) {
 	flagPrefix, notePrefix := applyPrefix(prefix, description)
 
-	// var distSpec DistributionSpec
-	distSpec := DistributionSpec(opts.DistributionSpec)
-	cmd.Flags().Var(&distSpec,
-		flagPrefix+"distribution-spec",
-		"Set OCI distribution spec version and API option for "+notePrefix+"target. Options: "+distSpec.Options())
+	// // var distSpec DistributionSpec
+	// distSpec := DistributionSpec(opts.DistributionSpec)
+	// cmd.Flags().Var(&distSpec,
+	// 	flagPrefix+"distribution-spec",
+	// 	"Set OCI distribution spec version and API option for "+notePrefix+"target. Options: "+distSpec.Options())
 
 	cmd.Flags().StringArrayVar(&opts.Headers,
 		flagPrefix+"header", nil,
@@ -162,9 +162,9 @@ func withRegistryConfig(cmd *cobra.Command, action *actions.Hops) {
 		if regcfg.Prefix != "" {
 			cfg.Registry.Prefix = regcfg.Prefix
 		}
-		if regcfg.DistributionSpec != "" {
-			cfg.Registry.DistributionSpec = regcfg.DistributionSpec
-		}
+		// if regcfg.DistributionSpec != "" {
+		// 	cfg.Registry.DistributionSpec = regcfg.DistributionSpec
+		// }
 		if regcfg.Headers != nil {
 			cfg.Registry.Headers = regcfg.Headers
 		}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"time"
 
 	"github.com/adrg/xdg"
@@ -210,6 +211,17 @@ func ConfigurationDefault(cfg *Configuration) {
 	if cfg.API.Domain == "" {
 		cfg.API.Domain = "https://formulae.brew.sh/api"
 	}
+}
+
+// ConfigurationEnvOverrides overrides the configuration with environment variables.
+func ConfigurationEnvOverrides(cfg *Configuration) {
+	cfg.API.Domain = env.String("HOMEBREW_API_DOMAIN", cfg.API.Domain)
+	cfg.API.AutoUpdate.Disabled = env.Bool("HOMEBREW_NO_AUTO_UPDATE", cfg.API.AutoUpdate.Disabled)
+	cfg.API.AutoUpdate.Secs = env.Or("HOMEBREW_API_AUTO_UPDATE_SECS", cfg.API.AutoUpdate.Secs,
+		func(envVal string) (*int, error) {
+			val, err := strconv.Atoi(envVal)
+			return &val, err
+		})
 }
 
 // // LoadEnvFiles loads Homebrew environment files so their variables are available to override configuration.

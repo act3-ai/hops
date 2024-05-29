@@ -110,7 +110,7 @@ func (p Prefix) KegPath(name, version string) string {
 
 // FormulaKegPath produces the keg for a formula.
 func (p Prefix) FormulaKegPath(f formula.Formula) string {
-	return p.KegPath(f.Name(), formula.PkgVersion(f.Version()))
+	return p.KegPath(f.Name(), formula.PkgVersion(f))
 }
 
 // Opt.
@@ -322,7 +322,7 @@ func (p Prefix) FormulaOutdated(f formula.Formula) (bool, error) {
 		return true, err
 	}
 
-	latest := formula.PkgVersion(f.Version())
+	latest := formula.PkgVersion(f)
 
 	outdated := true
 

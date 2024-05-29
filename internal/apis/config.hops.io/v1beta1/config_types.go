@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/adrg/xdg"
@@ -68,7 +67,7 @@ type RegistryConfig struct {
 	// CAFile string `json:"caFile,omitempty" yaml:"caFile,omitempty" env:"CA_FILE"`
 
 	// DistributionSpec sets OCI distribution spec version and API option for target. options: v1.1-referrers-api, v1.1-referrers-tag
-	DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty" env:"DISTRIBUTION_SPEC"`
+	// DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty" env:"DISTRIBUTION_SPEC"`
 
 	// Headers adds custom headers to requests
 	Headers []string `json:"headers,omitempty" yaml:"headers,omitempty" env:"HEADERS"`
@@ -103,28 +102,6 @@ func ConfigurationDefault(cfg *Configuration) {
 	if cfg.Cache == "" {
 		cfg.Cache = filepath.Join(xdg.CacheHome, "hops")
 	}
-
-	if cfg.Registry.DistributionSpec == "" {
-		cfg.Registry.DistributionSpec = "v1.1-referrers-api"
-	}
-
-	if cfg.Homebrew.API.AutoUpdate.Secs == nil {
-		cfg.Homebrew.API.AutoUpdate.Secs = new(int)
-		*(cfg.Homebrew.API.AutoUpdate.Secs) = brewenv.DefaultAutoUpdateSecs
-	}
-
-	if cfg.Homebrew.API.Domain == "" {
-		cfg.Homebrew.API.Domain = "https://formulae.brew.sh/api"
-	}
-
-	// Do not default the registry prefix
-	// ghcr.io/homebrew/core is not usable as a Hops registry
-	// Could change this down the line if support is added for
-	// "unsafe" installation without metadata or if Homebrew's
-	// registry starts including the metadata in some way
-	// if cfg.Registry.Prefix == "" {
-	// 	cfg.Registry.Prefix = "ghcr.io/homebrew/core"
-	// }
 }
 
 // ConfigurationEnvOverrides overrides the configuration with environment variables.
@@ -138,26 +115,7 @@ func ConfigurationEnvOverrides(cfg *Configuration) {
 		ConfigurationEnvPrefix+"_CACHE",
 		cfg.Cache)
 
-	cfg.Homebrew.API.Domain = env.OneOfString([]string{
-		ConfigurationEnvPrefix + "_HOMEBREW_API_DOMAIN",
-		"HOMEBREW_API_DOMAIN",
-	}, cfg.Homebrew.API.Domain)
-
-	cfg.Homebrew.API.AutoUpdate.Disabled = env.OneOfOr([]string{
-		ConfigurationEnvPrefix + "_HOMEBREW_NO_AUTO_UPDATE",
-		"HOMEBREW_NO_AUTO_UPDATE",
-	},
-		cfg.Homebrew.API.AutoUpdate.Disabled,
-		strconv.ParseBool)
-
-	cfg.Homebrew.API.AutoUpdate.Secs = env.OneOfOr([]string{
-		ConfigurationEnvPrefix + "_HOMEBREW_API_AUTO_UPDATE_SECS",
-		"HOMEBREW_API_AUTO_UPDATE_SECS",
-	},
-		cfg.Homebrew.API.AutoUpdate.Secs, func(envVal string) (*int, error) {
-			val, err := strconv.Atoi(envVal)
-			return &val, err
-		})
+	brewenv.ConfigurationEnvOverrides(&cfg.Homebrew)
 
 	cfg.Registry.Prefix = env.String(ConfigurationEnvPrefix+"_REGISTRY", cfg.Registry.Prefix)
 	cfg.Registry.PlainHTTP = env.Bool(ConfigurationEnvPrefix+"_REGISTRY_PLAIN_HTTP", cfg.Registry.PlainHTTP)

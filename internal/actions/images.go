@@ -130,7 +130,7 @@ func (action *Images) listImages(ctx context.Context, formulae []formula.Platfor
 }
 
 func (action *Images) resolve(ctx context.Context, reg hopsreg.Registry, f formula.Formula) (string, error) {
-	image := strings.TrimSuffix(action.Config().Registry.Prefix, "/") + "/" + brewfmt.Repo(f.Name()) + ":" + formula.Tag(f.Version())
+	image := strings.TrimSuffix(action.Config().Registry.Prefix, "/") + "/" + brewfmt.Repo(f.Name()) + ":" + formula.Tag(f)
 
 	if action.NoVerify {
 		// Skip any resolving or verifying

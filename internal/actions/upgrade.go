@@ -54,7 +54,7 @@ func (action *Upgrade) Run(ctx context.Context, args ...string) error {
 		outOfDate := true
 		for _, k := range kegs {
 			kegVersion := k.Version()
-			updated := formula.PkgVersion(f.Version())
+			updated := formula.PkgVersion(f)
 			switch versionCompare(updated, kegVersion) {
 			case 0:
 				outOfDate = false
@@ -70,7 +70,7 @@ func (action *Upgrade) Run(ctx context.Context, args ...string) error {
 			continue
 		}
 
-		fmt.Println("Upgrading " + formula.PkgVersion(f.Version()))
+		fmt.Println("Upgrading " + formula.PkgVersion(f))
 		toUpgrade = append(toUpgrade, f)
 	}
 
