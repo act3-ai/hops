@@ -24,7 +24,8 @@ body = """
     {% for commit in commits %}
         - {% if commit.scope %}**{{ commit.scope }}**: {% endif %}\
             {% if commit.breaking %}[**Breaking change**]: {% endif %}\
-            {{ commit.message }} ([{{ commit.id | truncate(length=7, end="") }}]({{ commit.id }}))\
+            {{ commit.message }} ([{{ commit.id | truncate(length=7, end="") }}](\
+                https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}))\
     {% endfor %}
 {% endfor %}\n
 """
@@ -115,7 +116,7 @@ sort_commits = "oldest"
 # regex for parsing and extracting external references, and turning them into URLs, using regex.
 link_parsers = [
   # generate links for GitHub issues and PRs
-  { pattern = "#(\\d+)", href = "https://github.com/https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/issues/$1" },
+  { pattern = "#(\\d+)", href = "https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/issues/$1" },
   # generate links for RFCs
   { pattern = "RFC(\\d+)", text = "ietf-rfc$1", href = "https://datatracker.ietf.org/doc/html/rfc$1" },
 ]
