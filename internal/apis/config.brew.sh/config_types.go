@@ -215,13 +215,26 @@ func ConfigurationDefault(cfg *Configuration) {
 
 // ConfigurationEnvOverrides overrides the configuration with environment variables.
 func ConfigurationEnvOverrides(cfg *Configuration) {
-	cfg.API.Domain = env.String("HOMEBREW_API_DOMAIN", cfg.API.Domain)
-	cfg.API.AutoUpdate.Disabled = env.Bool("HOMEBREW_NO_AUTO_UPDATE", cfg.API.AutoUpdate.Disabled)
-	cfg.API.AutoUpdate.Secs = env.Or("HOMEBREW_API_AUTO_UPDATE_SECS", cfg.API.AutoUpdate.Secs,
+	cfg.Cache = env.String(
+		"HOMEBREW_CACHE", cfg.Cache)
+	cfg.ArtifactDomain = env.String(
+		"HOMEBREW_ARTIFACT_DOMAIN", cfg.ArtifactDomain)
+	cfg.API.Domain = env.String(
+		"HOMEBREW_API_DOMAIN", cfg.API.Domain)
+	cfg.API.AutoUpdate.Disabled = env.Bool(
+		"HOMEBREW_NO_AUTO_UPDATE", cfg.API.AutoUpdate.Disabled)
+	cfg.API.AutoUpdate.Secs = env.Or(
+		"HOMEBREW_API_AUTO_UPDATE_SECS", cfg.API.AutoUpdate.Secs,
 		func(envVal string) (*int, error) {
 			val, err := strconv.Atoi(envVal)
 			return &val, err
 		})
+	cfg.BottleDomain = env.String(
+		"HOMEBREW_BOTTLE_DOMAIN", cfg.BottleDomain)
+	cfg.DockerRegistry.BasicAuthToken = env.String(
+		"HOMEBREW_DOCKER_REGISTRY_BASIC_AUTH_TOKEN", cfg.DockerRegistry.BasicAuthToken)
+	cfg.DockerRegistry.BasicAuthToken = env.String(
+		"HOMEBREW_DOCKER_REGISTRY_TOKEN", cfg.DockerRegistry.BasicAuthToken)
 }
 
 // // LoadEnvFiles loads Homebrew environment files so their variables are available to override configuration.

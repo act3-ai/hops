@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-outfile="internal/benchmark/results.md"
+dir=${0%/*}
+
+outfile="${dir}/results.md"
 
 cat >"${outfile}" <<EOF
 # Benchmark Results
@@ -9,7 +11,7 @@ cat >"${outfile}" <<EOF
 | ------- | ----- | ------- | ---- | ------ | ---- | ------- | ----- |
 EOF
 
-for file in internal/benchmark/tests/*.json; do
+for file in "${dir}"/tests/*.json; do
 	# echo "${file}:"
 
 	cache="warm"

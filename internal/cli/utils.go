@@ -156,6 +156,7 @@ func withRegistryFlags(cmd *cobra.Command, prefix, description string, opts *hop
 func withRegistryConfig(cmd *cobra.Command, action *actions.Hops) {
 	regcfg := &hopsv1.RegistryConfig{}
 
+	cmd.Flags().StringVar(&regcfg.Prefix, "registry", "", "Registry prefix for bottles (overrides config)")
 	withRegistryFlags(cmd, "", "", regcfg)
 
 	action.AddConfigOverride(func(cfg *hopsv1.Configuration) {

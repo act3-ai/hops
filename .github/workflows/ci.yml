@@ -12,7 +12,7 @@ concurrency:
 
 env:
   GO_VERSION: "1.22"
-  VERSION: ${{ github.ref_type == 'tag' && format('ci-{0}', github.ref_name) || format('ci-{0}', github.sha) }}
+  VERSION: ${{ format('ci-{0}', github.sha) }}
 
 jobs:
   lint:
@@ -45,7 +45,7 @@ jobs:
           go install golang.org/x/vuln/cmd/govulncheck@latest
           govulncheck ./...
 
-  test:
+  unit-test:
     name: Unit test
     runs-on: ubuntu-latest
     steps:
@@ -197,9 +197,56 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          annotations: ${{ steps.meta.outputs.annotations }}
-          labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             HOPS_EXECUTABLE=hops/${{env.VERSION}}/bin/hops
+          tags: |
+            ghcr.io/act3-ai/hops/ci:${{env.VERSION}}
+          push: true
+          annotations: ${{ steps.meta.outputs.annotations }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  integration-test:
+      name: Integration test
+      runs-on: ubuntu-latest
+      needs: build
+      steps:
+        # Download and unpack already-built binary
+        - name: Download build artifact
+          uses: actions/download-artifact@v4
+          with:
+            name: hops_linux_amd64
+        - name: Unpack build artifact
+          run: |
+            tar -xvf hops_linux_amd64.tar.gz
+        - name: Add Hops to PATH
+          run: |
+            echo "hops/${{env.VERSION}}/bin" >> $GITHUB_PATH
+        
+        # Authenticate to ghcr.io
+        - name: Login to GHCR
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.repository_owner }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+        
+        # Run tests
+        - name: hops install gh (cold)
+          run: hops install gh --debug
+        - name: hops uninstall gh
+          run: hops uninstall gh --debug
+        - name: hops install gh (warm)
+          run: hops install gh --debug
+        - name: hops deps ffmpeg --tree
+          run: hops deps ffmpeg --tree
+
+        - name: hops copy
+          run: hops copy node --to ./bottles --to-oci-layout
+        - name: hops install --registry (cold)
+          run: hops install node --registry ./bottles --oci-layout
+        - name: hops uninstall
+          run: hops uninstall node --registry ./bottles --oci-layout
+        - name: hops install --registry (warm)
+          run: hops install node --registry ./bottles --oci-layout
+        - name: hops deps brogue --tree
+          run: hops deps brogue --tree

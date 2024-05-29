@@ -25,7 +25,7 @@ type Brewfile struct {
 func Load(path string) (*Brewfile, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("%s %w", path, err)
+		return nil, fmt.Errorf("opening Brewfile %s: %w", path, err)
 	}
 	defer file.Close()
 

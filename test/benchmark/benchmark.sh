@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
 
+dir=${0%/*}
+
 # number of tests to be run
-numtests=40
+numtests=60
 
 # tool (hops/brew)
 # tool="hops"
 tool="hops"
 
 # command to benchmark
-command="xinstall"
+command="install"
 formulae="gh"
 
 # cache setting (warm/cold)
-# cache="warm"
-cache="cold"
+cache="warm"
+# cache="cold"
 
 # output JSON file
-outfile="internal/benchmark/tests/${command// /_}${formulae:+_}${formulae// /_}.${cache}.${tool}.$(date +%m_%d).json"
+outfile="${dir}/tests/${command// /_}${formulae:+_}${formulae// /_}.${cache}.${tool}.$(date +%m_%d).json"
 
 # Make sure output file does not already exist
 if [ -s "${outfile}" ]; then
@@ -25,6 +27,7 @@ if [ -s "${outfile}" ]; then
 fi
 
 # Start JSON array
+mkdir -p "${dir}/tests"
 echo "[" >>"$outfile"
 
 # numtests iterations
@@ -36,7 +39,7 @@ for ((i = 1; i <= numtests; i++)); do
 	if [[ "${tool}" == "brew" ]]; then
 		# Uninstall the formula
 		# Uninstall all dependencies
-		brew uninstall ${formulae} --force
+		brew uninstall ${formulae}
 		brew autoremove
 
 		# Homebrew cold cache
@@ -54,13 +57,13 @@ for ((i = 1; i <= numtests; i++)); do
 		# Uninstall the formula
 		# Uninstall all remaining dependencies
 		hops uninstall ${formulae}
-		rm -rf HOMEBREW_PREFIX # TODO: hops autoremove
+		hops cleanup
+		# rm -rf HOMEBREW_PREFIX # TODO: hops autoremove
 
 		# Hops cold cache
 		if [[ "${cache}" == "cold" ]]; then
 			# Remove Hops' cache
 			rm -rf HOMEBREW_CACHE
-			rm -rf HOMEBREW_PREFIX
 			rm -rf HOPS_CACHE
 			direnv reload
 		fi

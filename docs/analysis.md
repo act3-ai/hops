@@ -61,12 +61,13 @@ Formula with no dependencies:
 
 Factor of 4 for cold cache, factor of :shrug: for warm cache. Since Hops has the benefit of the Go runtime, I'm going to call its warm cache performance worse.
 
-| Command                   | Cache | Elapsed | User  | System | CPU%   | Tests |
-| ------------------------- | ----- | ------- | ----- | ------ | ------ | ----- |
-| `brew install gh`         | cold  | 4.16s   | 1.24s | 0.48s  | 42.8%  | 100   |
-| `hops install gh`         | cold  | 1.62s   | 0.43s | 0.09s  | 33.17% | 100   |
-| `brew install gh`         | warm  | 1.15s   | 0.8s  | 0.15s  | 82.41% | 100   |
-| `hops install gh`         | warm  | 1.02s   | 0.42s | 0.1s   | 53.66% | 100   |
+| Command           | Cache | Elapsed | User  | System | CPU%   | Memory   | Tests |
+| ----------------- | ----- | ------- | ----- | ------ | ------ | -------- | ----- |
+| `brew install gh` | cold  | 4.16s   | 1.24s | 0.48s  | 42.8%  |          | 100   |
+| `hops install gh` | cold  | 1.62s   | 0.43s | 0.09s  | 33.17% |          | 100   |
+| `hops install gh` | cold  | 1.85s   | 0.53s | 0.12s  | 36.33% | 110896kb | 36    |
+| `brew install gh` | warm  | 1.15s   | 0.8s  | 0.15s  | 82.41% |          | 100   |
+| `hops install gh` | warm  | 1.02s   | 0.42s | 0.1s   | 53.66% |          | 100   |
 
 Formula with many dependencies:
 

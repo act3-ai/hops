@@ -55,6 +55,7 @@ hops install formula [...] [flags]
       --only-dependencies        Install the dependencies with specified options but do not install the formula itself
       --overwrite                Delete files that already exist in the prefix while linking
       --plain-http               Allow insecure connections to registry without SSL check
+      --registry string          Registry prefix for bottles (overrides config)
       --registry-config string   Path of the authentication file for registry
       --skip-recommended         Skip :recommended dependencies for formula
 ```

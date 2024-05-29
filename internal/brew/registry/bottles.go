@@ -121,11 +121,16 @@ func (store *registry) fetchBottle(ctx context.Context, f formula.PlatformFormul
 	// Download bottle file
 	path, err := store.download(ctx, f)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("downloading bottle: %w", err)
 	}
 
 	// Open downloaded bottle file
-	return os.Open(path)
+	btl, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("opening bottle file %s: %w", path, err)
+	}
+
+	return btl, nil
 }
 
 // LinkName returns the name of the symlink to the downloaded bottle .tar.gz file for the formula.
@@ -208,7 +213,7 @@ func (store *registry) download(ctx context.Context, f formula.PlatformFormula) 
 		// Return here if the file is already downloaded
 		// this should also validate the existing file's checksum
 		slog.Debug("Already downloaded: " + bottleFileName)
-		return "", nil
+		return link, nil
 	} else if err != nil {
 		return "", err
 	}
@@ -216,7 +221,7 @@ func (store *registry) download(ctx context.Context, f formula.PlatformFormula) 
 
 	u, err := url.Parse(source)
 	if err != nil {
-		return "", fmt.Errorf("[%s] parsing bottle source: %w", f.Name(), err)
+		return "", fmt.Errorf("parsing bottle source: %w", err)
 	}
 
 	slog.Debug("starting bottle download",
@@ -237,7 +242,7 @@ func (store *registry) download(ctx context.Context, f formula.PlatformFormula) 
 		err = downloadBottleHTTP(ctx, *store.HTTP, store.headers, source, bottleFile)
 		if err != nil {
 			return "", errors.Join(
-				fmt.Errorf("[%s] downloading bottle: %w", f.Name(), err),
+				fmt.Errorf("downloading bottle: %w", err),
 				deleteOnFailure(),
 			)
 		}
@@ -248,7 +253,7 @@ func (store *registry) download(ctx context.Context, f formula.PlatformFormula) 
 	// 	}
 	default:
 		return "", errors.Join(
-			fmt.Errorf("[%s] downloading bottle: unsupported URL scheme %q", f.Name(), u.Scheme),
+			fmt.Errorf("unsupported URL scheme %q", u.Scheme),
 			deleteOnFailure(),
 		)
 	}

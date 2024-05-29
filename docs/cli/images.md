@@ -36,6 +36,7 @@ hops images ([formula]... | [--file Brewfile]) [flags]
       --no-verify                Do not verify tag existence (implies --no-resolve)
       --oci-layout               Set target as an OCI image layout
       --plain-http               Allow insecure connections to registry without SSL check
+      --registry string          Registry prefix for bottles (overrides config)
       --registry-config string   Path of the authentication file for registry
       --skip-recommended         Skip :recommended dependencies for formula
 ```
