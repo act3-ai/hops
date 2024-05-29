@@ -222,29 +222,24 @@ jobs:
         run: |
           echo "hops/${{env.VERSION}}/bin" >> $GITHUB_PATH
 
-      # Authenticate to ghcr.io
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      # Test Homebrew API mode
+      - name: hops install (api, cold)
+        run: hops install gh
+      - run: hops uninstall gh
+      - name: hops install (api, warm)
+        run: hops install gh
+      - name: hops install (api)
+        run: hops deps ffmpeg
 
-      # Run tests
-      - name: Test Homebrew API mode
-        run: |
-          hops install gh
-          hops uninstall gh
-          hops install gh
-          hops deps ffmpeg
-
-      - name: Test standalone registry mode
-        env:
-          HOPS_REGISTRY: ./bottles
-          HOPS_REGISTRY_OCI_LAYOUT: true
-        run: |
+      # Test standalone registry mode
+      - run: |
           hops copy node --to ./bottles --to-oci-layout
-          hops install node
-          hops uninstall node
-          hops install node
-          hops deps node
+          echo "HOPS_REGISTRY=./bottles" >> "$GITHUB_ENV"
+          echo "HOPS_REGISTRY_OCI_LAYOUT="true" >> "$GITHUB_ENV"
+      - name: hops install (standalone, cold)
+        run: hops install node
+      - run: hops uninstall node
+      - name: hops install (standalone, warm)
+        run: hops install node
+      - name: hops deps (standalone)
+        run: hops deps node
