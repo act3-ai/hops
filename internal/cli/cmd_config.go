@@ -149,7 +149,7 @@ func configCmd(hops *actions.Hops) *cobra.Command {
 
 // configInitCmd creates the command.
 func configInitCmd(hops *actions.Hops) *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "init",
 		Short: "Write current configuration to config file",
 		Args:  cobra.NoArgs,
@@ -177,6 +177,4 @@ func configInitCmd(hops *actions.Hops) *cobra.Command {
 			return nil
 		},
 	}
-
-	return cmd
 }

@@ -12,7 +12,6 @@ import (
 
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/brewfile"
-	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/formula"
 	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/o"
@@ -42,10 +41,16 @@ func (action *Images) Run(ctx context.Context, args ...string) error {
 
 	slog.Debug("finding images for", slog.Any("formulae", args))
 
-	formulae, err := action.findDeps(ctx, args)
+	graph, err := action.Hops.resolve(ctx, args, platform.All, &action.DependencyOptions)
 	if err != nil {
 		return err
 	}
+
+	deps := graph.Dependencies()
+	fmt.Printf("Found %d dependencies\n", len(deps))
+
+	// Combine root formulae with their dependencies in this list
+	formulae := slices.Concat(deps, graph.Roots())
 
 	images, err := action.listImages(ctx, formulae)
 	if err != nil {
@@ -76,34 +81,6 @@ func (action *Images) Run(ctx context.Context, args ...string) error {
 	// fmt.Println("Formula index: " + o.StyleBold(indexFile))
 
 	return nil
-}
-
-func (action *Images) findDeps(ctx context.Context, args []string) ([]formula.PlatformFormula, error) {
-	names := action.SetAlternateTags(args)
-
-	formulary, err := action.Formulary(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	roots, err := formula.FetchAllPlatform(ctx, formulary, names, platform.All)
-	if err != nil {
-		return nil, err
-	}
-
-	o.H1("Fetching dependencies...")
-
-	// Build dependency graph
-	graph, err := dependencies.WalkAll(ctx, formulary, roots, &action.DependencyOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	deps := graph.Dependencies()
-	fmt.Printf("Found %d dependencies\n", len(deps))
-
-	// Combine root formulae with their dependencies in this list
-	return slices.Concat(deps, roots), nil
 }
 
 // listImages lists the images for each formula in the index.

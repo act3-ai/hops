@@ -85,7 +85,7 @@ type Configuration struct {
 	BottleDomain string `json:"bottleDomain,omitempty" yaml:"bottleDomain,omitempty" env:"BOTTLE_DOMAIN"`
 
 	// Docker registry configuration
-	DockerRegistry DockerRegistryConfig `json:"registry,omitempty" yaml:"registry,omitempty" envPrefix:"DOCKER_REGISTRY_"`
+	DockerRegistry DockerRegistryConfig `json:"dockerRegistry,omitempty" yaml:"dockerRegistry,omitempty" envPrefix:"DOCKER_REGISTRY_"`
 }
 
 // DockerRegistryConfig configures docker registry usage.

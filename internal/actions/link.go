@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
@@ -25,7 +26,7 @@ type Link struct {
 }
 
 // Run runs the action.
-func (action *Link) Run(ctx context.Context, args ...string) error {
+func (action *Link) Run(ctx context.Context, args []string) error {
 	if action.platform == "" {
 		action.platform = platform.SystemPlatform()
 	}
@@ -132,4 +133,25 @@ func (action *Unlink) Run(ctx context.Context, args ...string) error {
 	fmt.Printf("%d symlinks removed.\n", len(links))
 
 	return nil
+}
+
+func (action *Hops) resolve(ctx context.Context, args []string, plat platform.Platform, tags *formula.DependencyTags) (*dependencies.DependencyGraph, error) {
+	// Detect the platform if unset
+	if plat == "" {
+		plat = platform.SystemPlatform()
+	}
+
+	names := action.SetAlternateTags(args)
+
+	formulary, err := action.Formulary(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	formulae, err := formula.FetchAllPlatform(ctx, formulary, names, plat)
+	if err != nil {
+		return nil, err
+	}
+
+	return dependencies.Walk(ctx, formulary, formulae, plat, tags)
 }

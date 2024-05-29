@@ -6,7 +6,6 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/act3-ai/hops/internal/dependencies"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform"
 )
@@ -14,14 +13,13 @@ import (
 // Deps represents the action and its options.
 type Deps struct {
 	*Hops
-	Standalone        bool
 	DependencyOptions formula.DependencyTags
 	Platform          platform.Platform
 }
 
 // Tree runs the action.
-func (action *Deps) Run(ctx context.Context, names ...string) error {
-	graph, err := action.eval(ctx, names)
+func (action *Deps) Run(ctx context.Context, args []string) error {
+	graph, err := action.resolve(ctx, args, action.Platform, &action.DependencyOptions)
 	if err != nil {
 		return err
 	}
@@ -34,8 +32,8 @@ func (action *Deps) Run(ctx context.Context, names ...string) error {
 }
 
 // Tree runs the action.
-func (action *Deps) Tree(ctx context.Context, names ...string) error {
-	deps, err := action.eval(ctx, names)
+func (action *Deps) Tree(ctx context.Context, args []string) error {
+	deps, err := action.resolve(ctx, args, action.Platform, &action.DependencyOptions)
 	if err != nil {
 		return err
 	}
@@ -50,29 +48,4 @@ func (action *Deps) Tree(ctx context.Context, names ...string) error {
 	}
 
 	return nil
-}
-
-func (action *Deps) eval(ctx context.Context, args []string) (*dependencies.DependencyGraph, error) {
-	names := action.SetAlternateTags(args)
-
-	formulary, err := action.Formulary(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	formulae, err := formula.FetchAllPlatform(ctx, formulary, names, action.Platform)
-	if err != nil {
-		return nil, err
-	}
-
-	graph, err := dependencies.Walk(ctx,
-		formulary,
-		formulae,
-		action.Platform,
-		&action.DependencyOptions)
-	if err != nil {
-		return nil, err
-	}
-
-	return graph, nil
 }

@@ -90,6 +90,9 @@ func updateCmd(hops *actions.Hops) *cobra.Command {
 			return action.Run(cmd.Context())
 		},
 	}
+
+	withRegistryConfig(cmd, action.Hops)
+
 	return cmd
 }
 
@@ -104,6 +107,9 @@ func upgradeCmd(hops *actions.Hops) *cobra.Command {
 			return action.Run(cmd.Context(), args...)
 		},
 	}
+
+	withRegistryConfig(cmd, action.Hops)
+
 	return cmd
 }
 
@@ -121,9 +127,11 @@ func linkCmd(hops *actions.Hops) *cobra.Command {
 		Args:              cobra.MatchAll(cobra.MinimumNArgs(1), cobra.OnlyValidArgs),
 		ValidArgsFunction: installedFormulae(hops),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return action.Run(cmd.Context(), args...)
+			return action.Run(cmd.Context(), args)
 		},
 	}
+
+	withRegistryConfig(cmd, action.Hops)
 
 	cmd.Flags().BoolVar(&action.Overwrite, "overwrite", false, "Delete files that already exist in the prefix while linking")
 	cmd.Flags().BoolVarP(&action.DryRun, "dry-run", "n", false, "List files which would be linked or deleted by hops link --overwrite without actually linking or deleting any files")

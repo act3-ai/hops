@@ -25,6 +25,8 @@ func infoCmd(hops *actions.Hops) *cobra.Command {
 	cmd.Flags().StringVar(&action.JSON, "json", "", "Print a JSON representation")
 	cmd.Flags().Lookup("json").NoOptDefVal = "v1"
 
+	withRegistryConfig(cmd, action.Hops)
+
 	// Platform selector (not reflected in Homebrew)
 	platflag := cmd.Flags().VarPF(&action.Platform, "platform", "p", "View dependencies on platform")
 	platflag.DefValue = "system"
@@ -68,15 +70,17 @@ func depsCmd(hops *actions.Hops) *cobra.Command {
 			ctx := cmd.Context()
 			switch {
 			case tree:
-				return action.Tree(ctx, args...)
+				return action.Tree(ctx, args)
 			default:
-				return action.Run(ctx, args...)
+				return action.Run(ctx, args)
 			}
 		},
 	}
 
 	// Mode switch flags
 	cmd.Flags().BoolVar(&tree, "tree", false, "Show dependencies as a tree. When given multiple formula arguments, show individual trees for each formula.")
+
+	withRegistryConfig(cmd, action.Hops)
 
 	// Platform selector (not reflected in Homebrew)
 	platflag := cmd.Flags().VarPF(&action.Platform, "platform", "p", "View dependencies on platform")
