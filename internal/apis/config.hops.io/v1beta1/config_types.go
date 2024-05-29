@@ -49,7 +49,7 @@ type Configuration struct {
 	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty" env:"PREFIX"`
 
 	// Path used for caches.
-	Cache string `json:"cache,omitempty" yaml:"cache,omitempty" env:"CACHE" envDefault:"$XDG_CACHE_HOME/hops"`
+	Cache string `json:"cache,omitempty" yaml:"cache,omitempty" env:"CACHE"`
 
 	// Configuration shared from Homebrew.
 	Homebrew brewenv.Configuration `json:"homebrew,omitempty" yaml:"homebrew,omitempty" envPrefix:"HOMEBREW_"`
@@ -102,6 +102,9 @@ func ConfigurationDefault(cfg *Configuration) {
 	if cfg.Cache == "" {
 		cfg.Cache = filepath.Join(xdg.CacheHome, "hops")
 	}
+
+	// Default Homebrew fields
+	brewenv.ConfigurationDefault(&cfg.Homebrew)
 }
 
 // ConfigurationEnvOverrides overrides the configuration with environment variables.
@@ -115,10 +118,11 @@ func ConfigurationEnvOverrides(cfg *Configuration) {
 		ConfigurationEnvPrefix+"_CACHE",
 		cfg.Cache)
 
-	brewenv.ConfigurationEnvOverrides(&cfg.Homebrew)
-
 	cfg.Registry.Prefix = env.String(ConfigurationEnvPrefix+"_REGISTRY", cfg.Registry.Prefix)
 	cfg.Registry.PlainHTTP = env.Bool(ConfigurationEnvPrefix+"_REGISTRY_PLAIN_HTTP", cfg.Registry.PlainHTTP)
+
+	// Override Homebrew fields
+	brewenv.ConfigurationEnvOverrides(&cfg.Homebrew)
 }
 
 // String implements fmt.Stringer.
