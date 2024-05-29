@@ -235,6 +235,12 @@ jobs:
           hops copy node --to "${{ github.workspace }}/bottles" --to-oci-layout
           echo 'HOPS_REGISTRY="${{ github.workspace }}/bottles"' >> "$GITHUB_ENV"
           echo 'HOPS_REGISTRY_OCI_LAYOUT=true' >> "$GITHUB_ENV"
+      - run: |
+          cat ${{ github.workspace }}/bottles/node/index.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bottles
+          path: ${{ github.workspace }}/bottles
       - name: hops install (standalone, cold)
         run: hops install node
       - run: hops uninstall node
