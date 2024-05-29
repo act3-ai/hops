@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/act3-ai/hops/internal/apis/formulae.brew.sh/common"
-	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/platform"
 )
 
@@ -213,22 +212,4 @@ func (info *PlatformInfo) PossibleNames() []string {
 	names = append(names, info.OldNames...)
 	names = append(names, info.Aliases...)
 	return names
-}
-
-// ManifestTag produces the tag of the formula's manifest.
-func (info *PlatformInfo) ManifestTag(key string) (string, error) {
-	bottle := info.Bottle[key]
-	if bottle == nil {
-		return "", fmt.Errorf("formula %s does not have a %s bottle", info.Name, key)
-	}
-
-	version := ""
-	if key == Stable {
-		if info.Versions.Stable == "" {
-			return "", fmt.Errorf("formula %s does not have a %s version", info.Name, key)
-		}
-		version = info.Versions.Stable
-	}
-
-	return brewfmt.Tag(version, info.Revision, bottle.Rebuild), nil
 }
