@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Features
 
-- **install**: respect pour_bottle_only_if conditions (f90695247bfded73688f737fbf0210877a1f808d)
+- **install**: respect pour_bottle_only_if conditions f90695247bfded73688f737fbf0210877a1f808d
 - **HOMEBREW_BOTTLE_DOMAIN**: respect the HOMEBREW_BOTTLE_DOMAIN option ([85d625f](85d625fd99eade6744f7b61b8efb8dd64265e5ba))
 - **configuration**: unify config file with Homebrew environment config ([ca288cb](ca288cbe246fd53ffff9444ff88e0d8a3c0951eb))
 - **configuration**: support custom HTTP headers for registry requests ([132e73e](132e73ef4b8c3646ee99c394015f295ecb8ebd1f))
