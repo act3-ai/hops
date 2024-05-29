@@ -14,13 +14,11 @@ type VerbosityOptions struct {
 }
 
 // WithPersistentVerbosityFlags adds the debug, quiet, and verbose flags to the given command.
-func WithPersistentVerbosityFlags(cmd *cobra.Command) *VerbosityOptions {
-	v := &VerbosityOptions{}
+func WithPersistentVerbosityFlags(cmd *cobra.Command, v *VerbosityOptions) {
 	cmd.PersistentFlags().CountVarP(&v.Debug, "debug", "d", "Display more debugging information")
 	cmd.PersistentFlags().CountVarP(&v.Quiet, "quiet", "q", "Make some output more quiet")
 	cmd.PersistentFlags().CountVarP(&v.Verbose, "verbose", "v", "Make some output more verbose")
 	cmd.MarkFlagsMutuallyExclusive("verbose", "quiet")
-	return v
 }
 
 // LogLevel produces the desired slog.Level by parsing the "debug", "verbose", and "quiet" flags.

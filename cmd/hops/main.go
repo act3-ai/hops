@@ -12,6 +12,7 @@ import (
 
 	"github.com/act3-ai/hops/docs"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils/env"
 	"github.com/act3-ai/hops/internal/utils/logutil"
 
 	commands "gitlab.com/act3-ai/asce/go-common/pkg/cmd"
@@ -49,7 +50,8 @@ func main() {
 	)
 
 	// Logger flags
-	logopts := logutil.WithPersistentVerbosityFlags(root) // Add "quiet", "verbose", and "debug" flags
+	logopts := &logutil.VerbosityOptions{}
+	logutil.WithPersistentVerbosityFlags(root, logopts) // Add "quiet", "verbose", and "debug" flags
 	var logfmt string
 	root.PersistentFlags().StringVar(&logfmt, "log-fmt", "text", "Set format for log messages. Options: text, json")
 	// var logfile string
@@ -61,6 +63,8 @@ func main() {
 	// The pre run function logs build info and sets the default output writer
 	root.PersistentPreRunE = func(cmd *cobra.Command, _ []string) error {
 		ctx := cmd.Context()
+
+		verbosityEnvOverrides(logopts) // evaluate environment variables
 
 		// Create [log/slog.Handler] using flag configuration
 		level := logopts.LogLevel(slog.LevelInfo) // evaluate log level flags
@@ -186,3 +190,15 @@ func logHandler(level slog.Level, format, file string) (slog.Handler, error) {
 	return slogmulti.Fanout(termHandler, fileHandler), nil
 }
 */
+
+func verbosityEnvOverrides(v *logutil.VerbosityOptions) {
+	if v.Debug == 0 && env.Bool("HOPS_DEBUG", false) {
+		v.Debug = 1
+	}
+	if v.Quiet == 0 && env.Bool("HOPS_QUIET", false) {
+		v.Quiet = 1
+	}
+	if v.Verbose == 0 && env.Bool("HOPS_VERBOSE", false) {
+		v.Verbose = 1
+	}
+}
