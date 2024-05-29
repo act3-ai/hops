@@ -61,11 +61,6 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	action.platform = platform.SystemPlatform()
 	names := action.SetAlternateTags(args)
 
-	err := action.autoUpdate(ctx)
-	if err != nil {
-		return err
-	}
-
 	installs, err := action.resolveInstalls(ctx, names)
 	if err != nil {
 		return err
@@ -88,7 +83,7 @@ func (action *Install) Run(ctx context.Context, args ...string) error {
 	}
 
 	// Get bottle registry
-	reg, err := action.BottleRegistry(ctx)
+	reg, err := action.BottleRegistry()
 	if err != nil {
 		return err
 	}

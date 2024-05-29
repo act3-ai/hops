@@ -118,7 +118,7 @@ func (action *Images) listImages(ctx context.Context, formulae []formula.Platfor
 		o.Poo("Skipping tag verification")
 	}
 
-	reg, err := action.registry(ctx)
+	reg, err := hopsRegistry(&action.Config().Registry, action.UserAgent())
 	if err != nil {
 		return nil, err
 	}

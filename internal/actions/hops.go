@@ -3,16 +3,12 @@ package actions
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
-	"oras.land/oras-go/v2/registry/remote/auth"
-	"oras.land/oras-go/v2/registry/remote/credentials"
-	"oras.land/oras-go/v2/registry/remote/retry"
 
 	brewenv "github.com/act3-ai/hops/internal/apis/config.brew.sh"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
@@ -22,7 +18,6 @@ import (
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/formula/bottle"
 	hops "github.com/act3-ai/hops/internal/hops"
-	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/utils/logutil"
@@ -36,11 +31,9 @@ type Hops struct {
 	Concurrency int      // sets the maximum threads for any parallel tasks
 
 	// callback functions to override runtime-loaded configuration
-	brewOverrides   []func(e *brewenv.Environment)
 	configOverrides []func(cfg *hopsv1.Configuration)
 
 	// cache for runtime-loaded objects
-	authClient    *auth.Client
 	cfg           *hopsv1.Configuration
 	alternateTags map[string]string
 	hopsclient    hops.Client
@@ -85,72 +78,11 @@ func (action *Hops) UserAgent() string {
 	return "hops/" + action.version
 }
 
-// AddHomebrewOverride adds a configuration override function.
-// The override function will be called when loading
-// homebrew's environment configuration.
-func (action *Hops) AddHomebrewOverride(overrides ...func(e *brewenv.Environment)) {
-	action.brewOverrides = append(action.brewOverrides, overrides...)
-}
-
 // AddConfigOverride adds a configuration override function.
 // The override function will be called when loading
 // hops' configuration.
 func (action *Hops) AddConfigOverride(overrides ...func(cfg *hopsv1.Configuration)) {
 	action.configOverrides = append(action.configOverrides, overrides...)
-}
-
-// Returns the client used for authentication to OCI repositories.
-func (action *Hops) DefaultAuth() (*auth.Client, error) {
-	if action.authClient == nil {
-		var err error
-		action.authClient, err = Auth(slog.Default(), &action.cfg.Registry, action.UserAgent())
-		if err != nil {
-			return nil, err
-		}
-	}
-	return action.authClient, nil
-}
-
-// Auth produces an auth client.
-func Auth(log *slog.Logger, cfg *hopsv1.RegistryConfig, userAgent string) (*auth.Client, error) {
-	var credStore credentials.Store
-	switch {
-	// Use specified config file
-	case cfg.Config != "":
-		fileStore, err := credentials.NewStore(cfg.Config, credentials.StoreOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("loading registry config: %w", err)
-		}
-
-		log.Debug("using registry config", slog.String("file", fileStore.ConfigPath()))
-		credStore = fileStore
-	// Use Docker credentials
-	default:
-		// prepare authentication using Docker credentials
-		dockerStore, err := credentials.NewStoreFromDocker(credentials.StoreOptions{})
-		if err != nil {
-			return nil, fmt.Errorf("loading docker config: %w", err)
-		}
-
-		log.Debug("using docker config", slog.String("file", dockerStore.ConfigPath()))
-		credStore = dockerStore
-	}
-
-	h, err := cfg.ParseHeaders()
-	if err != nil {
-		return nil, err
-	}
-
-	authClient := &auth.Client{
-		Client:     retry.NewClient(),
-		Cache:      auth.NewCache(),
-		Header:     h,
-		Credential: credentials.Credential(credStore), // Use the credentials store
-	}
-
-	authClient.SetUserAgent(userAgent)
-
-	return authClient, nil
 }
 
 // Config returns the Hops CLI configuration.
@@ -198,46 +130,6 @@ func (action *Hops) Config() *hopsv1.Configuration {
 	return action.cfg
 }
 
-var errNoRegistryConfig = errors.New("no registry configured")
-
-// registry produces the Hops registry from options.
-func (action *Hops) registry(ctx context.Context) (hopsreg.Registry, error) {
-	authClient, err := action.DefaultAuth()
-	if err != nil {
-		return nil, err
-	}
-	return hopsRegistry(ctx, authClient, &action.Config().Registry)
-}
-
-func hopsRegistry(ctx context.Context, authClient *auth.Client, cfg *hopsv1.RegistryConfig) (hopsreg.Registry, error) {
-	switch {
-	case cfg.Prefix == "":
-		return nil, errNoRegistryConfig
-	case cfg.OCILayout:
-		return hopsreg.NewLocal(cfg.Prefix), nil
-	default:
-		reg, err := hopsreg.NewRemote(ctx,
-			cfg.Prefix,
-			authClient,
-			cfg.PlainHTTP,
-		)
-		if err != nil {
-			return nil, err
-		}
-		return reg, nil
-	}
-}
-
-func hopsClient(cache string, alternateTags map[string]string, maxGoroutines int, reg hopsreg.Registry) hops.Client {
-	// Create OCI layout cache
-	btlcache := hopsreg.NewLocal(cache)
-
-	// Initialize client
-	return hops.NewClient(
-		reg, btlcache,
-		alternateTags, maxGoroutines)
-}
-
 // SetAlternateVersions sets alternate tags from a list of arguments,
 // and returns the isolated names from the arguments.
 func (action *Hops) SetAlternateTags(args []string) (names []string) {
@@ -256,39 +148,36 @@ func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Formulary
 	case "":
-		return action.brewFormulary(ctx, nil)
+		return action.brewFormulary(ctx)
 	// Hops-style Formulary
 	default:
-		return action.hopsClient(ctx)
+		return action.hopsClient()
 	}
 }
 
 // BottleRegistry produces the configured Bottle registry.
-func (action *Hops) BottleRegistry(ctx context.Context) (bottle.Registry, error) {
+func (action *Hops) BottleRegistry() (bottle.Registry, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Registry
 	case "":
 		return action.brewRegistry(), nil
 	// Hops-style Registry
 	default:
-		return action.hopsClient(ctx)
+		return action.hopsClient()
 	}
 }
 
 // hopsClient initializes the configured formula.Formulary/bottle.Registry.
-func (action *Hops) hopsClient(ctx context.Context) (hops.Client, error) {
+func (action *Hops) hopsClient() (hops.Client, error) {
 	if action.hopsclient == nil {
-		cache := filepath.Join(action.Config().Cache, "oci")
-		slog.Debug("using Hops client", slog.String("registry", action.Config().Registry.Prefix), slog.String("cache", cache))
-
 		// Initialize registry.Registry
-		reg, err := action.registry(ctx)
+		reg, err := hopsRegistry(&action.Config().Registry, action.UserAgent())
 		if err != nil {
 			return nil, err
 		}
 
 		action.hopsclient = hopsClient(
-			cache,
+			filepath.Join(action.Config().Cache, "oci"),
 			action.alternateTags,
 			action.MaxGoroutines(),
 			reg)
@@ -297,24 +186,13 @@ func (action *Hops) hopsClient(ctx context.Context) (hops.Client, error) {
 }
 
 // brewFormulary initializes the configured formula.Formulary.
-func (action *Hops) autoUpdate(ctx context.Context) error {
-	if action.Config().Registry.Prefix != "" {
-		return nil
-	}
-	_, err := action.brewFormulary(ctx, &action.Config().Homebrew.API.AutoUpdate)
-	return err
-}
-
-// brewFormulary initializes the configured formula.Formulary.
-func (action *Hops) brewFormulary(ctx context.Context, opts *brewenv.AutoUpdateConfig) (brewformulary.PreloadedFormulary, error) {
+func (action *Hops) brewFormulary(ctx context.Context) (brewformulary.PreloadedFormulary, error) {
 	if action.brewformulary == nil {
-		slog.Debug("using Homebrew API formulary", //nolint:sloglint
-			slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.API.Domain))
-
 		// Load the index
-		index, err := brewformulary.FetchV1(ctx,
-			brewapi.NewClient(action.Config().Homebrew.API.Domain),
-			action.Config().Cache, opts)
+		index, err := brewFormulary(ctx,
+			action.Config().Homebrew.API.Domain,
+			&action.Config().Homebrew.API.AutoUpdate,
+			action.Config().Cache)
 		if err != nil {
 			return nil, err
 		}
@@ -324,21 +202,19 @@ func (action *Hops) brewFormulary(ctx context.Context, opts *brewenv.AutoUpdateC
 	return action.brewformulary, nil
 }
 
+func brewFormulary(ctx context.Context, domain string, cfg *brewenv.AutoUpdateConfig, cache string) (brewformulary.PreloadedFormulary, error) {
+	slog.Debug("using Homebrew API formulary", //nolint:sloglint
+		slog.String("HOMEBREW_API_DOMAIN", domain))
+	// Load the index
+	return brewformulary.FetchV1(ctx,
+		brewapi.NewClient(domain),
+		cache, cfg)
+}
+
 // brewRegistry initializes the configured bottle.Registry.
 func (action *Hops) brewRegistry() brewreg.Registry {
 	if action.brewregistry == nil {
-		slog.Debug("using Homebrew registry", //nolint:sloglint
-			slog.String("HOMEBREW_BOTTLE_DOMAIN", action.Config().Homebrew.BottleDomain),
-			slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Config().Homebrew.ArtifactDomain))
-
-		action.brewregistry = brewreg.NewBottleRegistry(
-			action.Config().Homebrew.GitHubPackagesHeaders(),
-			retry.NewClient(),
-			action.Config().Homebrew.Cache,
-			action.MaxGoroutines(),
-			action.Config().Homebrew.BottleDomain,
-			action.Config().Homebrew.ArtifactDomain,
-		)
+		action.brewregistry = brewRegistry(slog.Default(), &action.Config().Homebrew, action.MaxGoroutines())
 	}
 	return action.brewregistry
 }

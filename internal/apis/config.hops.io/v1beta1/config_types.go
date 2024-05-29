@@ -63,9 +63,6 @@ type RegistryConfig struct {
 	// Prefix is the prefix for all Bottle repositories
 	Prefix string `json:"prefix,omitempty" yaml:"prefix,omitempty" env:",inline"`
 
-	// CAFile sets the server certificate authority file for the remote registry
-	// CAFile string `json:"caFile,omitempty" yaml:"caFile,omitempty" env:"CA_FILE"`
-
 	// DistributionSpec sets OCI distribution spec version and API option for target. options: v1.1-referrers-api, v1.1-referrers-tag
 	// DistributionSpec string `json:"distributionSpec,omitempty" yaml:"distributionSpec,omitempty" env:"DISTRIBUTION_SPEC"`
 
@@ -73,24 +70,16 @@ type RegistryConfig struct {
 	Headers []string `json:"headers,omitempty" yaml:"headers,omitempty" env:"HEADERS"`
 
 	// Insecure	allows connections to SSL registry without certs
-	// Insecure bool `json:"insecure,omitempty" yaml:"insecure,omitempty" env:"INSECURE"`
+	Insecure bool `json:"insecure,omitempty" yaml:"insecure,omitempty" env:"INSECURE"`
 
 	// OCILayout sets the registry as an OCI image layout
 	OCILayout bool `json:"ociLayout,omitempty" yaml:"ociLayout,omitempty" env:"OCI_LAYOUT"`
-
-	// // Username sets the registry username
-	// Username string
-	// // Password sets the registry password
-	// Password string
 
 	// PlainHTTP allows insecure connections to registry without SSL check
 	PlainHTTP bool `json:"plainHTTP,omitempty" yaml:"plainHTTP,omitempty" env:"PLAIN_HTTP"`
 
 	// Config sets the path of the authentication file for the registry
 	Config string `json:"config,omitempty" yaml:"config,omitempty" env:"CONFIG"`
-
-	// Resolve sets customized DNS for registry, formatted in host:port:address[:address_port]
-	// Resolve string `json:"resolve,omitempty" yaml:"resolve,omitempty" env:"RESOLVE"`
 }
 
 // ConfigurationDefault defaults the object's fields.
@@ -114,9 +103,7 @@ func ConfigurationEnvOverrides(cfg *Configuration) {
 		"HOMEBREW_PREFIX",
 	}, cfg.Prefix)
 
-	cfg.Cache = env.String(
-		ConfigurationEnvPrefix+"_CACHE",
-		cfg.Cache)
+	cfg.Cache = env.String(ConfigurationEnvPrefix+"_CACHE", cfg.Cache)
 
 	cfg.Registry.Prefix = env.String(ConfigurationEnvPrefix+"_REGISTRY", cfg.Registry.Prefix)
 	cfg.Registry.PlainHTTP = env.Bool(ConfigurationEnvPrefix+"_REGISTRY_PLAIN_HTTP", cfg.Registry.PlainHTTP)

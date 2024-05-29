@@ -19,7 +19,7 @@ type Remote struct {
 }
 
 // NewRemote initializes a remote registry.
-func NewRemote(ctx context.Context, prefix string, client remote.Client, plainHTTP bool) (*Remote, error) {
+func NewRemote(prefix string, client remote.Client, plainHTTP bool) (*Remote, error) {
 	var host, path string
 
 	// Split registry host and path
@@ -39,15 +39,19 @@ func NewRemote(ctx context.Context, prefix string, client remote.Client, plainHT
 	reg.PlainHTTP = plainHTTP
 	reg.SkipReferrersGC = true
 
-	err = reg.Ping(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("pinging bottle registry %s: %w", prefix, err)
-	}
-
 	return &Remote{
 		registry: reg,
 		path:     strings.TrimSuffix(path, "/"), // remove trailing slash
 	}, nil
+}
+
+// Ping checks whether or not the registry implement Docker Registry API V2 or OCI Distribution Specification. Ping can be used to check authentication when an auth client is configured.
+func (r *Remote) Ping(ctx context.Context) error {
+	err := r.registry.Ping(ctx)
+	if err != nil {
+		return fmt.Errorf("pinging bottle registry %s: %w", r.registry.Reference.String(), err)
+	}
+	return nil
 }
 
 // Repositories lists bottle repositories.
