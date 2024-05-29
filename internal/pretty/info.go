@@ -13,6 +13,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/utils"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 // Info prints the formula information in pretty format.
@@ -31,12 +32,12 @@ func Info(f formula.PlatformFormula, p prefix.Prefix) {
 	if isInstalled {
 		files, size, err = utils.CountDir(keg)
 		if err != nil {
-			slog.Warn("checking cellar", o.ErrAttr(err))
+			slog.Warn("checking cellar", logutil.ErrAttr(err))
 		}
 
 		installReceipt, err = receipt.Load(keg)
 		if err != nil {
-			slog.Warn("parsing install receipt", o.ErrAttr(err))
+			slog.Warn("parsing install receipt", logutil.ErrAttr(err))
 		}
 	}
 

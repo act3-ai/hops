@@ -6,7 +6,7 @@ import (
 	"github.com/muesli/termenv"
 
 	"github.com/act3-ai/hops/internal/utils"
-	hlog "github.com/act3-ai/hops/internal/utils/logutil"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 const (
@@ -107,13 +107,7 @@ func LogStyles() *log.Styles {
 		Foreground(lipgloss.ANSIColor(magenta))
 
 	// Add a custom style for key err/error
-	styles.Keys[ErrKey] = lipgloss.NewStyle().Foreground(lipgloss.ANSIColor(red))
+	styles.Keys[logutil.ErrKey] = lipgloss.NewStyle().Foreground(lipgloss.ANSIColor(red))
 
 	return styles
 }
-
-// aliases for internal log utility (avoid import cycles).
-var (
-	ErrKey  = hlog.ErrKey
-	ErrAttr = hlog.ErrAttr
-)

@@ -51,12 +51,8 @@ type Service struct {
 	Interval             time.Duration     `json:"interval,omitempty"`
 	Cron                 string            `json:"cron,omitempty"`
 	RequireRoot          bool              `json:"require_root,omitempty"`
-	KeepAlive            struct {
-		Always         bool `json:"always,omitempty"`
-		SuccessfulExit bool `json:"successful_exit,omitempty"`
-		Crashed        bool `json:"crashed,omitempty"` // 1 example
-	} `json:"keep_alive,omitempty"`
-	WorkingDir string `json:"working_dir,omitempty"`
+	KeepAlive            KeepAliveConfig   `json:"keep_alive,omitempty"`
+	WorkingDir           string            `json:"working_dir,omitempty"`
 
 	// 2 examples: knot-resolver, knot
 	InputPath string `json:"input_path,omitempty"`
@@ -74,6 +70,13 @@ type Service struct {
 
 	// 1 example: gitlab-runner
 	MacOSLegacyTimers bool `json:"macos_legacy_timers,omitempty"`
+}
+
+// KeepAliveConfig declares what happens when a service exits.
+type KeepAliveConfig struct {
+	Always         bool `json:"always,omitempty"`
+	SuccessfulExit bool `json:"successful_exit,omitempty"`
+	Crashed        bool `json:"crashed,omitempty"` // 1 example
 }
 
 // RunArgs evaluates the command arguments to run

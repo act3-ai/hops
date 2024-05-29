@@ -111,7 +111,7 @@ func (p *platformFormulaV1) Info() *Info {
 }
 
 // SystemDependencies implements PlatformFormulaWithInfo.
-func (p *platformFormulaV1) SystemDependencies() *TaggedDependencies {
+func (*platformFormulaV1) SystemDependencies() *TaggedDependencies {
 	// return &taggedDependencies{
 	// 	required:    p.src.Dependencies,
 	// 	build:       p.src.BuildDependencies,

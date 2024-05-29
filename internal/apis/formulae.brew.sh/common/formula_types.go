@@ -1,5 +1,11 @@
 package common
 
+// Pour bottle conditions.
+const (
+	PourBottleConditionDefaultPrefix = "default_prefix" // pour bottle condition requiring the default prefix
+	PourBottleConditionCLTInstalled  = "clt_installed"  // pour bottle condition requiring the macOS command line tools
+)
+
 // Bottle Cellar values.
 const (
 	CellarAny               = ":any"                 // Signifies bottle is safe to install in the Cellar.

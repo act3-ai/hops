@@ -3,7 +3,6 @@ package v1
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/act3-ai/hops/internal/apis/formulae.brew.sh/common"
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
@@ -21,66 +20,58 @@ type Info struct {
 
 // PlatformInfo represents Homebrew API information for a formula.
 type PlatformInfo struct {
-	Name              string                `json:"name"`
-	FullName          string                `json:"full_name"` // Deprecated: Evaluate from Tap/Name
-	Tap               string                `json:"tap"`
-	OldName           string                `json:"oldname"` // Deprecated: Use OldNames list
-	OldNames          []string              `json:"oldnames"`
-	Aliases           []string              `json:"aliases"`
-	VersionedFormulae []string              `json:"versioned_formulae"`
-	Desc              string                `json:"desc"`
-	License           string                `json:"license"`
-	Homepage          string                `json:"homepage"`
-	Versions          Versions              `json:"versions"`
-	URLs              map[string]FormulaURL `json:"urls"`
-	Revision          int                   `json:"revision"`
-	VersionScheme     int                   `json:"version_scheme"`
-	Bottle            map[string]*Bottle    `json:"bottle"`
-	PourBottleOnlyIf  *string               `json:"pour_bottle_only_if"`
-	KegOnly           bool                  `json:"keg_only"`
-	KegOnlyReason     struct {
-		Reason      common.KegOnlyReason `json:"reason"`
-		Explanation string               `json:"explanation"`
-	} `json:"keg_only_reason"`
-	Options                 []any             `json:"options"`
-	BuildDependencies       []string          `json:"build_dependencies"`
-	Dependencies            []string          `json:"dependencies"`
-	TestDependencies        []string          `json:"test_dependencies"`
-	RecommendedDependencies []string          `json:"recommended_dependencies"`
-	OptionalDependencies    []string          `json:"optional_dependencies"`
-	UsesFromMacOS           []any             `json:"uses_from_macos"`
-	UsesFromMacOSBounds     []*MacOSBounds    `json:"uses_from_macos_bounds"`
-	Requirements            []*Requirement    `json:"requirements"`
-	ConflictsWith           []string          `json:"conflicts_with"`
-	ConflictsWithReasons    []string          `json:"conflicts_with_reasons"`
-	LinkOverwrite           []string          `json:"link_overwrite"`
-	Caveats                 *string           `json:"caveats"`
-	Installed               []InstalledInfo   `json:"installed"`
-	LinkedKeg               string            `json:"linked_keg"`
-	Pinned                  bool              `json:"pinned"`
-	Outdated                bool              `json:"outdated"`
-	Deprecated              bool              `json:"deprecated"`
-	DeprecationDate         *string           `json:"deprecation_date"`
-	DeprecationReason       *string           `json:"deprecation_reason"`
-	Disabled                bool              `json:"disabled"`
-	DisabledDate            *string           `json:"disable_date"`
-	DisabledReason          *string           `json:"disable_reason"`
-	PostInstallDefined      bool              `json:"post_install_defined"`
-	Service                 *common.Service   `json:"service"`
-	TapGitHead              string            `json:"tap_git_head"`
-	RubySourcePath          string            `json:"ruby_source_path"`
-	RubySourceChecksum      map[string]string `json:"ruby_source_checksum"`
-	HeadDependencies        *HeadDependencies `json:"head_dependencies,omitempty"`
+	Name                    string                `json:"name"`
+	FullName                string                `json:"full_name"` // Deprecated: Evaluate from Tap/Name
+	Tap                     string                `json:"tap"`
+	OldName                 string                `json:"oldname"` // Deprecated: Use OldNames list
+	OldNames                []string              `json:"oldnames"`
+	Aliases                 []string              `json:"aliases"`
+	VersionedFormulae       []string              `json:"versioned_formulae"`
+	Desc                    string                `json:"desc"`
+	License                 string                `json:"license"`
+	Homepage                string                `json:"homepage"`
+	Versions                Versions              `json:"versions"`
+	URLs                    map[string]FormulaURL `json:"urls"`
+	Revision                int                   `json:"revision"`
+	VersionScheme           int                   `json:"version_scheme"`
+	Bottle                  map[string]*Bottle    `json:"bottle"`
+	PourBottleOnlyIf        *string               `json:"pour_bottle_only_if"`
+	KegOnly                 bool                  `json:"keg_only"`
+	KegOnlyReason           common.KegOnlyConfig  `json:"keg_only_reason"`
+	Options                 []any                 `json:"options"`
+	BuildDependencies       []string              `json:"build_dependencies"`
+	Dependencies            []string              `json:"dependencies"`
+	TestDependencies        []string              `json:"test_dependencies"`
+	RecommendedDependencies []string              `json:"recommended_dependencies"`
+	OptionalDependencies    []string              `json:"optional_dependencies"`
+	UsesFromMacOS           []any                 `json:"uses_from_macos"`
+	UsesFromMacOSBounds     []*MacOSBounds        `json:"uses_from_macos_bounds"`
+	Requirements            []*Requirement        `json:"requirements"`
+	ConflictsWith           []string              `json:"conflicts_with"`
+	ConflictsWithReasons    []string              `json:"conflicts_with_reasons"`
+	LinkOverwrite           []string              `json:"link_overwrite"`
+	Caveats                 *string               `json:"caveats"`
+	Installed               []InstalledInfo       `json:"installed"`
+	LinkedKeg               string                `json:"linked_keg"`
+	Pinned                  bool                  `json:"pinned"`
+	Outdated                bool                  `json:"outdated"`
+	Deprecated              bool                  `json:"deprecated"`
+	DeprecationDate         *string               `json:"deprecation_date"`
+	DeprecationReason       *string               `json:"deprecation_reason"`
+	Disabled                bool                  `json:"disabled"`
+	DisabledDate            *string               `json:"disable_date"`
+	DisabledReason          *string               `json:"disable_reason"`
+	PostInstallDefined      bool                  `json:"post_install_defined"`
+	Service                 *common.Service       `json:"service"`
+	TapGitHead              string                `json:"tap_git_head"`
+	RubySourcePath          string                `json:"ruby_source_path"`
+	RubySourceChecksum      map[string]string     `json:"ruby_source_checksum"`
+	HeadDependencies        *HeadDependencies     `json:"head_dependencies,omitempty"`
 }
 
 const (
 	// RubySourceChecksumSha256 is the key for the sha256 checksum of a Formula's Ruby source.
 	RubySourceChecksumSha256 = "sha256"
-)
-
-const (
-	PourBottleConditionDefaultPrefix = "default_prefix" // pour bottle condition requiring the default prefix
-	PourBottleConditionCLTInstalled  = "clt_installed"  // pour bottle condition requiring the macOS command line tools
 )
 
 // FormulaURL represents the urls block.
@@ -114,51 +105,8 @@ type RuntimeDependency struct {
 	DeclaredDirectly bool   `json:"declared_directly"`
 }
 
-// Repo implements the same name formatting as other bottle parsing functions.
-func (rd *RuntimeDependency) Repo() string {
-	repo := rd.FullName                       // start with formula name
-	repo = strings.ReplaceAll(repo, "@", "/") // replace "@" with "/"
-	repo = strings.ReplaceAll(repo, "+", "x") // replace "+" with "x"
-	return repo
-}
-
-// PkgVersion returns the package version.
-func (rd *RuntimeDependency) PkgVersion() string {
-	v := rd.PkgVersionValue
-	if v == "" {
-		v = rd.Version
-	}
-	return v
-}
-
-// Tag implements the same tag naming logic as other bottle parsing functions.
-func (rd *RuntimeDependency) Tag() string {
-	v := rd.PkgVersion()
-	if rd.Revision != 0 {
-		v += fmt.Sprintf("-%d", rd.Revision)
-	}
-	return v
-}
-
 // Variation represents an entry in the variations map.
-type Variation Info
-
-// type Variation struct {
-// 	PourBottleOnlyIf     *PourBottleCondition `json:"pour_bottle_only_if,omitempty"`
-// 	KegOnly              bool                 `json:"keg_only,omitempty"`
-// 	KegOnlyReason        KegOnlyReasonInfo    `json:"keg_only_reason,omitempty"`
-// 	BuildDependencies    []string             `json:"build_dependencies,omitempty"`
-// 	Dependencies         []string             `json:"dependencies,omitempty"`
-// 	TestDependencies     []string             `json:"test_dependencies,omitempty"`
-// 	Requirements         []*Requirement       `json:"requirements,omitempty"`
-// 	ConflictsWith        []string             `json:"conflicts_with,omitempty"`
-// 	ConflictsWithReasons []string             `json:"conflicts_with_reasons,omitempty"`
-// 	HeadDependencies     *HeadDependencies    `json:"head_dependencies,omitempty"`
-// 	Caveats              *string              `json:"caveats,omitempty"`
-// 	Disabled             bool                 `json:"disabled,omitempty"`
-// 	DisabledDate         *string              `json:"disable_date,omitempty"`
-// 	DisabledReason       *string              `json:"disable_reason,omitempty"`
-// }
+type Variation PlatformInfo
 
 // HeadDependencies represents the head_dependencies field.
 type HeadDependencies struct {
@@ -248,10 +196,6 @@ func (info *Info) String() string {
 // the "revision" field is set in the formula, which signals the
 // formula was updated without changing the version being installed.
 func (info *PlatformInfo) Version() string {
-	// if info.Versions.Stable == nil {
-	// 	return "HEAD"
-	// }
-
 	tag := info.Versions.Stable
 	if info.Revision != 0 {
 		tag += fmt.Sprintf("_%d", info.Revision)

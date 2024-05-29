@@ -8,6 +8,7 @@ import (
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/prefix"
 	"github.com/act3-ai/hops/internal/utils"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 // InstallStats prints installation stats.
@@ -22,7 +23,7 @@ func InstallStats(kegs []string) {
 		}
 		f, s, err := utils.CountDir(k)
 		if err != nil {
-			l.Debug("checking keg stats", o.ErrAttr(err))
+			l.Debug("checking keg stats", logutil.ErrAttr(err))
 		} else {
 			l.Debug("Installed keg",
 				slog.Int("files", f),

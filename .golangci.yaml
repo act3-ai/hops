@@ -47,10 +47,12 @@ linters:
     # - wrapcheck
 
 linters-settings:
-  # godot:
-  #   scope: declarations
-  #   period: true
-  #   capital: false
+  goimports:
+    # Put imports beginning with prefix after 3rd-party packages.
+    # It's a comma-separated list of prefixes.
+    # Default: ""
+    local-prefixes: >-
+      github.com/act3-ai, gitlab.com/act3-ai
 
   importas:
     # if set to `true`, force to use alias.
@@ -79,6 +81,67 @@ linters-settings:
   perfsprint:
     err-error: true
 
+  revive:
+    ignore-generated-header: true
+    enable-all-rules: true
+    rules:
+      - name: add-constant
+        disabled: true
+      - name: atomic
+      - name: blank-imports
+      - name: cognitive-complexity
+        arguments: [30]
+      - name: confusing-naming
+        disabled: true
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: cyclomatic
+        disabled: true
+      - name: defer
+      - name: dot-imports
+      - name: empty-block
+      - name: error-naming
+      - name: error-return
+      - name: error-strings
+      - name: errorf
+      - name: exported
+      - name: function-length
+        disabled: true
+      - name: if-return
+      - name: increment-decrement
+      - name: indent-error-flow
+      - name: line-length-limit
+        disabled: true
+      - name: max-public-structs
+        disabled: true
+      - name: package-comments
+      - name: range-val-address
+        disabled: true
+      - name: range-val-in-closure
+        disabled: true
+      - name: range
+      - name: receiver-naming
+      - name: redefines-builtin-id
+      - name: redundant-import-alias
+        disabled: true
+      - name: struct-tag
+        disabled: true
+      - name: superfluous-else
+      - name: time-naming
+      - name: unexported-naming
+      - name: unexported-return
+      - name: unhandled-error
+        arguments:
+          - "fmt.Printf"
+          - "fmt.Println"
+          - "fmt.Print"
+      - name: unreachable-code
+      - name: unused-parameter
+      - name: use-any
+      - name: useless-break
+      - name: var-declaration
+      - name: var-naming
+
   sloglint:
     # Enforce using attributes only (overrides no-mixed-args, incompatible with kv-only).
     # Default: false
@@ -96,61 +159,12 @@ linters-settings:
     # Default: ["*"]
     checks: ["all"]
 
-  revive:
-    ignore-generated-header: true
-    rules:
-      - name: atomic
-      - name: unhandled-error
-        arguments:
-          - "fmt.Printf"
-          - "fmt.Println"
-          - "fmt.Print"
-      - name: blank-imports
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: dot-imports
-      - name: error-return
-      - name: error-strings
-      - name: error-naming
-      - name: exported
-      - name: if-return
-      - name: increment-decrement
-      - name: var-naming
-      - name: var-declaration
-      - name: package-comments
-      - name: range
-      - name: receiver-naming
-      - name: time-naming
-      - name: unexported-return
-      - name: indent-error-flow
-      - name: errorf
-      - name: empty-block
-      - name: superfluous-else
-      - name: unused-parameter
-      - name: unreachable-code
-      - name: redefines-builtin-id
-      - name: defer
-      - name: useless-break
-      - name: unexported-naming
-      - name: cognitive-complexity
-        arguments: [30]
-      - name: use-any
-
-  goimports:
-    # Put imports beginning with prefix after 3rd-party packages.
-    # It's a comma-separated list of prefixes.
-    # Default: ""
-    local-prefixes: >-
-      github.com/act3-ai,
-      gitlab.com/act3-ai
-  
   unparam:
     check-exported: true
 
 issues:
   # uncomment to enable more linting
   # exclude-use-default: false
-
   include:
     - EXC0005
     - EXC0012

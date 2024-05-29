@@ -82,7 +82,7 @@ func boldFirstLine(msg string) string {
 	return out
 }
 
-func splitFirstLine(msg string) (string, string) {
+func splitFirstLine(msg string) (first, rest string) {
 	lines := strings.Split(msg, "\n")
 	if len(lines) <= 1 {
 		return msg, ""

@@ -17,7 +17,7 @@ import (
 	brewfmt "github.com/act3-ai/hops/internal/brew/fmt"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/formula/bottle"
-	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 	"github.com/act3-ai/hops/internal/utils/resputil"
 	"github.com/act3-ai/hops/internal/utils/symlink"
 )
@@ -94,12 +94,12 @@ func (store *registry) Source(f formula.PlatformFormula) (string, error) {
 }
 
 // bottleURL produces the URL for a bottle.
-func bottleURL(f formula.PlatformFormula) (string, string) {
+func bottleURL(f formula.PlatformFormula) (root, path string) {
 	btl := f.Bottle()
 	if btl == nil {
 		return "", ""
 	}
-	path := "/" + brewfmt.Repo(f.Name()) + "/blobs/sha256:" + btl.Sha256
+	path = "/" + brewfmt.Repo(f.Name()) + "/blobs/sha256:" + btl.Sha256
 	return btl.RootURL, path
 }
 
@@ -142,7 +142,7 @@ func linkName(f formula.Formula) string {
 }
 
 // lookupCachedFile.
-func (store *registry) lookupCachedFile(file, link string) (*os.File, error) {
+func lookupCachedFile(file, link string) (*os.File, error) {
 	// Create parent directories (also will create the cache directory if it does not exist)
 	err := os.MkdirAll(filepath.Dir(file), 0o775)
 	if err != nil {
@@ -165,7 +165,7 @@ func (store *registry) lookupCachedFile(file, link string) (*os.File, error) {
 	if !errors.Is(err, os.ErrNotExist) {
 		// Implies an unreadable file in the cache
 		// Remove files and redownload
-		slog.Warn("Removing unreadable cache file", o.ErrAttr(err))
+		slog.Warn("Removing unreadable cache file", logutil.ErrAttr(err))
 
 		err = os.RemoveAll(file)
 		if err != nil {
@@ -203,7 +203,7 @@ func (store *registry) download(ctx context.Context, f formula.PlatformFormula) 
 	// cowsay--3.04_1
 	link := filepath.Join(store.cache, linkName(f))
 
-	bottleFile, err := store.lookupCachedFile(file, link)
+	bottleFile, err := lookupCachedFile(file, link)
 	if err == nil && bottleFile == nil {
 		// Return here if the file is already downloaded
 		// this should also validate the existing file's checksum

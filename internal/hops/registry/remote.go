@@ -20,18 +20,18 @@ type Remote struct {
 
 // NewRemote initializes a remote registry.
 func NewRemote(ctx context.Context, prefix string, client remote.Client, plainHTTP bool) (*Remote, error) {
-	var registry, path string
+	var host, path string
 
-	// Split registry and path
+	// Split registry host and path
 	// from: https://pkg.go.dev/oras.land/oras-go/v2@v2.5.0/registry#ParseReference
 	parts := strings.SplitN(prefix, "/", 2)
 	if len(parts) == 1 {
-		registry, path = parts[0], ""
+		host, path = parts[0], ""
 	} else {
-		registry, path = parts[0], parts[1]
+		host, path = parts[0], parts[1]
 	}
 
-	reg, err := remote.NewRegistry(registry)
+	reg, err := remote.NewRegistry(host)
 	if err != nil {
 		return nil, err
 	}
@@ -73,5 +73,5 @@ func (r *Remote) repository(ctx context.Context, name string) (*remote.Repositor
 	if err != nil {
 		return nil, err
 	}
-	return repoi.(*remote.Repository), nil
+	return repoi.(*remote.Repository), nil //revive:disable:unchecked-type-assertion
 }

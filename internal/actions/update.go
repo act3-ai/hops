@@ -13,6 +13,7 @@ import (
 	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/utils"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 // Update represents the action and its options.
@@ -32,7 +33,7 @@ func (action *Update) Run(ctx context.Context) error {
 	// Only load the cached indexes
 	oldIndex, err := brewformulary.LoadV1(action.Config().Cache)
 	if err != nil {
-		slog.Warn("loading cached index", o.ErrAttr(err))
+		slog.Warn("loading cached index", logutil.ErrAttr(err))
 	}
 
 	newIndex, err := brewformulary.FetchV1(ctx,
@@ -73,16 +74,16 @@ func (action *Update) Run(ctx context.Context) error {
 }
 
 // IsNewerThan reports if n is newer than o by comparing their versions.
-func IsNewerThan(n *brewv1.Info, o *brewv1.Info) bool {
+func IsNewerThan(a *brewv1.Info, b *brewv1.Info) bool {
 	return semver.Compare(
-		utils.FmtSemver(n.Versions.Stable),
-		utils.FmtSemver(o.Versions.Stable),
+		utils.FmtSemver(a.Versions.Stable),
+		utils.FmtSemver(b.Versions.Stable),
 	) > 0
 }
 
-func versionCompare(n, o string) int {
+func versionCompare(a, b string) int {
 	return semver.Compare(
-		utils.FmtSemver(n),
-		utils.FmtSemver(o),
+		utils.FmtSemver(a),
+		utils.FmtSemver(b),
 	)
 }

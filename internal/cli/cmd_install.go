@@ -43,7 +43,7 @@ func installCmd(hops *actions.Hops) *cobra.Command {
 		},
 	}
 
-	withRegistryFlags(cmd, action.Hops)
+	withRegistryConfig(cmd, action.Hops)
 
 	cmd.Flags().BoolVar(&action.Force, "force", false, "Install formulae without checking for previously installed keg-only or non-migrated versions. When installing casks, overwrite existing files (binaries and symlinks are excluded, unless originally from the same cask)")
 	cmd.Flags().BoolVar(&action.DryRun, "dry-run", false, "Show what would be installed, but do not actually install anything")

@@ -89,7 +89,7 @@ func CreateInstallReceipt(version string, requested []string, info *brewv1.Info)
 }
 
 // NewInstallReceipt creates an install receipt for a formula.
-func NewInstallReceipt(info *brewv1.Info, tab *tab.Tab, requested bool, hopsVersion string) *InstallReceipt {
+func NewInstallReceipt(info *brewv1.Info, t *tab.Tab, requested bool, hopsVersion string) *InstallReceipt {
 	return &InstallReceipt{
 		HomebrewVersion:       "hops+" + hopsVersion,
 		BuiltAsBottle:         true,
@@ -97,18 +97,18 @@ func NewInstallReceipt(info *brewv1.Info, tab *tab.Tab, requested bool, hopsVers
 		LoadedFromAPI:         true,
 		InstalledAsDependency: !requested,
 		InstalledOnRequest:    requested,
-		ChangedFiles:          tab.ChangedFiles,
+		ChangedFiles:          t.ChangedFiles,
 		Time:                  uint(time.Now().Unix()),
-		SourceModifiedTime:    tab.SourceModifiedTime,
-		Compiler:              tab.Compiler,
+		SourceModifiedTime:    t.SourceModifiedTime,
+		Compiler:              t.Compiler,
 		Aliases:               info.Aliases,
-		RuntimeDependencies:   tab.RuntimeDependencies,
+		RuntimeDependencies:   t.RuntimeDependencies,
 		Source: Source{
 			Spec:     brewv1.Stable,
 			Versions: info.Versions,
 			Path:     "HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-core/Formula/g/git.rb",
 		},
-		Arch:    tab.Arch,
-		BuiltOn: tab.BuiltOn,
+		Arch:    t.Arch,
+		BuiltOn: t.BuiltOn,
 	}
 }

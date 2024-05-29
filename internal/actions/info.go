@@ -35,7 +35,7 @@ func (action *Info) Run(ctx context.Context, args ...string) error {
 
 	switch {
 	case action.JSON == "v1":
-		return action.jsonV1(ctx, formulary, names)
+		return jsonV1(ctx, formulary, names)
 	case action.JSON == "v2":
 		slog.Error("v2 JSON not supported")
 		return nil
@@ -44,7 +44,7 @@ func (action *Info) Run(ctx context.Context, args ...string) error {
 	}
 }
 
-func (action *Info) jsonV1(ctx context.Context, fmlry formula.Formulary, names []string) error {
+func jsonV1(ctx context.Context, fmlry formula.Formulary, names []string) error {
 	formulae, err := formula.FetchAll(ctx, fmlry, names)
 	if err != nil {
 		return err

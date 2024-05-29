@@ -7,7 +7,7 @@ import (
 
 	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
-	"github.com/act3-ai/hops/internal/prefix/keg"
+	"github.com/act3-ai/hops/internal/prefix"
 )
 
 // List represents the action and its options.
@@ -84,7 +84,7 @@ func (action *List) Run(ctx context.Context, names ...string) error {
 	return nil
 }
 
-func multiple(kegs []keg.Keg) {
+func multiple(kegs []prefix.Keg) {
 	count := map[string]int{}
 	for _, k := range kegs {
 		count[k.Name()]++

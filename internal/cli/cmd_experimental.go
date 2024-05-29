@@ -1,14 +1,12 @@
 package cli
 
 import (
-	"log/slog"
-
 	"github.com/MakeNowJust/heredoc/v2"
 	"github.com/spf13/cobra"
 
 	"github.com/act3-ai/hops/internal/actions"
 	hopsv1 "github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1"
-	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 // copyCmd creates the command.
@@ -32,20 +30,21 @@ func copyCmd(hops *actions.Hops) *cobra.Command {
 		},
 	}
 
+	// Source registry flags
 	cmd.Flags().StringVar(&action.From.Prefix, "from", "ghcr.io/homebrew/core", "Source registry prefix for bottles")
-	cmd.Flags().BoolVar(&action.From.OCILayout, "from-oci-layout", false, "Set source target as an OCI image layout")
-	cmd.Flags().BoolVar(&action.From.PlainHTTP, "from-plain-http", false, "Allow insecure connections to source registry without SSL check")
-	cmd.Flags().StringVar(&action.FromAPIDomain, "from-api-domain", "https://formulae.brew.sh/api", "Source API domain for metadata")
+	withRegistryFlags(cmd, "from", "source", &action.From)
+	cmd.Flags().StringVar(&action.FromAPIDomain,
+		"from-api-domain", "https://formulae.brew.sh/api",
+		"Source API domain for metadata")
 
+	// Destination registry flags
 	cmd.Flags().StringVar(&action.To.Prefix, "to", "", "Destination registry prefix for bottles")
-	cobra.CheckErr(cmd.MarkFlagRequired("to"))
-	cmd.Flags().BoolVar(&action.To.OCILayout, "to-oci-layout", false, "Set destination target as an OCI image layout")
-	cmd.Flags().BoolVar(&action.To.PlainHTTP, "to-plain-http", false, "Allow insecure connections to destination registry without SSL check")
+	logutil.FlagErr("to", cmd.MarkFlagRequired("to"))
+	withRegistryFlags(cmd, "to", "destination", &action.To)
 
-	cmd.Flags().StringVar(&action.File, "file", "", "Copy formulae listed in a Brewfile")
-	if err := cmd.MarkFlagFilename("file"); err != nil {
-		slog.Info("flag error", o.ErrAttr(err))
-	}
+	// Formula flags
+	cmd.Flags().StringSliceVar(&action.Brewfile, "brewfile", nil, "Copy formulae listed in a Brewfile")
+	logutil.FlagErr("brewfile", cmd.MarkFlagFilename("brewfile"))
 
 	// Dependency resolution flags
 	withDependencyFlags(cmd, &action.DependencyOptions)
@@ -68,12 +67,12 @@ func imagesCmd(hops *actions.Hops) *cobra.Command {
 		},
 	}
 
-	withRegistryFlags(cmd, action.Hops)
+	// Enable registry override flags
+	withRegistryConfig(cmd, action.Hops)
 
 	cmd.Flags().StringVar(&action.File, "file", "", "Find images for the formulae listed in a Brewfile")
-	if err := cmd.MarkFlagFilename("file"); err != nil {
-		slog.Info("flag error", o.ErrAttr(err))
-	}
+	logutil.FlagErr("file", cmd.MarkFlagFilename("file"))
+
 	cmd.Flags().BoolVar(&action.NoResolve, "no-resolve", false, "Do not resolve image tags")
 	cmd.Flags().BoolVar(&action.NoVerify, "no-verify", false, "Do not verify tag existence (implies --no-resolve)")
 	cmd.MarkFlagsMutuallyExclusive("no-resolve", "no-verify")

@@ -23,9 +23,9 @@ import (
 	"github.com/act3-ai/hops/internal/formula/bottle"
 	hops "github.com/act3-ai/hops/internal/hops"
 	hopsreg "github.com/act3-ai/hops/internal/hops/registry"
-	"github.com/act3-ai/hops/internal/o"
 	"github.com/act3-ai/hops/internal/platform"
 	"github.com/act3-ai/hops/internal/prefix"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 // Hops represents the base action.
@@ -40,15 +40,12 @@ type Hops struct {
 	configOverrides []func(cfg *hopsv1.Configuration)
 
 	// cache for runtime-loaded objects
-	authClient *auth.Client
-	cfg        *hopsv1.Configuration
-
+	authClient    *auth.Client
+	cfg           *hopsv1.Configuration
 	alternateTags map[string]string
 	hopsclient    hops.Client
-	brewclient    struct {
-		formulary brewformulary.PreloadedFormulary
-		registry  brewreg.Registry
-	}
+	brewformulary brewformulary.PreloadedFormulary
+	brewregistry  brewreg.Registry
 }
 
 // DefaultConcurrency is the default maximum threads for parallel tasks.
@@ -187,7 +184,7 @@ func (action *Hops) Config() *hopsv1.Configuration {
 		// it will be read successfully and converted into the internal version
 		if err := yaml.Unmarshal(content, action.cfg); err != nil {
 			// err = fmt.Errorf("loading config file %s: %w", filename, err)
-			slog.Error("loading config file", slog.String("path", filename), o.ErrAttr(err))
+			slog.Error("loading config file", slog.String("path", filename), logutil.ErrAttr(err))
 			continue
 		}
 
@@ -255,7 +252,7 @@ func (action *Hops) Formulary(ctx context.Context) (formula.Formulary, error) {
 	switch action.Config().Registry.Prefix {
 	// Homebrew-style Formulary
 	case "":
-		return action.brewFormulary(ctx, false)
+		return action.brewFormulary(ctx, nil)
 	// Hops-style Formulary
 	default:
 		return action.hopsClient(ctx)
@@ -300,43 +297,37 @@ func (action *Hops) autoUpdate(ctx context.Context) error {
 	if action.Config().Registry.Prefix != "" {
 		return nil
 	}
-	_, err := action.brewFormulary(ctx, true)
+	_, err := action.brewFormulary(ctx, &action.Config().Homebrew.API.AutoUpdate)
 	return err
 }
 
 // brewFormulary initializes the configured formula.Formulary.
-func (action *Hops) brewFormulary(ctx context.Context, autoUpdate bool) (brewformulary.PreloadedFormulary, error) {
-	if action.brewclient.formulary == nil {
+func (action *Hops) brewFormulary(ctx context.Context, opts *brewenv.AutoUpdateConfig) (brewformulary.PreloadedFormulary, error) {
+	if action.brewformulary == nil {
 		slog.Debug("using Homebrew API formulary", //nolint:sloglint
 			slog.String("HOMEBREW_API_DOMAIN", action.Config().Homebrew.API.Domain))
-
-		// Set auto-update config
-		var upcfg *brewenv.AutoUpdateConfig
-		if autoUpdate {
-			upcfg = &action.Config().Homebrew.API.AutoUpdate
-		}
 
 		// Load the index
 		index, err := brewformulary.FetchV1(ctx,
 			brewapi.NewClient(action.Config().Homebrew.API.Domain),
-			action.Config().Cache, upcfg)
+			action.Config().Cache, opts)
 		if err != nil {
 			return nil, err
 		}
 
-		action.brewclient.formulary = index
+		action.brewformulary = index
 	}
-	return action.brewclient.formulary, nil
+	return action.brewformulary, nil
 }
 
 // brewRegistry initializes the configured bottle.Registry.
 func (action *Hops) brewRegistry() brewreg.Registry {
-	if action.brewclient.registry == nil {
+	if action.brewregistry == nil {
 		slog.Debug("using Homebrew registry", //nolint:sloglint
 			slog.String("HOMEBREW_BOTTLE_DOMAIN", action.Config().Homebrew.BottleDomain),
 			slog.String("HOMEBREW_ARTIFACT_DOMAIN", action.Config().Homebrew.ArtifactDomain))
 
-		action.brewclient.registry = brewreg.NewBottleRegistry(
+		action.brewregistry = brewreg.NewBottleRegistry(
 			action.Config().Homebrew.GitHubPackagesHeaders(),
 			retry.NewClient(),
 			action.Config().Homebrew.Cache,
@@ -345,7 +336,7 @@ func (action *Hops) brewRegistry() brewreg.Registry {
 			action.Config().Homebrew.ArtifactDomain,
 		)
 	}
-	return action.brewclient.registry
+	return action.brewregistry
 }
 
 func parseArg(arg string) (name, version string) {

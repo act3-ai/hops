@@ -12,7 +12,7 @@ import (
 
 // HTTPSuccess reports if the status code is success.
 func HTTPSuccess(resp *http.Response) bool {
-	return resp.StatusCode >= 200 && resp.StatusCode < 300
+	return resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices
 }
 
 // From: https://github.com/cli/go-gh/blob/trunk/pkg/api/errors.go

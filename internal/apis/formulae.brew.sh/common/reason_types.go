@@ -89,6 +89,12 @@ var formulaDeprecateDisableReasons = map[string]string{
 		We can re-package this once upstream has confirmed that they retagged their release`),
 }
 
+// KegOnlyConfig declares if a formula is keg-only and why.
+type KegOnlyConfig struct {
+	Reason      KegOnlyReason `json:"reason,omitempty"`
+	Explanation string        `json:"explanation,omitempty"`
+}
+
 // KegOnlyReason is used for the reason field in keg_only_reason.
 type KegOnlyReason string
 

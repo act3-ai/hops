@@ -92,7 +92,7 @@ func (p Prefix) BrokenLinks() ([]string, error) {
 type LinkOptions symlink.Options
 
 // FormulaLink links a keg from the Cellar into the prefix.
-func (p Prefix) FormulaLink(f formula.Formula, opts *LinkOptions) (int, int, error) {
+func (p Prefix) FormulaLink(f formula.Formula, opts *LinkOptions) (links, files int, err error) {
 	return p.Link(f.Name(), formula.PkgVersion(f.Version()), opts)
 }
 
@@ -102,9 +102,7 @@ func (p Prefix) FormulaLink(f formula.Formula, opts *LinkOptions) (int, int, err
 //
 // TODO: make sure etc and var directories are installed correctly:
 // https://github.com/Homebrew/brew/blob/caff1359de1ae7ac198fa7081d905d2a535af3a1/Library/Homebrew/formula.rb#L1339
-func (p Prefix) Link(name, version string, opts *LinkOptions) (int, int, error) {
-	links, files := 0, 0
-
+func (p Prefix) Link(name, version string, opts *LinkOptions) (links, files int, err error) {
 	if !opts.DryRun {
 		var err error
 		// Create all "must exist" dirs
@@ -116,7 +114,7 @@ func (p Prefix) Link(name, version string, opts *LinkOptions) (int, int, error) 
 		}
 	}
 
-	err := p.OptLink(name, version, (*symlink.Options)(opts))
+	err = p.OptLink(name, version, (*symlink.Options)(opts))
 	if err != nil {
 		return links, files, err
 	}

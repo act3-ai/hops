@@ -17,8 +17,6 @@ import (
 	"golang.org/x/mod/semver"
 
 	"github.com/act3-ai/hops/internal/formula"
-	"github.com/act3-ai/hops/internal/prefix/keg"
-	"github.com/act3-ai/hops/internal/prefix/rack"
 	"github.com/act3-ai/hops/internal/utils"
 	"github.com/act3-ai/hops/internal/utils/logutil"
 	"github.com/act3-ai/hops/internal/utils/symlink"
@@ -268,27 +266,27 @@ func (p Prefix) AnyInstalled(f formula.Formula) bool {
 }
 
 // InstalledKegs returns all currently installed prefix directories.
-func (p Prefix) InstalledKegs(f formula.Formula) ([]keg.Keg, error) {
+func (p Prefix) InstalledKegs(f formula.Formula) ([]Keg, error) {
 	return p.InstalledKegsByName(f.Name())
 }
 
 // InstalledPrefixes returns all currently installed prefix directories.
-func (p Prefix) InstalledKegsByName(names ...string) ([]keg.Keg, error) {
+func (p Prefix) InstalledKegsByName(names ...string) ([]Keg, error) {
 	prefixes := []struct {
 		dir   string
 		entry fs.DirEntry
 	}{}
 
-	sortedPrefixes := func() []keg.Keg {
+	sortedPrefixes := func() []Keg {
 		// Sort by basenames
 		sort.Slice(prefixes, func(i, j int) bool {
 			return prefixes[i].entry.Name() < prefixes[j].entry.Name()
 		})
 
 		// Flatten to list of keg dirs
-		sorted := []keg.Keg{}
+		sorted := []Keg{}
 		for _, p := range prefixes {
-			sorted = append(sorted, keg.Keg(filepath.Join(p.dir, p.entry.Name())))
+			sorted = append(sorted, Keg(filepath.Join(p.dir, p.entry.Name())))
 		}
 
 		return sorted
@@ -427,12 +425,12 @@ func (p Prefix) Uninstall(kegs ...string) error {
 }
 
 // Racks returns the list of available racks.
-func (p Prefix) Racks() ([]rack.Rack, error) {
-	racks := []rack.Rack{}
+func (p Prefix) Racks() ([]Rack, error) {
+	racks := []Rack{}
 
 	err := p.forEachRack(
 		func(r fs.DirEntry, _ []fs.DirEntry) {
-			racks = append(racks, rack.Rack(filepath.Join(p.Cellar(), r.Name())))
+			racks = append(racks, Rack(filepath.Join(p.Cellar(), r.Name())))
 		})
 	if err != nil {
 		return nil, err
@@ -516,12 +514,12 @@ func (p Prefix) forEachRack(fn func(rack fs.DirEntry, kegs []fs.DirEntry)) error
 }
 
 // Kegs returns the list of available kegs.
-func (p Prefix) Kegs() ([]keg.Keg, error) {
-	ks := []keg.Keg{}
+func (p Prefix) Kegs() ([]Keg, error) {
+	ks := []Keg{}
 
 	err := p.forEachRack(func(rack fs.DirEntry, kegs []fs.DirEntry) {
 		for _, k := range kegs {
-			ks = append(ks, keg.Keg(filepath.Join(p.Cellar(), rack.Name(), k.Name())))
+			ks = append(ks, Keg(filepath.Join(p.Cellar(), rack.Name(), k.Name())))
 		}
 	})
 	if err != nil {

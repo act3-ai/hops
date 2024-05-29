@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	brewv1 "github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1"
+	"github.com/act3-ai/hops/internal/apis/formulae.brew.sh/common"
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform/macos"
 )
@@ -24,7 +24,7 @@ func (p Prefix) CanPourBottle(ctx context.Context, f formula.PlatformFormula) er
 	case "":
 		return nil
 	// Bottle can be poured with the default prefix
-	case brewv1.PourBottleConditionDefaultPrefix:
+	case common.PourBottleConditionDefaultPrefix:
 		if p != Default() {
 			return errors.New(
 				"cannot pour bottle for " + f.Name() +
@@ -32,7 +32,7 @@ func (p Prefix) CanPourBottle(ctx context.Context, f formula.PlatformFormula) er
 		}
 		return nil
 	// Bottle can be poured with the XCode Command Line Tools installed
-	case brewv1.PourBottleConditionCLTInstalled:
+	case common.PourBottleConditionCLTInstalled:
 		// skip check on non-macOS systems
 		if !f.Platform().IsMacOS() {
 			return nil

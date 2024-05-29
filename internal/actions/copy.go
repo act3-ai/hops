@@ -43,7 +43,7 @@ type Copy struct {
 	// DependencyOptions dependencies.Options
 	DependencyOptions formula.DependencyTags
 
-	File string // path to a Brewfile specifying formulae dependencies
+	Brewfile []string // path to a Brewfile specifying formulae dependencies
 
 	From hopsv1.RegistryConfig // source registry for bottles
 	To   hopsv1.RegistryConfig // destination registry for bottles
@@ -70,12 +70,11 @@ func (action *Copy) Run(ctx context.Context, args []string) error {
 	}
 
 	// Add Brewfile dependencies if requested
-	if action.File != "" {
-		bf, err := brewfile.Load(action.File)
+	for _, file := range action.Brewfile {
+		bf, err := brewfile.Load(file)
 		if err != nil {
 			return err
 		}
-
 		args = append(args, bf.Formula...)
 	}
 

@@ -1,4 +1,4 @@
-package rack
+package prefix
 
 import (
 	"path/filepath"

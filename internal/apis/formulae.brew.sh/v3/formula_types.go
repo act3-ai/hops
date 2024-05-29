@@ -24,30 +24,27 @@ type PlatformFormula struct {
 		Using    string `json:"using,omitempty"`
 		Checksum string `json:"checksum,omitempty"`
 	} `json:"urls"`
-	PostInstallDefined bool     `json:"post_install_defined"`
-	RubySourcePath     string   `json:"ruby_source_path"`
-	RubySourceSHA256   string   `json:"ruby_source_sha256"`
-	LinkOverwrite      []string `json:"link_overwrite,omitempty"`
-	Revision           int      `json:"revision,omitempty"`
-	KegOnlyReason      struct {
-		Reason      common.KegOnlyReason `json:"reason,omitempty"`
-		Explanation string               `json:"explanation,omitempty"`
-	} `json:"keg_only_reason,omitempty"`
-	PourBottleOnlyIf  string         `json:"pour_bottle_only_if,omitempty"`
-	Caveats           string         `json:"caveats,omitempty"`
-	Service           common.Service `json:"service,omitempty"`
-	VersionScheme     int            `json:"version_scheme,omitempty"`
-	Version           string         `json:"version"`
-	Bottle            Bottle         `json:"bottle"`
-	VersionedFormulae []string       `json:"versioned_formulae,omitempty"`
-	DeprecationDate   string         `json:"deprecation_date,omitempty"`
-	DeprecationReason string         `json:"deprecation_reason,omitempty"`
-	DisabledDate      string         `json:"disable_date,omitempty"`
-	DisabledReason    string         `json:"disable_reason,omitempty"`
-	Dependencies      Dependencies   `json:"dependencies,omitempty"`
-	HeadDependencies  Dependencies   `json:"head_dependencies,omitempty"`
-	Requirements      []Requirement  `json:"requirements,omitempty"`
-	Conflicts         Conflicts      `json:",inline"`
+	PostInstallDefined bool                 `json:"post_install_defined"`
+	RubySourcePath     string               `json:"ruby_source_path"`
+	RubySourceSHA256   string               `json:"ruby_source_sha256"`
+	LinkOverwrite      []string             `json:"link_overwrite,omitempty"`
+	Revision           int                  `json:"revision,omitempty"`
+	KegOnlyReason      common.KegOnlyConfig `json:"keg_only_reason,omitempty"`
+	PourBottleOnlyIf   string               `json:"pour_bottle_only_if,omitempty"`
+	Caveats            string               `json:"caveats,omitempty"`
+	Service            common.Service       `json:"service,omitempty"`
+	VersionScheme      int                  `json:"version_scheme,omitempty"`
+	Version            string               `json:"version"`
+	Bottle             Bottle               `json:"bottle"`
+	VersionedFormulae  []string             `json:"versioned_formulae,omitempty"`
+	DeprecationDate    string               `json:"deprecation_date,omitempty"`
+	DeprecationReason  string               `json:"deprecation_reason,omitempty"`
+	DisabledDate       string               `json:"disable_date,omitempty"`
+	DisabledReason     string               `json:"disable_reason,omitempty"`
+	Dependencies       Dependencies         `json:"dependencies,omitempty"`
+	HeadDependencies   Dependencies         `json:"head_dependencies,omitempty"`
+	Requirements       []Requirement        `json:"requirements,omitempty"`
+	Conflicts          Conflicts            `json:",inline"`
 }
 
 // Variation represents a platform-specific variation to the formula's metadata.

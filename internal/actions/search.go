@@ -16,6 +16,7 @@ import (
 	brewapi "github.com/act3-ai/hops/internal/brew/api"
 	brewformulary "github.com/act3-ai/hops/internal/brew/formulary"
 	"github.com/act3-ai/hops/internal/o"
+	"github.com/act3-ai/hops/internal/utils/logutil"
 )
 
 // Search represents the action and its options.
@@ -151,7 +152,7 @@ func isInstalled(cellar, name string) bool {
 	case errors.Is(err, os.ErrNotExist):
 		return false
 	case err != nil:
-		slog.Warn("checking cellar", o.ErrAttr(err))
+		slog.Warn("checking cellar", logutil.ErrAttr(err))
 		return false
 	case len(entries) == 0:
 		return false

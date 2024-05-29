@@ -144,7 +144,7 @@ func (store *formulary) fetchPlatform(ctx context.Context, name string, plat pla
 
 func (store *formulary) resolve(ctx context.Context, name string) (*regbottle.BottleIndex, error) {
 	if btl, ok := store.resolved.Load(name); ok && btl != nil {
-		return btl.(*regbottle.BottleIndex), nil
+		return btl.(*regbottle.BottleIndex), nil //revive:disable:unchecked-type-assertion
 	}
 
 	source, err := store.registry.Repository(ctx, name)

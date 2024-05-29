@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// VerbosityOptions configures logger verbosity
+// VerbosityOptions configures logger verbosity.
 type VerbosityOptions struct {
 	Debug   int // number of --debug flags passed
 	Quiet   int // number of --quiet flags passed
@@ -31,4 +31,11 @@ func (v *VerbosityOptions) LogLevel(base slog.Level) slog.Level {
 		slog.Level(-4*v.Debug) + // Debug flag increases the the log threshold by a full level
 		slog.Level(-v.Verbose) + // Verbose flag lowers the log threshold by one numeric step
 		slog.Level(v.Quiet) // Quiet flag raises the log threshold by one numeric step
+}
+
+// Logs an error when setting up flags.
+func FlagErr(name string, err error) {
+	if err != nil {
+		slog.Warn("flag error", slog.String("flag", name), ErrAttr(err))
+	}
 }

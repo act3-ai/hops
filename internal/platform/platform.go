@@ -29,7 +29,7 @@ func (p *Platform) Set(s string) error {
 }
 
 // Type implements pflag.Value.
-func (p Platform) Type() string {
+func (Platform) Type() string {
 	return "platform"
 }
 
