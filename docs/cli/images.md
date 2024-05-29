@@ -26,16 +26,18 @@ hops images ([formula]... | [--file Brewfile]) [flags]
 ## Options
 
 ```plaintext
-      --file string        Find images for the formulae listed in a Brewfile
-  -h, --help               help for images
-      --include-build      Include :build dependencies for formula
-      --include-optional   Include :optional dependencies for formula
-      --include-test       Include :test dependencies for formula (non-recursive)
-      --no-resolve         Do not resolve image tags
-      --no-verify          Do not verify tag existence (implies --no-resolve)
-      --plain-http         Allow insecure connections to registry without SSL check
-  -r, --registry string    Registry prefix for bottles
-      --skip-recommended   Skip :recommended dependencies for formula
+      --file string              Find images for the formulae listed in a Brewfile
+      --header stringArray       Add custom headers to requests
+  -h, --help                     help for images
+      --include-build            Include :build dependencies for formula
+      --include-optional         Include :optional dependencies for formula
+      --include-test             Include :test dependencies for formula (non-recursive)
+      --no-resolve               Do not resolve image tags
+      --no-verify                Do not verify tag existence (implies --no-resolve)
+      --oci-layout               Set target as an OCI image layout
+      --plain-http               Allow insecure connections to registry without SSL check
+      --registry-config string   Path of the authentication file for registry
+      --skip-recommended         Skip :recommended dependencies for formula
 ```
 
 ## Options inherited from parent commands
@@ -43,7 +45,8 @@ hops images ([formula]... | [--file Brewfile]) [flags]
 ```plaintext
       --concurrency int   Concurrency level (default 8)
       --config strings    Set config file search paths (default `hops-config.yaml`,`$XDG_CONFIG_HOME/hops/config.yaml`,`/etc/hops/config.yaml`)
-  -d, --debug count       Display any debugging information
+  -d, --debug count       Display more debugging information
+      --log-fmt string    Set format for log messages. Options: text, json (default "text")
   -q, --quiet count       Make some output more quiet
   -v, --verbose count     Make some output more verbose
 ```

@@ -26,19 +26,23 @@ hops copy ([formula]... | [--file Brewfile]) [flags]
 ## Options
 
 ```plaintext
-      --file string              Copy formulae listed in a Brewfile
-      --from string              Source registry prefix for bottles (default "ghcr.io/homebrew/core")
-      --from-api-domain string   Source API domain for metadata (default "https://formulae.brew.sh/api")
-      --from-oci-layout          Set source target as an OCI image layout
-      --from-plain-http          Allow insecure connections to source registry without SSL check
-  -h, --help                     help for copy
-      --include-build            Include :build dependencies for formula
-      --include-optional         Include :optional dependencies for formula
-      --include-test             Include :test dependencies for formula (non-recursive)
-      --skip-recommended         Skip :recommended dependencies for formula
-      --to string                Destination registry prefix for bottles
-      --to-oci-layout            Set destination target as an OCI image layout
-      --to-plain-http            Allow insecure connections to destination registry without SSL check
+      --brewfile strings              Copy formulae listed in a Brewfile
+      --from string                   Source registry prefix for bottles (default "ghcr.io/homebrew/core")
+      --from-api-domain string        Source API domain for metadata (default "https://formulae.brew.sh/api")
+      --from-header stringArray       Add custom headers to source requests
+      --from-oci-layout               Set source target as an OCI image layout
+      --from-plain-http               Allow insecure connections to source registry without SSL check
+      --from-registry-config string   Path of the authentication file for source registry
+  -h, --help                          help for copy
+      --include-build                 Include :build dependencies for formula
+      --include-optional              Include :optional dependencies for formula
+      --include-test                  Include :test dependencies for formula (non-recursive)
+      --skip-recommended              Skip :recommended dependencies for formula
+      --to string                     Destination registry prefix for bottles
+      --to-header stringArray         Add custom headers to destination requests
+      --to-oci-layout                 Set destination target as an OCI image layout
+      --to-plain-http                 Allow insecure connections to destination registry without SSL check
+      --to-registry-config string     Path of the authentication file for destination registry
 ```
 
 ## Options inherited from parent commands
@@ -46,7 +50,8 @@ hops copy ([formula]... | [--file Brewfile]) [flags]
 ```plaintext
       --concurrency int   Concurrency level (default 8)
       --config strings    Set config file search paths (default `hops-config.yaml`,`$XDG_CONFIG_HOME/hops/config.yaml`,`/etc/hops/config.yaml`)
-  -d, --debug count       Display any debugging information
+  -d, --debug count       Display more debugging information
+      --log-fmt string    Set format for log messages. Options: text, json (default "text")
   -q, --quiet count       Make some output more quiet
   -v, --verbose count     Make some output more verbose
 ```
