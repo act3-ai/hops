@@ -203,13 +203,7 @@ var (
 // The returned index will be -1 if a compatible image is not found.
 // The selected platform will not exceed the constraint.
 func SelectManifest(index *ocispec.Index, constraint Platform) (ocispec.Descriptor, error) {
-	// check for manifest with matching refname
-	candidates := make([]Platform, len(index.Manifests))
-	for i, manifest := range index.Manifests {
-		candidates[i] = FromOCI(manifest.Platform)
-	}
-
-	sel := SelectIndex(candidates, constraint)
+	sel := SelectManifestIndex(index, constraint)
 	if sel < 0 {
 		return ocispec.Descriptor{}, errors.New("no manifest in index matches platform " + constraint.String())
 	}
@@ -222,6 +216,13 @@ func SelectManifest(index *ocispec.Index, constraint Platform) (ocispec.Descript
 // The returned index will be -1 if a compatible image is not found.
 // The selected platform will not exceed the constraint.
 func SelectManifestIndex(index *ocispec.Index, constraint Platform) int {
+	// HACK:
+	// Homebrew does not correctly publish bottles for the "all" platform.
+	// If there is a single manifest, assume it is for the "all" platform.
+	if len(index.Manifests) == 1 {
+		return 0
+	}
+
 	// check for manifest with matching refname
 	candidates := make([]Platform, len(index.Manifests))
 	for i, manifest := range index.Manifests {
