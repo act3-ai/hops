@@ -255,7 +255,7 @@ tasks:
     cmds:
       - |
         goreleaser release --clean \
-          --release-notes <(git cliff --current --strip header)
+          --release-notes <(git cliff --current --strip header | tail -n +3)
 
   update-changelog:
     desc: Update CHANGELOG.md

@@ -61,7 +61,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run GoReleaser
         run: |
-          goreleaser release --clean --release-notes <(git-cliff --current --strip header)
+          goreleaser release --clean --release-notes <(git-cliff --current --strip header | tail -n +3)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
