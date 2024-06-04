@@ -68,7 +68,8 @@ func readWriteJSON[T easyjson.Unmarshaler](path string, r io.Reader) (T, error) 
 	// decoder := json.NewDecoder(io.TeeReader(r, f))
 	// decoder.DisallowUnknownFields()
 
-	if err := easyjson.UnmarshalFromReader(io.TeeReader(r, f), obj); err != nil {
+	pobj := new(T)
+	if err := easyjson.UnmarshalFromReader(io.TeeReader(r, f), *pobj); err != nil {
 		return obj, fmt.Errorf("decoding JSON failed: %w", err)
 	}
 
@@ -97,7 +98,6 @@ func LoadV1(dir string) (*V1Cache, error) {
 		defer f.Close()
 
 		data := brewv1.Index{}
-
 		err = easyjson.UnmarshalFromReader(f, &data)
 		if err != nil {
 			return nil, fmt.Errorf("parsing cached file: %w", err)

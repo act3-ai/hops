@@ -53,6 +53,7 @@ func jsonPatch[T easyjson.MarshalerUnmarshaler](original, patch T) (T, error) {
 		return newobj, nil
 	}
 
+	newobj = *new(T)
 	err = easyjson.Unmarshal(newjson, newobj)
 	if err != nil {
 		return newobj, fmt.Errorf("unmarshaling patched config into %T (%T): %w", newobj, newobj, err)

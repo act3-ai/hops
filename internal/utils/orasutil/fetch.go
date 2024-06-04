@@ -58,6 +58,7 @@ func FetchEasyUnmarshal[T easyjson.Unmarshaler](ctx context.Context, fetcher con
 		// 	return fmt.Errorf("decoding JSON failed: %w", err)
 		// }
 
+		obj = *new(T)
 		if err := easyjson.UnmarshalFromReader(r, obj); err != nil {
 			return fmt.Errorf("decoding JSON failed: %w", err)
 		}

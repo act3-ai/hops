@@ -30,7 +30,7 @@ type Search struct {
 
 // Run runs the action.
 func (action *Search) Run(ctx context.Context, terms ...string) error {
-	if action.Config().Registry.Prefix == "" {
+	if action.Config().Registry.Prefix != "" {
 		o.Hai("Search is not available for standalone registry mode")
 		return nil
 	}

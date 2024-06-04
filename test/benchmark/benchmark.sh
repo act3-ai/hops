@@ -3,19 +3,19 @@
 dir=${0%/*}
 
 # number of tests to be run
-numtests=60
+numtests=100
 
 # tool (hops/brew)
 # tool="hops"
 tool="hops"
 
 # command to benchmark
-command="install"
-formulae="gh"
+command="search"
+formulae="bash"
 
 # cache setting (warm/cold)
-cache="warm"
-# cache="cold"
+# cache="warm"
+cache="cold"
 
 # output JSON file
 outfile="${dir}/tests/${command// /_}${formulae:+_}${formulae// /_}.${cache}.${tool}.$(date +%m_%d).json"
@@ -56,8 +56,8 @@ for ((i = 1; i <= numtests; i++)); do
 	if [[ "${tool}" == "hops"* ]]; then
 		# Uninstall the formula
 		# Uninstall all remaining dependencies
-		hops uninstall ${formulae}
-		hops cleanup
+		# hops uninstall ${formulae}
+		# hops cleanup
 		# rm -rf HOMEBREW_PREFIX # TODO: hops autoremove
 
 		# Hops cold cache
@@ -70,9 +70,9 @@ for ((i = 1; i <= numtests; i++)); do
 	fi
 
 	# shellcheck disable=SC2016
-	# gtime -o "$outfile" -a -f '{"command":"%C","real":%e,"user":%U,"system":%S,"cpu":"%P"},' -- ${tool} images --file internal/benchmark/data/big-brewfile
-	gtime -o "$outfile" -a -f "{\"date\":\"$(date)\",\"command\":\"%C\",\"real\":%e,\"user\":%U,\"system\":%S,\"cpu\":\"%P\",\"maxrss\":%M}${comma}" -- ${tool} ${command} ${formulae}
-	# gtime -o "$outfile" -a -f "{\"date\":\"$(date)\",\"command\":\"${tool} ${command} --file ${formulae}\",\"real\":%e,\"user\":%U,\"system\":%S,\"cpu\":\"%P\"}${comma}" -- ${tool} ${command} --file "internal/benchmark/data/${formulae}"
+	# time -o "$outfile" -a -f '{"command":"%C","real":%e,"user":%U,"system":%S,"cpu":"%P"},' -- ${tool} images --file internal/benchmark/data/big-brewfile
+	command time -o "$outfile" -a -f "{\"date\":\"$(date)\",\"command\":\"%C\",\"real\":%e,\"user\":%U,\"system\":%S,\"cpu\":\"%P\",\"maxrss\":%M}${comma}" -- ${tool} ${command} ${formulae}
+	# time -o "$outfile" -a -f "{\"date\":\"$(date)\",\"command\":\"${tool} ${command} --file ${formulae}\",\"real\":%e,\"user\":%U,\"system\":%S,\"cpu\":\"%P\"}${comma}" -- ${tool} ${command} --file "internal/benchmark/data/${formulae}"
 	# add trailing comma after previous test result (if there is one)
 done
 
