@@ -27,6 +27,8 @@ vars:
   GOVULNCHECK_VERSION: latest
   # renovate: datasource=go depName=go.abhg.dev/doc2go
   DOC2GO_VERSION: v0.8.1
+  # renovate: datasource=go depName=github.com/mailru/easyjson
+  EASYJSON_VERSION: master
 
 tasks:
   default:
@@ -84,14 +86,18 @@ tasks:
 
   generate:
     desc: "Run go generate"
+    # deps:
+    #   - tool:easyjson
     cmds:
       - go generate ./...
     sources:
       - gen.go
       - internal/cli/**/*
       - cmd/hops/**/*
+      - internal/apis/formulae.brew.sh/**/*
     generates:
       - docs/cli/**/*
+      - internal/apis/formulae.brew.sh/**/*_easyjson.go
 
   lint:
     desc: "Lint project"
@@ -317,6 +323,15 @@ tasks:
         vars:
           VERSION: "{{.DOC2GO_VERSION}}"
           PKG: go.abhg.dev/doc2go
+  
+  # doc2go: renders static Go package docs
+  tool:easyjson:
+    desc: "Install easyjson JSON function generator"
+    cmds:
+      - task: versioned-go-pkg
+        vars:
+          VERSION: "{{.EASYJSON_VERSION}}"
+          PKG: github.com/mailru/easyjson/...
 
   # Generalized task for installing Go tools
   versioned-go-pkg:

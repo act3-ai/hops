@@ -34,17 +34,22 @@ hops ln
 ## Options
 
 ```plaintext
-      --HEAD        Link the HEAD version of the formula if it is installed
-  -n, --dry-run     List files which would be linked or deleted by hops link --overwrite without actually linking or deleting any files
-  -f, --force       Allow keg-only formulae to be linked
-  -h, --help        help for link
-      --overwrite   Delete files that already exist in the prefix while linking
+      --HEAD                     Link the HEAD version of the formula if it is installed
+  -n, --dry-run                  List files which would be linked or deleted by hops link --overwrite without actually linking or deleting any files
+  -f, --force                    Allow keg-only formulae to be linked
+      --header stringArray       Add custom headers to requests
+  -h, --help                     help for link
+      --oci-layout               Set target as an OCI image layout
+      --overwrite                Delete files that already exist in the prefix while linking
+      --plain-http               Allow insecure connections to registry without SSL check
+      --registry string          Registry prefix for bottles (overrides config)
+      --registry-config string   Path of the authentication file for registry
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --concurrency int   Concurrency level (default 8)
+      --concurrency int   Concurrency level (default 12)
       --config strings    Set config file search paths (default `hops-config.yaml`,`$XDG_CONFIG_HOME/hops/config.yaml`,`/etc/hops/config.yaml`)
   -d, --debug count       Display more debugging information
       --log-fmt string    Set format for log messages. Options: text, json (default "text")

@@ -1,5 +1,12 @@
 # golangci-lint is a fast linters runner for Go.
-#
+run:
+  timeout: "1m"
+  issues-exit-code: 1
+  tests: true
+  allow-parallel-runners: false
+  allow-serial-runners: false
+  go: "1.22"
+
 # Available linters and settings:
 # https://golangci-lint.run/usage/linters
 linters:
@@ -52,7 +59,7 @@ linters-settings:
     # It's a comma-separated list of prefixes.
     # Default: ""
     local-prefixes: >-
-      github.com/act3-ai, gitlab.com/act3-ai
+      github.com/act3-ai,gitlab.com/act3-ai
 
   importas:
     # if set to `true`, force to use alias.
