@@ -9,7 +9,6 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
-	time "time"
 )
 
 // suppress unused package warning
@@ -116,21 +115,17 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV1(out *
 			out.RawByte('}')
 		}
 	}
-	{
+	if in.Stable != "" {
 		const prefix string = ",\"stable\":"
 		out.RawString(prefix)
 		out.String(string(in.Stable))
 	}
-	{
+	if in.Head != nil {
 		const prefix string = ",\"head\":"
 		out.RawString(prefix)
-		if in.Head == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.Head))
-		}
+		out.String(string(*in.Head))
 	}
-	{
+	if in.Bottle {
 		const prefix string = ",\"bottle\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Bottle))
@@ -204,29 +199,50 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV11(out 
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.FullName != "" {
 		const prefix string = ",\"full_name\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.FullName))
 	}
-	{
+	if in.Version != "" {
 		const prefix string = ",\"version\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Version))
 	}
-	{
+	if in.Revision != 0 {
 		const prefix string = ",\"revision\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.Int(int(in.Revision))
 	}
-	{
+	if in.PkgVersionValue != "" {
 		const prefix string = ",\"pkg_version\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.PkgVersionValue))
 	}
-	{
+	if in.DeclaredDirectly {
 		const prefix string = ",\"declared_directly\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.Bool(bool(in.DeclaredDirectly))
 	}
 	out.RawByte('}')
@@ -354,14 +370,20 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV12(out 
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Name != "" {
 		const prefix string = ",\"name\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	{
+	if in.Cask != nil {
 		const prefix string = ",\"cask\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		if m, ok := in.Cask.(easyjson.Marshaler); ok {
 			m.MarshalEasyJSON(out)
 		} else if m, ok := in.Cask.(json.Marshaler); ok {
@@ -370,9 +392,14 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV12(out 
 			out.Raw(json.Marshal(in.Cask))
 		}
 	}
-	{
+	if in.Download != nil {
 		const prefix string = ",\"download\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		if m, ok := in.Download.(easyjson.Marshaler); ok {
 			m.MarshalEasyJSON(out)
 		} else if m, ok := in.Download.(json.Marshaler); ok {
@@ -381,17 +408,25 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV12(out 
 			out.Raw(json.Marshal(in.Download))
 		}
 	}
-	{
+	if in.Version != "" {
 		const prefix string = ",\"version\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Version))
 	}
-	{
+	if len(in.Contexts) != 0 {
 		const prefix string = ",\"contexts\":"
-		out.RawString(prefix)
-		if in.Contexts == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
 			for v5, v6 := range in.Contexts {
 				if v5 > 0 {
@@ -402,12 +437,15 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV12(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.Specs) != 0 {
 		const prefix string = ",\"specs\":"
-		out.RawString(prefix)
-		if in.Specs == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
 			for v7, v8 := range in.Specs {
 				if v7 > 0 {
@@ -468,7 +506,7 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(in *
 		case "full_name":
 			out.FullName = string(in.String())
 		case "tap":
-			out.Tap = string(in.String())
+			out.Tap = string(in.StringIntern())
 		case "oldname":
 			out.OldName = string(in.String())
 		case "oldnames":
@@ -553,7 +591,11 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(in *
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.URLs = make(map[string]FormulaURL)
+				if !in.IsDelim('}') {
+					out.URLs = make(map[string]FormulaURL)
+				} else {
+					out.URLs = nil
+				}
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
@@ -573,7 +615,11 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(in *
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.Bottle = make(map[string]*Bottle)
+				if !in.IsDelim('}') {
+					out.Bottle = make(map[string]*Bottle)
+				} else {
+					out.Bottle = nil
+				}
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
@@ -605,7 +651,7 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(in *
 		case "keg_only":
 			out.KegOnly = bool(in.Bool())
 		case "keg_only_reason":
-			easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(in, &out.KegOnlyReason)
+			(out.KegOnlyReason).UnmarshalEasyJSON(in)
 		case "options":
 			if in.IsNull() {
 				in.Skip()
@@ -1003,10 +1049,10 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(in *
 				if out.Service == nil {
 					out.Service = new(common.Service)
 				}
-				easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon1(in, out.Service)
+				(*out.Service).UnmarshalEasyJSON(in)
 			}
 		case "tap_git_head":
-			out.TapGitHead = string(in.String())
+			out.TapGitHead = string(in.StringIntern())
 		case "ruby_source_path":
 			out.RubySourcePath = string(in.String())
 		case "ruby_source_checksum":
@@ -1014,7 +1060,11 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(in *
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.RubySourceChecksum = make(map[string]string)
+				if !in.IsDelim('}') {
+					out.RubySourceChecksum = make(map[string]string)
+				} else {
+					out.RubySourceChecksum = nil
+				}
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
@@ -1054,27 +1104,25 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	{
+	if in.FullName != "" {
 		const prefix string = ",\"full_name\":"
 		out.RawString(prefix)
 		out.String(string(in.FullName))
 	}
-	{
+	if in.Tap != "" {
 		const prefix string = ",\"tap\":"
 		out.RawString(prefix)
 		out.String(string(in.Tap))
 	}
-	{
+	if in.OldName != "" {
 		const prefix string = ",\"oldname\":"
 		out.RawString(prefix)
 		out.String(string(in.OldName))
 	}
-	{
+	if len(in.OldNames) != 0 {
 		const prefix string = ",\"oldnames\":"
 		out.RawString(prefix)
-		if in.OldNames == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v28, v29 := range in.OldNames {
 				if v28 > 0 {
@@ -1085,12 +1133,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.Aliases) != 0 {
 		const prefix string = ",\"aliases\":"
 		out.RawString(prefix)
-		if in.Aliases == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v30, v31 := range in.Aliases {
 				if v30 > 0 {
@@ -1101,12 +1147,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.VersionedFormulae) != 0 {
 		const prefix string = ",\"versioned_formulae\":"
 		out.RawString(prefix)
-		if in.VersionedFormulae == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v32, v33 := range in.VersionedFormulae {
 				if v32 > 0 {
@@ -1117,32 +1161,30 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if in.Desc != "" {
 		const prefix string = ",\"desc\":"
 		out.RawString(prefix)
 		out.String(string(in.Desc))
 	}
-	{
+	if in.License != "" {
 		const prefix string = ",\"license\":"
 		out.RawString(prefix)
 		out.String(string(in.License))
 	}
-	{
+	if in.Homepage != "" {
 		const prefix string = ",\"homepage\":"
 		out.RawString(prefix)
 		out.String(string(in.Homepage))
 	}
-	{
+	if true {
 		const prefix string = ",\"versions\":"
 		out.RawString(prefix)
 		(in.Versions).MarshalEasyJSON(out)
 	}
-	{
+	if len(in.URLs) != 0 {
 		const prefix string = ",\"urls\":"
 		out.RawString(prefix)
-		if in.URLs == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
-		} else {
+		{
 			out.RawByte('{')
 			v34First := true
 			for v34Name, v34Value := range in.URLs {
@@ -1158,22 +1200,20 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte('}')
 		}
 	}
-	{
+	if in.Revision != 0 {
 		const prefix string = ",\"revision\":"
 		out.RawString(prefix)
 		out.Int(int(in.Revision))
 	}
-	{
+	if in.VersionScheme != 0 {
 		const prefix string = ",\"version_scheme\":"
 		out.RawString(prefix)
 		out.Int(int(in.VersionScheme))
 	}
-	{
+	if len(in.Bottle) != 0 {
 		const prefix string = ",\"bottle\":"
 		out.RawString(prefix)
-		if in.Bottle == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
-		} else {
+		{
 			out.RawByte('{')
 			v35First := true
 			for v35Name, v35Value := range in.Bottle {
@@ -1193,31 +1233,25 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte('}')
 		}
 	}
-	{
+	if in.PourBottleOnlyIf != nil {
 		const prefix string = ",\"pour_bottle_only_if\":"
 		out.RawString(prefix)
-		if in.PourBottleOnlyIf == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.PourBottleOnlyIf))
-		}
+		out.String(string(*in.PourBottleOnlyIf))
 	}
-	{
+	if in.KegOnly {
 		const prefix string = ",\"keg_only\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.KegOnly))
 	}
-	{
+	if true {
 		const prefix string = ",\"keg_only_reason\":"
 		out.RawString(prefix)
-		easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(out, in.KegOnlyReason)
+		(in.KegOnlyReason).MarshalEasyJSON(out)
 	}
-	{
+	if len(in.Options) != 0 {
 		const prefix string = ",\"options\":"
 		out.RawString(prefix)
-		if in.Options == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v36, v37 := range in.Options {
 				if v36 > 0 {
@@ -1234,12 +1268,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.BuildDependencies) != 0 {
 		const prefix string = ",\"build_dependencies\":"
 		out.RawString(prefix)
-		if in.BuildDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v38, v39 := range in.BuildDependencies {
 				if v38 > 0 {
@@ -1250,12 +1282,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.Dependencies) != 0 {
 		const prefix string = ",\"dependencies\":"
 		out.RawString(prefix)
-		if in.Dependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v40, v41 := range in.Dependencies {
 				if v40 > 0 {
@@ -1266,12 +1296,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.TestDependencies) != 0 {
 		const prefix string = ",\"test_dependencies\":"
 		out.RawString(prefix)
-		if in.TestDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v42, v43 := range in.TestDependencies {
 				if v42 > 0 {
@@ -1282,12 +1310,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.RecommendedDependencies) != 0 {
 		const prefix string = ",\"recommended_dependencies\":"
 		out.RawString(prefix)
-		if in.RecommendedDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v44, v45 := range in.RecommendedDependencies {
 				if v44 > 0 {
@@ -1298,12 +1324,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.OptionalDependencies) != 0 {
 		const prefix string = ",\"optional_dependencies\":"
 		out.RawString(prefix)
-		if in.OptionalDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v46, v47 := range in.OptionalDependencies {
 				if v46 > 0 {
@@ -1314,12 +1338,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.UsesFromMacOS) != 0 {
 		const prefix string = ",\"uses_from_macos\":"
 		out.RawString(prefix)
-		if in.UsesFromMacOS == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v48, v49 := range in.UsesFromMacOS {
 				if v48 > 0 {
@@ -1336,12 +1358,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.UsesFromMacOSBounds) != 0 {
 		const prefix string = ",\"uses_from_macos_bounds\":"
 		out.RawString(prefix)
-		if in.UsesFromMacOSBounds == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v50, v51 := range in.UsesFromMacOSBounds {
 				if v50 > 0 {
@@ -1356,12 +1376,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.Requirements) != 0 {
 		const prefix string = ",\"requirements\":"
 		out.RawString(prefix)
-		if in.Requirements == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v52, v53 := range in.Requirements {
 				if v52 > 0 {
@@ -1376,12 +1394,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.ConflictsWith) != 0 {
 		const prefix string = ",\"conflicts_with\":"
 		out.RawString(prefix)
-		if in.ConflictsWith == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v54, v55 := range in.ConflictsWith {
 				if v54 > 0 {
@@ -1392,12 +1408,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.ConflictsWithReasons) != 0 {
 		const prefix string = ",\"conflicts_with_reasons\":"
 		out.RawString(prefix)
-		if in.ConflictsWithReasons == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v56, v57 := range in.ConflictsWithReasons {
 				if v56 > 0 {
@@ -1408,12 +1422,10 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.LinkOverwrite) != 0 {
 		const prefix string = ",\"link_overwrite\":"
 		out.RawString(prefix)
-		if in.LinkOverwrite == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v58, v59 := range in.LinkOverwrite {
 				if v58 > 0 {
@@ -1424,21 +1436,15 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if in.Caveats != nil {
 		const prefix string = ",\"caveats\":"
 		out.RawString(prefix)
-		if in.Caveats == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.Caveats))
-		}
+		out.String(string(*in.Caveats))
 	}
-	{
+	if len(in.Installed) != 0 {
 		const prefix string = ",\"installed\":"
 		out.RawString(prefix)
-		if in.Installed == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
 			for v60, v61 := range in.Installed {
 				if v60 > 0 {
@@ -1449,97 +1455,75 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(out 
 			out.RawByte(']')
 		}
 	}
-	{
+	if in.LinkedKeg != "" {
 		const prefix string = ",\"linked_keg\":"
 		out.RawString(prefix)
 		out.String(string(in.LinkedKeg))
 	}
-	{
+	if in.Pinned {
 		const prefix string = ",\"pinned\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Pinned))
 	}
-	{
+	if in.Outdated {
 		const prefix string = ",\"outdated\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Outdated))
 	}
-	{
+	if in.Deprecated {
 		const prefix string = ",\"deprecated\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Deprecated))
 	}
-	{
+	if in.DeprecationDate != nil {
 		const prefix string = ",\"deprecation_date\":"
 		out.RawString(prefix)
-		if in.DeprecationDate == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DeprecationDate))
-		}
+		out.String(string(*in.DeprecationDate))
 	}
-	{
+	if in.DeprecationReason != nil {
 		const prefix string = ",\"deprecation_reason\":"
 		out.RawString(prefix)
-		if in.DeprecationReason == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DeprecationReason))
-		}
+		out.String(string(*in.DeprecationReason))
 	}
-	{
+	if in.Disabled {
 		const prefix string = ",\"disabled\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Disabled))
 	}
-	{
+	if in.DisabledDate != nil {
 		const prefix string = ",\"disable_date\":"
 		out.RawString(prefix)
-		if in.DisabledDate == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DisabledDate))
-		}
+		out.String(string(*in.DisabledDate))
 	}
-	{
+	if in.DisabledReason != nil {
 		const prefix string = ",\"disable_reason\":"
 		out.RawString(prefix)
-		if in.DisabledReason == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DisabledReason))
-		}
+		out.String(string(*in.DisabledReason))
 	}
-	{
+	if in.PostInstallDefined {
 		const prefix string = ",\"post_install_defined\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.PostInstallDefined))
 	}
-	{
+	if in.Service != nil {
 		const prefix string = ",\"service\":"
 		out.RawString(prefix)
-		if in.Service == nil {
-			out.RawString("null")
-		} else {
-			easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon1(out, *in.Service)
-		}
+		(*in.Service).MarshalEasyJSON(out)
 	}
-	{
+	if in.TapGitHead != "" {
 		const prefix string = ",\"tap_git_head\":"
 		out.RawString(prefix)
 		out.String(string(in.TapGitHead))
 	}
-	{
+	if in.RubySourcePath != "" {
 		const prefix string = ",\"ruby_source_path\":"
 		out.RawString(prefix)
 		out.String(string(in.RubySourcePath))
 	}
-	{
+	if len(in.RubySourceChecksum) != 0 {
 		const prefix string = ",\"ruby_source_checksum\":"
 		out.RawString(prefix)
-		if in.RubySourceChecksum == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
-		} else {
+		{
 			out.RawByte('{')
 			v62First := true
 			for v62Name, v62Value := range in.RubySourceChecksum {
@@ -1586,352 +1570,6 @@ func (v *PlatformInfo) UnmarshalJSON(data []byte) error {
 func (v *PlatformInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV13(l, v)
 }
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon1(in *jlexer.Lexer, out *common.Service) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "name":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				in.Delim('{')
-				if !in.IsDelim('}') {
-					out.Name = make(map[string]string)
-				} else {
-					out.Name = nil
-				}
-				for !in.IsDelim('}') {
-					key := string(in.String())
-					in.WantColon()
-					var v63 string
-					v63 = string(in.String())
-					(out.Name)[key] = v63
-					in.WantComma()
-				}
-				in.Delim('}')
-			}
-		case "run":
-			if m, ok := out.Run.(easyjson.Unmarshaler); ok {
-				m.UnmarshalEasyJSON(in)
-			} else if m, ok := out.Run.(json.Unmarshaler); ok {
-				_ = m.UnmarshalJSON(in.Raw())
-			} else {
-				out.Run = in.Interface()
-			}
-		case "run_type":
-			out.RunType = common.ServiceRunType(in.String())
-		case "environment_variables":
-			if in.IsNull() {
-				in.Skip()
-			} else {
-				in.Delim('{')
-				if !in.IsDelim('}') {
-					out.EnvironmentVariables = make(map[string]string)
-				} else {
-					out.EnvironmentVariables = nil
-				}
-				for !in.IsDelim('}') {
-					key := string(in.String())
-					in.WantColon()
-					var v64 string
-					v64 = string(in.String())
-					(out.EnvironmentVariables)[key] = v64
-					in.WantComma()
-				}
-				in.Delim('}')
-			}
-		case "interval":
-			out.Interval = time.Duration(in.Int64())
-		case "cron":
-			out.Cron = string(in.String())
-		case "require_root":
-			out.RequireRoot = bool(in.Bool())
-		case "keep_alive":
-			easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon2(in, &out.KeepAlive)
-		case "working_dir":
-			out.WorkingDir = string(in.String())
-		case "input_path":
-			out.InputPath = string(in.String())
-		case "log_path":
-			out.LogPath = string(in.String())
-		case "error_log_path":
-			out.ErrorLogPath = string(in.String())
-		case "sockets":
-			out.Sockets = string(in.String())
-		case "process_type":
-			out.ProcessType = common.ProcessType(in.String())
-		case "macos_legacy_timers":
-			out.MacOSLegacyTimers = bool(in.Bool())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon1(out *jwriter.Writer, in common.Service) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	if len(in.Name) != 0 {
-		const prefix string = ",\"name\":"
-		first = false
-		out.RawString(prefix[1:])
-		{
-			out.RawByte('{')
-			v65First := true
-			for v65Name, v65Value := range in.Name {
-				if v65First {
-					v65First = false
-				} else {
-					out.RawByte(',')
-				}
-				out.String(string(v65Name))
-				out.RawByte(':')
-				out.String(string(v65Value))
-			}
-			out.RawByte('}')
-		}
-	}
-	{
-		const prefix string = ",\"run\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		if m, ok := in.Run.(easyjson.Marshaler); ok {
-			m.MarshalEasyJSON(out)
-		} else if m, ok := in.Run.(json.Marshaler); ok {
-			out.Raw(m.MarshalJSON())
-		} else {
-			out.Raw(json.Marshal(in.Run))
-		}
-	}
-	{
-		const prefix string = ",\"run_type\":"
-		out.RawString(prefix)
-		out.String(string(in.RunType))
-	}
-	if len(in.EnvironmentVariables) != 0 {
-		const prefix string = ",\"environment_variables\":"
-		out.RawString(prefix)
-		{
-			out.RawByte('{')
-			v66First := true
-			for v66Name, v66Value := range in.EnvironmentVariables {
-				if v66First {
-					v66First = false
-				} else {
-					out.RawByte(',')
-				}
-				out.String(string(v66Name))
-				out.RawByte(':')
-				out.String(string(v66Value))
-			}
-			out.RawByte('}')
-		}
-	}
-	if in.Interval != 0 {
-		const prefix string = ",\"interval\":"
-		out.RawString(prefix)
-		out.Int64(int64(in.Interval))
-	}
-	if in.Cron != "" {
-		const prefix string = ",\"cron\":"
-		out.RawString(prefix)
-		out.String(string(in.Cron))
-	}
-	if in.RequireRoot {
-		const prefix string = ",\"require_root\":"
-		out.RawString(prefix)
-		out.Bool(bool(in.RequireRoot))
-	}
-	if true {
-		const prefix string = ",\"keep_alive\":"
-		out.RawString(prefix)
-		easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon2(out, in.KeepAlive)
-	}
-	if in.WorkingDir != "" {
-		const prefix string = ",\"working_dir\":"
-		out.RawString(prefix)
-		out.String(string(in.WorkingDir))
-	}
-	if in.InputPath != "" {
-		const prefix string = ",\"input_path\":"
-		out.RawString(prefix)
-		out.String(string(in.InputPath))
-	}
-	if in.LogPath != "" {
-		const prefix string = ",\"log_path\":"
-		out.RawString(prefix)
-		out.String(string(in.LogPath))
-	}
-	if in.ErrorLogPath != "" {
-		const prefix string = ",\"error_log_path\":"
-		out.RawString(prefix)
-		out.String(string(in.ErrorLogPath))
-	}
-	if in.Sockets != "" {
-		const prefix string = ",\"sockets\":"
-		out.RawString(prefix)
-		out.String(string(in.Sockets))
-	}
-	if in.ProcessType != "" {
-		const prefix string = ",\"process_type\":"
-		out.RawString(prefix)
-		out.String(string(in.ProcessType))
-	}
-	if in.MacOSLegacyTimers {
-		const prefix string = ",\"macos_legacy_timers\":"
-		out.RawString(prefix)
-		out.Bool(bool(in.MacOSLegacyTimers))
-	}
-	out.RawByte('}')
-}
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon2(in *jlexer.Lexer, out *common.KeepAliveConfig) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "always":
-			out.Always = bool(in.Bool())
-		case "successful_exit":
-			out.SuccessfulExit = bool(in.Bool())
-		case "crashed":
-			out.Crashed = bool(in.Bool())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon2(out *jwriter.Writer, in common.KeepAliveConfig) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	if in.Always {
-		const prefix string = ",\"always\":"
-		first = false
-		out.RawString(prefix[1:])
-		out.Bool(bool(in.Always))
-	}
-	if in.SuccessfulExit {
-		const prefix string = ",\"successful_exit\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Bool(bool(in.SuccessfulExit))
-	}
-	if in.Crashed {
-		const prefix string = ",\"crashed\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.Bool(bool(in.Crashed))
-	}
-	out.RawByte('}')
-}
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(in *jlexer.Lexer, out *common.KegOnlyConfig) {
-	isTopLevel := in.IsStart()
-	if in.IsNull() {
-		if isTopLevel {
-			in.Consumed()
-		}
-		in.Skip()
-		return
-	}
-	in.Delim('{')
-	for !in.IsDelim('}') {
-		key := in.UnsafeFieldName(false)
-		in.WantColon()
-		if in.IsNull() {
-			in.Skip()
-			in.WantComma()
-			continue
-		}
-		switch key {
-		case "reason":
-			if data := in.Raw(); in.Ok() {
-				in.AddError((out.Reason).UnmarshalJSON(data))
-			}
-		case "explanation":
-			out.Explanation = string(in.String())
-		default:
-			in.SkipRecursive()
-		}
-		in.WantComma()
-	}
-	in.Delim('}')
-	if isTopLevel {
-		in.Consumed()
-	}
-}
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(out *jwriter.Writer, in common.KegOnlyConfig) {
-	out.RawByte('{')
-	first := true
-	_ = first
-	if in.Reason != "" {
-		const prefix string = ",\"reason\":"
-		first = false
-		out.RawString(prefix[1:])
-		out.Raw((in.Reason).MarshalJSON())
-	}
-	if in.Explanation != "" {
-		const prefix string = ",\"explanation\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Explanation))
-	}
-	out.RawByte('}')
-}
 func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV14(in *jlexer.Lexer, out *MacOSBounds) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
@@ -1967,8 +1605,9 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV14(out 
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Since != "" {
 		const prefix string = ",\"since\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Since))
 	}
@@ -2035,15 +1674,15 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV15(in *
 					out.UsedOptions = (out.UsedOptions)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v67 interface{}
-					if m, ok := v67.(easyjson.Unmarshaler); ok {
+					var v63 interface{}
+					if m, ok := v63.(easyjson.Unmarshaler); ok {
 						m.UnmarshalEasyJSON(in)
-					} else if m, ok := v67.(json.Unmarshaler); ok {
+					} else if m, ok := v63.(json.Unmarshaler); ok {
 						_ = m.UnmarshalJSON(in.Raw())
 					} else {
-						v67 = in.Interface()
+						v63 = in.Interface()
 					}
-					out.UsedOptions = append(out.UsedOptions, v67)
+					out.UsedOptions = append(out.UsedOptions, v63)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2070,17 +1709,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV15(in *
 					out.RuntimeDependencies = (out.RuntimeDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v68 *RuntimeDependency
+					var v64 *RuntimeDependency
 					if in.IsNull() {
 						in.Skip()
-						v68 = nil
+						v64 = nil
 					} else {
-						if v68 == nil {
-							v68 = new(RuntimeDependency)
+						if v64 == nil {
+							v64 = new(RuntimeDependency)
 						}
-						(*v68).UnmarshalEasyJSON(in)
+						(*v64).UnmarshalEasyJSON(in)
 					}
-					out.RuntimeDependencies = append(out.RuntimeDependencies, v68)
+					out.RuntimeDependencies = append(out.RuntimeDependencies, v64)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2115,16 +1754,16 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV15(out 
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v69, v70 := range in.UsedOptions {
-				if v69 > 0 {
+			for v65, v66 := range in.UsedOptions {
+				if v65 > 0 {
 					out.RawByte(',')
 				}
-				if m, ok := v70.(easyjson.Marshaler); ok {
+				if m, ok := v66.(easyjson.Marshaler); ok {
 					m.MarshalEasyJSON(out)
-				} else if m, ok := v70.(json.Marshaler); ok {
+				} else if m, ok := v66.(json.Marshaler); ok {
 					out.Raw(m.MarshalJSON())
 				} else {
-					out.Raw(json.Marshal(v70))
+					out.Raw(json.Marshal(v66))
 				}
 			}
 			out.RawByte(']')
@@ -2152,14 +1791,14 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV15(out 
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v71, v72 := range in.RuntimeDependencies {
-				if v71 > 0 {
+			for v67, v68 := range in.RuntimeDependencies {
+				if v67 > 0 {
 					out.RawByte(',')
 				}
-				if v72 == nil {
+				if v68 == nil {
 					out.RawString("null")
 				} else {
-					(*v72).MarshalEasyJSON(out)
+					(*v68).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -2229,17 +1868,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 				for !in.IsDelim('}') {
 					key := platform.Platform(in.String())
 					in.WantColon()
-					var v73 *PlatformInfo
+					var v69 *PlatformInfo
 					if in.IsNull() {
 						in.Skip()
-						v73 = nil
+						v69 = nil
 					} else {
-						if v73 == nil {
-							v73 = new(PlatformInfo)
+						if v69 == nil {
+							v69 = new(PlatformInfo)
 						}
-						(*v73).UnmarshalEasyJSON(in)
+						(*v69).UnmarshalEasyJSON(in)
 					}
-					(out.Variations)[key] = v73
+					(out.Variations)[key] = v69
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2249,7 +1888,7 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 		case "full_name":
 			out.FullName = string(in.String())
 		case "tap":
-			out.Tap = string(in.String())
+			out.Tap = string(in.StringIntern())
 		case "oldname":
 			out.OldName = string(in.String())
 		case "oldnames":
@@ -2268,9 +1907,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.OldNames = (out.OldNames)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v74 string
-					v74 = string(in.String())
-					out.OldNames = append(out.OldNames, v74)
+					var v70 string
+					v70 = string(in.String())
+					out.OldNames = append(out.OldNames, v70)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2291,9 +1930,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.Aliases = (out.Aliases)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v75 string
-					v75 = string(in.String())
-					out.Aliases = append(out.Aliases, v75)
+					var v71 string
+					v71 = string(in.String())
+					out.Aliases = append(out.Aliases, v71)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2314,9 +1953,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.VersionedFormulae = (out.VersionedFormulae)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v76 string
-					v76 = string(in.String())
-					out.VersionedFormulae = append(out.VersionedFormulae, v76)
+					var v72 string
+					v72 = string(in.String())
+					out.VersionedFormulae = append(out.VersionedFormulae, v72)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2334,13 +1973,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.URLs = make(map[string]FormulaURL)
+				if !in.IsDelim('}') {
+					out.URLs = make(map[string]FormulaURL)
+				} else {
+					out.URLs = nil
+				}
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v77 FormulaURL
-					(v77).UnmarshalEasyJSON(in)
-					(out.URLs)[key] = v77
+					var v73 FormulaURL
+					(v73).UnmarshalEasyJSON(in)
+					(out.URLs)[key] = v73
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2354,21 +1997,25 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.Bottle = make(map[string]*Bottle)
+				if !in.IsDelim('}') {
+					out.Bottle = make(map[string]*Bottle)
+				} else {
+					out.Bottle = nil
+				}
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v78 *Bottle
+					var v74 *Bottle
 					if in.IsNull() {
 						in.Skip()
-						v78 = nil
+						v74 = nil
 					} else {
-						if v78 == nil {
-							v78 = new(Bottle)
+						if v74 == nil {
+							v74 = new(Bottle)
 						}
-						(*v78).UnmarshalEasyJSON(in)
+						(*v74).UnmarshalEasyJSON(in)
 					}
-					(out.Bottle)[key] = v78
+					(out.Bottle)[key] = v74
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2386,7 +2033,7 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 		case "keg_only":
 			out.KegOnly = bool(in.Bool())
 		case "keg_only_reason":
-			easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(in, &out.KegOnlyReason)
+			(out.KegOnlyReason).UnmarshalEasyJSON(in)
 		case "options":
 			if in.IsNull() {
 				in.Skip()
@@ -2403,15 +2050,15 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.Options = (out.Options)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v79 interface{}
-					if m, ok := v79.(easyjson.Unmarshaler); ok {
+					var v75 interface{}
+					if m, ok := v75.(easyjson.Unmarshaler); ok {
 						m.UnmarshalEasyJSON(in)
-					} else if m, ok := v79.(json.Unmarshaler); ok {
+					} else if m, ok := v75.(json.Unmarshaler); ok {
 						_ = m.UnmarshalJSON(in.Raw())
 					} else {
-						v79 = in.Interface()
+						v75 = in.Interface()
 					}
-					out.Options = append(out.Options, v79)
+					out.Options = append(out.Options, v75)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2432,9 +2079,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.BuildDependencies = (out.BuildDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v80 string
-					v80 = string(in.String())
-					out.BuildDependencies = append(out.BuildDependencies, v80)
+					var v76 string
+					v76 = string(in.String())
+					out.BuildDependencies = append(out.BuildDependencies, v76)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2455,9 +2102,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.Dependencies = (out.Dependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v81 string
-					v81 = string(in.String())
-					out.Dependencies = append(out.Dependencies, v81)
+					var v77 string
+					v77 = string(in.String())
+					out.Dependencies = append(out.Dependencies, v77)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2478,9 +2125,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.TestDependencies = (out.TestDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v82 string
-					v82 = string(in.String())
-					out.TestDependencies = append(out.TestDependencies, v82)
+					var v78 string
+					v78 = string(in.String())
+					out.TestDependencies = append(out.TestDependencies, v78)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2501,9 +2148,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.RecommendedDependencies = (out.RecommendedDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v83 string
-					v83 = string(in.String())
-					out.RecommendedDependencies = append(out.RecommendedDependencies, v83)
+					var v79 string
+					v79 = string(in.String())
+					out.RecommendedDependencies = append(out.RecommendedDependencies, v79)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2524,9 +2171,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.OptionalDependencies = (out.OptionalDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v84 string
-					v84 = string(in.String())
-					out.OptionalDependencies = append(out.OptionalDependencies, v84)
+					var v80 string
+					v80 = string(in.String())
+					out.OptionalDependencies = append(out.OptionalDependencies, v80)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2547,15 +2194,15 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.UsesFromMacOS = (out.UsesFromMacOS)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v85 interface{}
-					if m, ok := v85.(easyjson.Unmarshaler); ok {
+					var v81 interface{}
+					if m, ok := v81.(easyjson.Unmarshaler); ok {
 						m.UnmarshalEasyJSON(in)
-					} else if m, ok := v85.(json.Unmarshaler); ok {
+					} else if m, ok := v81.(json.Unmarshaler); ok {
 						_ = m.UnmarshalJSON(in.Raw())
 					} else {
-						v85 = in.Interface()
+						v81 = in.Interface()
 					}
-					out.UsesFromMacOS = append(out.UsesFromMacOS, v85)
+					out.UsesFromMacOS = append(out.UsesFromMacOS, v81)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2576,17 +2223,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.UsesFromMacOSBounds = (out.UsesFromMacOSBounds)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v86 *MacOSBounds
+					var v82 *MacOSBounds
 					if in.IsNull() {
 						in.Skip()
-						v86 = nil
+						v82 = nil
 					} else {
-						if v86 == nil {
-							v86 = new(MacOSBounds)
+						if v82 == nil {
+							v82 = new(MacOSBounds)
 						}
-						(*v86).UnmarshalEasyJSON(in)
+						(*v82).UnmarshalEasyJSON(in)
 					}
-					out.UsesFromMacOSBounds = append(out.UsesFromMacOSBounds, v86)
+					out.UsesFromMacOSBounds = append(out.UsesFromMacOSBounds, v82)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2607,17 +2254,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.Requirements = (out.Requirements)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v87 *Requirement
+					var v83 *Requirement
 					if in.IsNull() {
 						in.Skip()
-						v87 = nil
+						v83 = nil
 					} else {
-						if v87 == nil {
-							v87 = new(Requirement)
+						if v83 == nil {
+							v83 = new(Requirement)
 						}
-						(*v87).UnmarshalEasyJSON(in)
+						(*v83).UnmarshalEasyJSON(in)
 					}
-					out.Requirements = append(out.Requirements, v87)
+					out.Requirements = append(out.Requirements, v83)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2638,9 +2285,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.ConflictsWith = (out.ConflictsWith)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v88 string
-					v88 = string(in.String())
-					out.ConflictsWith = append(out.ConflictsWith, v88)
+					var v84 string
+					v84 = string(in.String())
+					out.ConflictsWith = append(out.ConflictsWith, v84)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2661,9 +2308,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.ConflictsWithReasons = (out.ConflictsWithReasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v89 string
-					v89 = string(in.String())
-					out.ConflictsWithReasons = append(out.ConflictsWithReasons, v89)
+					var v85 string
+					v85 = string(in.String())
+					out.ConflictsWithReasons = append(out.ConflictsWithReasons, v85)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2684,9 +2331,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.LinkOverwrite = (out.LinkOverwrite)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v90 string
-					v90 = string(in.String())
-					out.LinkOverwrite = append(out.LinkOverwrite, v90)
+					var v86 string
+					v86 = string(in.String())
+					out.LinkOverwrite = append(out.LinkOverwrite, v86)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2717,9 +2364,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 					out.Installed = (out.Installed)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v91 InstalledInfo
-					(v91).UnmarshalEasyJSON(in)
-					out.Installed = append(out.Installed, v91)
+					var v87 InstalledInfo
+					(v87).UnmarshalEasyJSON(in)
+					out.Installed = append(out.Installed, v87)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -2784,10 +2431,10 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 				if out.Service == nil {
 					out.Service = new(common.Service)
 				}
-				easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon1(in, out.Service)
+				(*out.Service).UnmarshalEasyJSON(in)
 			}
 		case "tap_git_head":
-			out.TapGitHead = string(in.String())
+			out.TapGitHead = string(in.StringIntern())
 		case "ruby_source_path":
 			out.RubySourcePath = string(in.String())
 		case "ruby_source_checksum":
@@ -2795,13 +2442,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(in *
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.RubySourceChecksum = make(map[string]string)
+				if !in.IsDelim('}') {
+					out.RubySourceChecksum = make(map[string]string)
+				} else {
+					out.RubySourceChecksum = nil
+				}
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v92 string
-					v92 = string(in.String())
-					(out.RubySourceChecksum)[key] = v92
+					var v88 string
+					v88 = string(in.String())
+					(out.RubySourceChecksum)[key] = v88
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -2837,19 +2488,19 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 			out.RawString(`null`)
 		} else {
 			out.RawByte('{')
-			v93First := true
-			for v93Name, v93Value := range in.Variations {
-				if v93First {
-					v93First = false
+			v89First := true
+			for v89Name, v89Value := range in.Variations {
+				if v89First {
+					v89First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v93Name))
+				out.String(string(v89Name))
 				out.RawByte(':')
-				if v93Value == nil {
+				if v89Value == nil {
 					out.RawString("null")
 				} else {
-					(*v93Value).MarshalEasyJSON(out)
+					(*v89Value).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte('}')
@@ -2860,29 +2511,55 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 		out.RawString(prefix)
 		out.String(string(in.Name))
 	}
-	{
+	if in.FullName != "" {
 		const prefix string = ",\"full_name\":"
 		out.RawString(prefix)
 		out.String(string(in.FullName))
 	}
-	{
+	if in.Tap != "" {
 		const prefix string = ",\"tap\":"
 		out.RawString(prefix)
 		out.String(string(in.Tap))
 	}
-	{
+	if in.OldName != "" {
 		const prefix string = ",\"oldname\":"
 		out.RawString(prefix)
 		out.String(string(in.OldName))
 	}
-	{
+	if len(in.OldNames) != 0 {
 		const prefix string = ",\"oldnames\":"
 		out.RawString(prefix)
-		if in.OldNames == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v94, v95 := range in.OldNames {
+			for v90, v91 := range in.OldNames {
+				if v90 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v91))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Aliases) != 0 {
+		const prefix string = ",\"aliases\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v92, v93 := range in.Aliases {
+				if v92 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v93))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.VersionedFormulae) != 0 {
+		const prefix string = ",\"versioned_formulae\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v94, v95 := range in.VersionedFormulae {
 				if v94 > 0 {
 					out.RawByte(',')
 				}
@@ -2891,163 +2568,147 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"aliases\":"
-		out.RawString(prefix)
-		if in.Aliases == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
-			out.RawByte('[')
-			for v96, v97 := range in.Aliases {
-				if v96 > 0 {
-					out.RawByte(',')
-				}
-				out.String(string(v97))
-			}
-			out.RawByte(']')
-		}
-	}
-	{
-		const prefix string = ",\"versioned_formulae\":"
-		out.RawString(prefix)
-		if in.VersionedFormulae == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
-			out.RawByte('[')
-			for v98, v99 := range in.VersionedFormulae {
-				if v98 > 0 {
-					out.RawByte(',')
-				}
-				out.String(string(v99))
-			}
-			out.RawByte(']')
-		}
-	}
-	{
+	if in.Desc != "" {
 		const prefix string = ",\"desc\":"
 		out.RawString(prefix)
 		out.String(string(in.Desc))
 	}
-	{
+	if in.License != "" {
 		const prefix string = ",\"license\":"
 		out.RawString(prefix)
 		out.String(string(in.License))
 	}
-	{
+	if in.Homepage != "" {
 		const prefix string = ",\"homepage\":"
 		out.RawString(prefix)
 		out.String(string(in.Homepage))
 	}
-	{
+	if true {
 		const prefix string = ",\"versions\":"
 		out.RawString(prefix)
 		(in.Versions).MarshalEasyJSON(out)
 	}
-	{
+	if len(in.URLs) != 0 {
 		const prefix string = ",\"urls\":"
 		out.RawString(prefix)
-		if in.URLs == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
-		} else {
+		{
 			out.RawByte('{')
-			v100First := true
-			for v100Name, v100Value := range in.URLs {
-				if v100First {
-					v100First = false
+			v96First := true
+			for v96Name, v96Value := range in.URLs {
+				if v96First {
+					v96First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v100Name))
+				out.String(string(v96Name))
 				out.RawByte(':')
-				(v100Value).MarshalEasyJSON(out)
+				(v96Value).MarshalEasyJSON(out)
 			}
 			out.RawByte('}')
 		}
 	}
-	{
+	if in.Revision != 0 {
 		const prefix string = ",\"revision\":"
 		out.RawString(prefix)
 		out.Int(int(in.Revision))
 	}
-	{
+	if in.VersionScheme != 0 {
 		const prefix string = ",\"version_scheme\":"
 		out.RawString(prefix)
 		out.Int(int(in.VersionScheme))
 	}
-	{
+	if len(in.Bottle) != 0 {
 		const prefix string = ",\"bottle\":"
 		out.RawString(prefix)
-		if in.Bottle == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
-		} else {
+		{
 			out.RawByte('{')
-			v101First := true
-			for v101Name, v101Value := range in.Bottle {
-				if v101First {
-					v101First = false
+			v97First := true
+			for v97Name, v97Value := range in.Bottle {
+				if v97First {
+					v97First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v101Name))
+				out.String(string(v97Name))
 				out.RawByte(':')
-				if v101Value == nil {
+				if v97Value == nil {
 					out.RawString("null")
 				} else {
-					(*v101Value).MarshalEasyJSON(out)
+					(*v97Value).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte('}')
 		}
 	}
-	{
+	if in.PourBottleOnlyIf != nil {
 		const prefix string = ",\"pour_bottle_only_if\":"
 		out.RawString(prefix)
-		if in.PourBottleOnlyIf == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.PourBottleOnlyIf))
-		}
+		out.String(string(*in.PourBottleOnlyIf))
 	}
-	{
+	if in.KegOnly {
 		const prefix string = ",\"keg_only\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.KegOnly))
 	}
-	{
+	if true {
 		const prefix string = ",\"keg_only_reason\":"
 		out.RawString(prefix)
-		easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(out, in.KegOnlyReason)
+		(in.KegOnlyReason).MarshalEasyJSON(out)
 	}
-	{
+	if len(in.Options) != 0 {
 		const prefix string = ",\"options\":"
 		out.RawString(prefix)
-		if in.Options == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v102, v103 := range in.Options {
-				if v102 > 0 {
+			for v98, v99 := range in.Options {
+				if v98 > 0 {
 					out.RawByte(',')
 				}
-				if m, ok := v103.(easyjson.Marshaler); ok {
+				if m, ok := v99.(easyjson.Marshaler); ok {
 					m.MarshalEasyJSON(out)
-				} else if m, ok := v103.(json.Marshaler); ok {
+				} else if m, ok := v99.(json.Marshaler); ok {
 					out.Raw(m.MarshalJSON())
 				} else {
-					out.Raw(json.Marshal(v103))
+					out.Raw(json.Marshal(v99))
 				}
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.BuildDependencies) != 0 {
 		const prefix string = ",\"build_dependencies\":"
 		out.RawString(prefix)
-		if in.BuildDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v104, v105 := range in.BuildDependencies {
+			for v100, v101 := range in.BuildDependencies {
+				if v100 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v101))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Dependencies) != 0 {
+		const prefix string = ",\"dependencies\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v102, v103 := range in.Dependencies {
+				if v102 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v103))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.TestDependencies) != 0 {
+		const prefix string = ",\"test_dependencies\":"
+		out.RawString(prefix)
+		{
+			out.RawByte('[')
+			for v104, v105 := range in.TestDependencies {
 				if v104 > 0 {
 					out.RawByte(',')
 				}
@@ -3056,14 +2717,12 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"dependencies\":"
+	if len(in.RecommendedDependencies) != 0 {
+		const prefix string = ",\"recommended_dependencies\":"
 		out.RawString(prefix)
-		if in.Dependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v106, v107 := range in.Dependencies {
+			for v106, v107 := range in.RecommendedDependencies {
 				if v106 > 0 {
 					out.RawByte(',')
 				}
@@ -3072,14 +2731,12 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"test_dependencies\":"
+	if len(in.OptionalDependencies) != 0 {
+		const prefix string = ",\"optional_dependencies\":"
 		out.RawString(prefix)
-		if in.TestDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v108, v109 := range in.TestDependencies {
+			for v108, v109 := range in.OptionalDependencies {
 				if v108 > 0 {
 					out.RawByte(',')
 				}
@@ -3088,108 +2745,96 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"recommended_dependencies\":"
+	if len(in.UsesFromMacOS) != 0 {
+		const prefix string = ",\"uses_from_macos\":"
 		out.RawString(prefix)
-		if in.RecommendedDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v110, v111 := range in.RecommendedDependencies {
+			for v110, v111 := range in.UsesFromMacOS {
 				if v110 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v111))
+				if m, ok := v111.(easyjson.Marshaler); ok {
+					m.MarshalEasyJSON(out)
+				} else if m, ok := v111.(json.Marshaler); ok {
+					out.Raw(m.MarshalJSON())
+				} else {
+					out.Raw(json.Marshal(v111))
+				}
 			}
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"optional_dependencies\":"
+	if len(in.UsesFromMacOSBounds) != 0 {
+		const prefix string = ",\"uses_from_macos_bounds\":"
 		out.RawString(prefix)
-		if in.OptionalDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v112, v113 := range in.OptionalDependencies {
+			for v112, v113 := range in.UsesFromMacOSBounds {
 				if v112 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v113))
+				if v113 == nil {
+					out.RawString("null")
+				} else {
+					(*v113).MarshalEasyJSON(out)
+				}
 			}
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"uses_from_macos\":"
+	if len(in.Requirements) != 0 {
+		const prefix string = ",\"requirements\":"
 		out.RawString(prefix)
-		if in.UsesFromMacOS == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v114, v115 := range in.UsesFromMacOS {
+			for v114, v115 := range in.Requirements {
 				if v114 > 0 {
 					out.RawByte(',')
 				}
-				if m, ok := v115.(easyjson.Marshaler); ok {
-					m.MarshalEasyJSON(out)
-				} else if m, ok := v115.(json.Marshaler); ok {
-					out.Raw(m.MarshalJSON())
+				if v115 == nil {
+					out.RawString("null")
 				} else {
-					out.Raw(json.Marshal(v115))
+					(*v115).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"uses_from_macos_bounds\":"
+	if len(in.ConflictsWith) != 0 {
+		const prefix string = ",\"conflicts_with\":"
 		out.RawString(prefix)
-		if in.UsesFromMacOSBounds == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v116, v117 := range in.UsesFromMacOSBounds {
+			for v116, v117 := range in.ConflictsWith {
 				if v116 > 0 {
 					out.RawByte(',')
 				}
-				if v117 == nil {
-					out.RawString("null")
-				} else {
-					(*v117).MarshalEasyJSON(out)
-				}
+				out.String(string(v117))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"requirements\":"
+	if len(in.ConflictsWithReasons) != 0 {
+		const prefix string = ",\"conflicts_with_reasons\":"
 		out.RawString(prefix)
-		if in.Requirements == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v118, v119 := range in.Requirements {
+			for v118, v119 := range in.ConflictsWithReasons {
 				if v118 > 0 {
 					out.RawByte(',')
 				}
-				if v119 == nil {
-					out.RawString("null")
-				} else {
-					(*v119).MarshalEasyJSON(out)
-				}
+				out.String(string(v119))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"conflicts_with\":"
+	if len(in.LinkOverwrite) != 0 {
+		const prefix string = ",\"link_overwrite\":"
 		out.RawString(prefix)
-		if in.ConflictsWith == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v120, v121 := range in.ConflictsWith {
+			for v120, v121 := range in.LinkOverwrite {
 				if v120 > 0 {
 					out.RawByte(',')
 				}
@@ -3198,165 +2843,105 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(out 
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"conflicts_with_reasons\":"
+	if in.Caveats != nil {
+		const prefix string = ",\"caveats\":"
 		out.RawString(prefix)
-		if in.ConflictsWithReasons == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		out.String(string(*in.Caveats))
+	}
+	if len(in.Installed) != 0 {
+		const prefix string = ",\"installed\":"
+		out.RawString(prefix)
+		{
 			out.RawByte('[')
-			for v122, v123 := range in.ConflictsWithReasons {
+			for v122, v123 := range in.Installed {
 				if v122 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v123))
+				(v123).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
 	}
-	{
-		const prefix string = ",\"link_overwrite\":"
-		out.RawString(prefix)
-		if in.LinkOverwrite == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
-			out.RawByte('[')
-			for v124, v125 := range in.LinkOverwrite {
-				if v124 > 0 {
-					out.RawByte(',')
-				}
-				out.String(string(v125))
-			}
-			out.RawByte(']')
-		}
-	}
-	{
-		const prefix string = ",\"caveats\":"
-		out.RawString(prefix)
-		if in.Caveats == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.Caveats))
-		}
-	}
-	{
-		const prefix string = ",\"installed\":"
-		out.RawString(prefix)
-		if in.Installed == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
-			out.RawByte('[')
-			for v126, v127 := range in.Installed {
-				if v126 > 0 {
-					out.RawByte(',')
-				}
-				(v127).MarshalEasyJSON(out)
-			}
-			out.RawByte(']')
-		}
-	}
-	{
+	if in.LinkedKeg != "" {
 		const prefix string = ",\"linked_keg\":"
 		out.RawString(prefix)
 		out.String(string(in.LinkedKeg))
 	}
-	{
+	if in.Pinned {
 		const prefix string = ",\"pinned\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Pinned))
 	}
-	{
+	if in.Outdated {
 		const prefix string = ",\"outdated\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Outdated))
 	}
-	{
+	if in.Deprecated {
 		const prefix string = ",\"deprecated\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Deprecated))
 	}
-	{
+	if in.DeprecationDate != nil {
 		const prefix string = ",\"deprecation_date\":"
 		out.RawString(prefix)
-		if in.DeprecationDate == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DeprecationDate))
-		}
+		out.String(string(*in.DeprecationDate))
 	}
-	{
+	if in.DeprecationReason != nil {
 		const prefix string = ",\"deprecation_reason\":"
 		out.RawString(prefix)
-		if in.DeprecationReason == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DeprecationReason))
-		}
+		out.String(string(*in.DeprecationReason))
 	}
-	{
+	if in.Disabled {
 		const prefix string = ",\"disabled\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.Disabled))
 	}
-	{
+	if in.DisabledDate != nil {
 		const prefix string = ",\"disable_date\":"
 		out.RawString(prefix)
-		if in.DisabledDate == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DisabledDate))
-		}
+		out.String(string(*in.DisabledDate))
 	}
-	{
+	if in.DisabledReason != nil {
 		const prefix string = ",\"disable_reason\":"
 		out.RawString(prefix)
-		if in.DisabledReason == nil {
-			out.RawString("null")
-		} else {
-			out.String(string(*in.DisabledReason))
-		}
+		out.String(string(*in.DisabledReason))
 	}
-	{
+	if in.PostInstallDefined {
 		const prefix string = ",\"post_install_defined\":"
 		out.RawString(prefix)
 		out.Bool(bool(in.PostInstallDefined))
 	}
-	{
+	if in.Service != nil {
 		const prefix string = ",\"service\":"
 		out.RawString(prefix)
-		if in.Service == nil {
-			out.RawString("null")
-		} else {
-			easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon1(out, *in.Service)
-		}
+		(*in.Service).MarshalEasyJSON(out)
 	}
-	{
+	if in.TapGitHead != "" {
 		const prefix string = ",\"tap_git_head\":"
 		out.RawString(prefix)
 		out.String(string(in.TapGitHead))
 	}
-	{
+	if in.RubySourcePath != "" {
 		const prefix string = ",\"ruby_source_path\":"
 		out.RawString(prefix)
 		out.String(string(in.RubySourcePath))
 	}
-	{
+	if len(in.RubySourceChecksum) != 0 {
 		const prefix string = ",\"ruby_source_checksum\":"
 		out.RawString(prefix)
-		if in.RubySourceChecksum == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
-		} else {
+		{
 			out.RawByte('{')
-			v128First := true
-			for v128Name, v128Value := range in.RubySourceChecksum {
-				if v128First {
-					v128First = false
+			v124First := true
+			for v124Name, v124Value := range in.RubySourceChecksum {
+				if v124First {
+					v124First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v128Name))
+				out.String(string(v124Name))
 				out.RawByte(':')
-				out.String(string(v128Value))
+				out.String(string(v124Value))
 			}
 			out.RawByte('}')
 		}
@@ -3392,7 +2977,85 @@ func (v *Info) UnmarshalJSON(data []byte) error {
 func (v *Info) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV16(l, v)
 }
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *jlexer.Lexer, out *HeadDependencies) {
+func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *jlexer.Lexer, out *Index) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		in.Skip()
+		*out = nil
+	} else {
+		in.Delim('[')
+		if *out == nil {
+			if !in.IsDelim(']') {
+				*out = make(Index, 0, 8)
+			} else {
+				*out = Index{}
+			}
+		} else {
+			*out = (*out)[:0]
+		}
+		for !in.IsDelim(']') {
+			var v125 *Info
+			if in.IsNull() {
+				in.Skip()
+				v125 = nil
+			} else {
+				if v125 == nil {
+					v125 = new(Info)
+				}
+				(*v125).UnmarshalEasyJSON(in)
+			}
+			*out = append(*out, v125)
+			in.WantComma()
+		}
+		in.Delim(']')
+	}
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(out *jwriter.Writer, in Index) {
+	if in == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+		out.RawString("null")
+	} else {
+		out.RawByte('[')
+		for v126, v127 := range in {
+			if v126 > 0 {
+				out.RawByte(',')
+			}
+			if v127 == nil {
+				out.RawString("null")
+			} else {
+				(*v127).MarshalEasyJSON(out)
+			}
+		}
+		out.RawByte(']')
+	}
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v Index) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v Index) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *Index) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *Index) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(l, v)
+}
+func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(in *jlexer.Lexer, out *HeadDependencies) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3427,9 +3090,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.BuildDependencies = (out.BuildDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v129 string
-					v129 = string(in.String())
-					out.BuildDependencies = append(out.BuildDependencies, v129)
+					var v128 string
+					v128 = string(in.String())
+					out.BuildDependencies = append(out.BuildDependencies, v128)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3450,9 +3113,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.Dependencies = (out.Dependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v130 string
-					v130 = string(in.String())
-					out.Dependencies = append(out.Dependencies, v130)
+					var v129 string
+					v129 = string(in.String())
+					out.Dependencies = append(out.Dependencies, v129)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3473,9 +3136,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.TestDependencies = (out.TestDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v131 string
-					v131 = string(in.String())
-					out.TestDependencies = append(out.TestDependencies, v131)
+					var v130 string
+					v130 = string(in.String())
+					out.TestDependencies = append(out.TestDependencies, v130)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3496,9 +3159,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.RecommendedDependencies = (out.RecommendedDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v132 string
-					v132 = string(in.String())
-					out.RecommendedDependencies = append(out.RecommendedDependencies, v132)
+					var v131 string
+					v131 = string(in.String())
+					out.RecommendedDependencies = append(out.RecommendedDependencies, v131)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3519,9 +3182,9 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.OptionalDependencies = (out.OptionalDependencies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v133 string
-					v133 = string(in.String())
-					out.OptionalDependencies = append(out.OptionalDependencies, v133)
+					var v132 string
+					v132 = string(in.String())
+					out.OptionalDependencies = append(out.OptionalDependencies, v132)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3542,15 +3205,15 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.UsesFromMacOS = (out.UsesFromMacOS)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v134 interface{}
-					if m, ok := v134.(easyjson.Unmarshaler); ok {
+					var v133 interface{}
+					if m, ok := v133.(easyjson.Unmarshaler); ok {
 						m.UnmarshalEasyJSON(in)
-					} else if m, ok := v134.(json.Unmarshaler); ok {
+					} else if m, ok := v133.(json.Unmarshaler); ok {
 						_ = m.UnmarshalJSON(in.Raw())
 					} else {
-						v134 = in.Interface()
+						v133 = in.Interface()
 					}
-					out.UsesFromMacOS = append(out.UsesFromMacOS, v134)
+					out.UsesFromMacOS = append(out.UsesFromMacOS, v133)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3571,17 +3234,17 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 					out.UsesFromMacOSBounds = (out.UsesFromMacOSBounds)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v135 *MacOSBounds
+					var v134 *MacOSBounds
 					if in.IsNull() {
 						in.Skip()
-						v135 = nil
+						v134 = nil
 					} else {
-						if v135 == nil {
-							v135 = new(MacOSBounds)
+						if v134 == nil {
+							v134 = new(MacOSBounds)
 						}
-						(*v135).UnmarshalEasyJSON(in)
+						(*v134).UnmarshalEasyJSON(in)
 					}
-					out.UsesFromMacOSBounds = append(out.UsesFromMacOSBounds, v135)
+					out.UsesFromMacOSBounds = append(out.UsesFromMacOSBounds, v134)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3596,127 +3259,144 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(in *
 		in.Consumed()
 	}
 }
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(out *jwriter.Writer, in HeadDependencies) {
+func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(out *jwriter.Writer, in HeadDependencies) {
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if len(in.BuildDependencies) != 0 {
 		const prefix string = ",\"build_dependencies\":"
+		first = false
 		out.RawString(prefix[1:])
-		if in.BuildDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
-		} else {
+		{
 			out.RawByte('[')
-			for v136, v137 := range in.BuildDependencies {
-				if v136 > 0 {
+			for v135, v136 := range in.BuildDependencies {
+				if v135 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v137))
+				out.String(string(v136))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.Dependencies) != 0 {
 		const prefix string = ",\"dependencies\":"
-		out.RawString(prefix)
-		if in.Dependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
-			for v138, v139 := range in.Dependencies {
-				if v138 > 0 {
+			for v137, v138 := range in.Dependencies {
+				if v137 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v139))
+				out.String(string(v138))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.TestDependencies) != 0 {
 		const prefix string = ",\"test_dependencies\":"
-		out.RawString(prefix)
-		if in.TestDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
-			for v140, v141 := range in.TestDependencies {
-				if v140 > 0 {
+			for v139, v140 := range in.TestDependencies {
+				if v139 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v141))
+				out.String(string(v140))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.RecommendedDependencies) != 0 {
 		const prefix string = ",\"recommended_dependencies\":"
-		out.RawString(prefix)
-		if in.RecommendedDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
-			for v142, v143 := range in.RecommendedDependencies {
-				if v142 > 0 {
+			for v141, v142 := range in.RecommendedDependencies {
+				if v141 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v143))
+				out.String(string(v142))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.OptionalDependencies) != 0 {
 		const prefix string = ",\"optional_dependencies\":"
-		out.RawString(prefix)
-		if in.OptionalDependencies == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
-			for v144, v145 := range in.OptionalDependencies {
-				if v144 > 0 {
+			for v143, v144 := range in.OptionalDependencies {
+				if v143 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v145))
+				out.String(string(v144))
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.UsesFromMacOS) != 0 {
 		const prefix string = ",\"uses_from_macos\":"
-		out.RawString(prefix)
-		if in.UsesFromMacOS == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
-			for v146, v147 := range in.UsesFromMacOS {
-				if v146 > 0 {
+			for v145, v146 := range in.UsesFromMacOS {
+				if v145 > 0 {
 					out.RawByte(',')
 				}
-				if m, ok := v147.(easyjson.Marshaler); ok {
+				if m, ok := v146.(easyjson.Marshaler); ok {
 					m.MarshalEasyJSON(out)
-				} else if m, ok := v147.(json.Marshaler); ok {
+				} else if m, ok := v146.(json.Marshaler); ok {
 					out.Raw(m.MarshalJSON())
 				} else {
-					out.Raw(json.Marshal(v147))
+					out.Raw(json.Marshal(v146))
 				}
 			}
 			out.RawByte(']')
 		}
 	}
-	{
+	if len(in.UsesFromMacOSBounds) != 0 {
 		const prefix string = ",\"uses_from_macos_bounds\":"
-		out.RawString(prefix)
-		if in.UsesFromMacOSBounds == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
-			out.RawString("null")
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('[')
-			for v148, v149 := range in.UsesFromMacOSBounds {
-				if v148 > 0 {
+			for v147, v148 := range in.UsesFromMacOSBounds {
+				if v147 > 0 {
 					out.RawByte(',')
 				}
-				if v149 == nil {
+				if v148 == nil {
 					out.RawString("null")
 				} else {
-					(*v149).MarshalEasyJSON(out)
+					(*v148).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte(']')
@@ -3728,27 +3408,27 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(out 
 // MarshalJSON supports json.Marshaler interface
 func (v HeadDependencies) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(&w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v HeadDependencies) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *HeadDependencies) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(&r, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *HeadDependencies) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV17(l, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(l, v)
 }
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(in *jlexer.Lexer, out *FormulaURL) {
+func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(in *jlexer.Lexer, out *FormulaURL) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3789,7 +3469,7 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(in *
 		in.Consumed()
 	}
 }
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(out *jwriter.Writer, in FormulaURL) {
+func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(out *jwriter.Writer, in FormulaURL) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -3829,27 +3509,27 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(out 
 // MarshalJSON supports json.Marshaler interface
 func (v FormulaURL) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(&w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v FormulaURL) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *FormulaURL) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(&r, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *FormulaURL) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV18(l, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(l, v)
 }
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(in *jlexer.Lexer, out *BottleFile) {
+func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(in *jlexer.Lexer, out *BottleFile) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3869,7 +3549,7 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(in *
 		}
 		switch key {
 		case "cellar":
-			out.Cellar = string(in.String())
+			out.Cellar = string(in.StringIntern())
 		case "url":
 			out.URL = string(in.String())
 		case "sha256":
@@ -3884,23 +3564,34 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(in *
 		in.Consumed()
 	}
 }
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(out *jwriter.Writer, in BottleFile) {
+func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(out *jwriter.Writer, in BottleFile) {
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Cellar != "" {
 		const prefix string = ",\"cellar\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Cellar))
 	}
-	{
+	if in.URL != "" {
 		const prefix string = ",\"url\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.URL))
 	}
-	{
+	if in.Sha256 != "" {
 		const prefix string = ",\"sha256\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Sha256))
 	}
 	out.RawByte('}')
@@ -3909,27 +3600,27 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(out 
 // MarshalJSON supports json.Marshaler interface
 func (v BottleFile) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(&w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v BottleFile) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *BottleFile) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(&r, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *BottleFile) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV19(l, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(l, v)
 }
-func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(in *jlexer.Lexer, out *Bottle) {
+func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV111(in *jlexer.Lexer, out *Bottle) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -3951,27 +3642,31 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(in 
 		case "rebuild":
 			out.Rebuild = int(in.Int())
 		case "root_url":
-			out.RootURL = string(in.String())
+			out.RootURL = string(in.StringIntern())
 		case "files":
 			if in.IsNull() {
 				in.Skip()
 			} else {
 				in.Delim('{')
-				out.Files = make(map[platform.Platform]*BottleFile)
+				if !in.IsDelim('}') {
+					out.Files = make(map[platform.Platform]*BottleFile)
+				} else {
+					out.Files = nil
+				}
 				for !in.IsDelim('}') {
 					key := platform.Platform(in.String())
 					in.WantColon()
-					var v150 *BottleFile
+					var v149 *BottleFile
 					if in.IsNull() {
 						in.Skip()
-						v150 = nil
+						v149 = nil
 					} else {
-						if v150 == nil {
-							v150 = new(BottleFile)
+						if v149 == nil {
+							v149 = new(BottleFile)
 						}
-						(*v150).UnmarshalEasyJSON(in)
+						(*v149).UnmarshalEasyJSON(in)
 					}
-					(out.Files)[key] = v150
+					(out.Files)[key] = v149
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -3986,40 +3681,49 @@ func easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(in 
 		in.Consumed()
 	}
 }
-func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(out *jwriter.Writer, in Bottle) {
+func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV111(out *jwriter.Writer, in Bottle) {
 	out.RawByte('{')
 	first := true
 	_ = first
-	{
+	if in.Rebuild != 0 {
 		const prefix string = ",\"rebuild\":"
+		first = false
 		out.RawString(prefix[1:])
 		out.Int(int(in.Rebuild))
 	}
-	{
+	if in.RootURL != "" {
 		const prefix string = ",\"root_url\":"
-		out.RawString(prefix)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.RootURL))
 	}
-	{
+	if len(in.Files) != 0 {
 		const prefix string = ",\"files\":"
-		out.RawString(prefix)
-		if in.Files == nil && (out.Flags&jwriter.NilMapAsEmpty) == 0 {
-			out.RawString(`null`)
+		if first {
+			first = false
+			out.RawString(prefix[1:])
 		} else {
+			out.RawString(prefix)
+		}
+		{
 			out.RawByte('{')
-			v151First := true
-			for v151Name, v151Value := range in.Files {
-				if v151First {
-					v151First = false
+			v150First := true
+			for v150Name, v150Value := range in.Files {
+				if v150First {
+					v150First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v151Name))
+				out.String(string(v150Name))
 				out.RawByte(':')
-				if v151Value == nil {
+				if v150Value == nil {
 					out.RawString("null")
 				} else {
-					(*v151Value).MarshalEasyJSON(out)
+					(*v150Value).MarshalEasyJSON(out)
 				}
 			}
 			out.RawByte('}')
@@ -4031,23 +3735,23 @@ func easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(out
 // MarshalJSON supports json.Marshaler interface
 func (v Bottle) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(&w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV111(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Bottle) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(w, v)
+	easyjson102f8a2fEncodeGithubComAct3AiHopsInternalApisFormulaeBrewShV111(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Bottle) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(&r, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV111(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Bottle) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV110(l, v)
+	easyjson102f8a2fDecodeGithubComAct3AiHopsInternalApisFormulaeBrewShV111(l, v)
 }

@@ -9,6 +9,8 @@ import (
 )
 
 // Index represents a formula index listing multiple formulae.
+//
+//easyjson:json
 type Index []*Info
 
 // Info represents Homebrew API information for a formula.
@@ -20,51 +22,51 @@ type Info struct {
 // PlatformInfo represents Homebrew API information for a formula.
 type PlatformInfo struct {
 	Name                    string                `json:"name"`
-	FullName                string                `json:"full_name"` // Deprecated: Evaluate from Tap/Name
-	Tap                     string                `json:"tap"`
-	OldName                 string                `json:"oldname"` // Deprecated: Use OldNames list
-	OldNames                []string              `json:"oldnames"`
-	Aliases                 []string              `json:"aliases"`
-	VersionedFormulae       []string              `json:"versioned_formulae"`
-	Desc                    string                `json:"desc"`
-	License                 string                `json:"license"`
-	Homepage                string                `json:"homepage"`
-	Versions                Versions              `json:"versions"`
-	URLs                    map[string]FormulaURL `json:"urls"`
-	Revision                int                   `json:"revision"`
-	VersionScheme           int                   `json:"version_scheme"`
-	Bottle                  map[string]*Bottle    `json:"bottle"`
-	PourBottleOnlyIf        *string               `json:"pour_bottle_only_if"`
-	KegOnly                 bool                  `json:"keg_only"`
-	KegOnlyReason           common.KegOnlyConfig  `json:"keg_only_reason"`
-	Options                 []any                 `json:"options"`
-	BuildDependencies       []string              `json:"build_dependencies"`
-	Dependencies            []string              `json:"dependencies"`
-	TestDependencies        []string              `json:"test_dependencies"`
-	RecommendedDependencies []string              `json:"recommended_dependencies"`
-	OptionalDependencies    []string              `json:"optional_dependencies"`
-	UsesFromMacOS           []any                 `json:"uses_from_macos"`
-	UsesFromMacOSBounds     []*MacOSBounds        `json:"uses_from_macos_bounds"`
-	Requirements            []*Requirement        `json:"requirements"`
-	ConflictsWith           []string              `json:"conflicts_with"`
-	ConflictsWithReasons    []string              `json:"conflicts_with_reasons"`
-	LinkOverwrite           []string              `json:"link_overwrite"`
-	Caveats                 *string               `json:"caveats"`
-	Installed               []InstalledInfo       `json:"installed"`
-	LinkedKeg               string                `json:"linked_keg"`
-	Pinned                  bool                  `json:"pinned"`
-	Outdated                bool                  `json:"outdated"`
-	Deprecated              bool                  `json:"deprecated"`
-	DeprecationDate         *string               `json:"deprecation_date"`
-	DeprecationReason       *string               `json:"deprecation_reason"`
-	Disabled                bool                  `json:"disabled"`
-	DisabledDate            *string               `json:"disable_date"`
-	DisabledReason          *string               `json:"disable_reason"`
-	PostInstallDefined      bool                  `json:"post_install_defined"`
-	Service                 *common.Service       `json:"service"`
-	TapGitHead              string                `json:"tap_git_head"`
-	RubySourcePath          string                `json:"ruby_source_path"`
-	RubySourceChecksum      map[string]string     `json:"ruby_source_checksum"`
+	FullName                string                `json:"full_name,omitempty"` // Deprecated: Evaluate from Tap/Name
+	Tap                     string                `json:"tap,omitempty,intern"`
+	OldName                 string                `json:"oldname,omitempty"` // Deprecated: Use OldNames list
+	OldNames                []string              `json:"oldnames,omitempty"`
+	Aliases                 []string              `json:"aliases,omitempty"`
+	VersionedFormulae       []string              `json:"versioned_formulae,omitempty"`
+	Desc                    string                `json:"desc,omitempty"`
+	License                 string                `json:"license,omitempty"`
+	Homepage                string                `json:"homepage,omitempty"`
+	Versions                Versions              `json:"versions,omitempty"`
+	URLs                    map[string]FormulaURL `json:"urls,omitempty"`
+	Revision                int                   `json:"revision,omitempty"`
+	VersionScheme           int                   `json:"version_scheme,omitempty"`
+	Bottle                  map[string]*Bottle    `json:"bottle,omitempty"`
+	PourBottleOnlyIf        *string               `json:"pour_bottle_only_if,omitempty"`
+	KegOnly                 bool                  `json:"keg_only,omitempty"`
+	KegOnlyReason           common.KegOnlyConfig  `json:"keg_only_reason,omitempty"`
+	Options                 []any                 `json:"options,omitempty"`
+	BuildDependencies       []string              `json:"build_dependencies,omitempty"`
+	Dependencies            []string              `json:"dependencies,omitempty"`
+	TestDependencies        []string              `json:"test_dependencies,omitempty"`
+	RecommendedDependencies []string              `json:"recommended_dependencies,omitempty"`
+	OptionalDependencies    []string              `json:"optional_dependencies,omitempty"`
+	UsesFromMacOS           []any                 `json:"uses_from_macos,omitempty"`
+	UsesFromMacOSBounds     []*MacOSBounds        `json:"uses_from_macos_bounds,omitempty"`
+	Requirements            []*Requirement        `json:"requirements,omitempty"`
+	ConflictsWith           []string              `json:"conflicts_with,omitempty"`
+	ConflictsWithReasons    []string              `json:"conflicts_with_reasons,omitempty"`
+	LinkOverwrite           []string              `json:"link_overwrite,omitempty"`
+	Caveats                 *string               `json:"caveats,omitempty"`
+	Installed               []InstalledInfo       `json:"installed,omitempty"`
+	LinkedKeg               string                `json:"linked_keg,omitempty"`
+	Pinned                  bool                  `json:"pinned,omitempty"`
+	Outdated                bool                  `json:"outdated,omitempty"`
+	Deprecated              bool                  `json:"deprecated,omitempty"`
+	DeprecationDate         *string               `json:"deprecation_date,omitempty"`
+	DeprecationReason       *string               `json:"deprecation_reason,omitempty"`
+	Disabled                bool                  `json:"disabled,omitempty"`
+	DisabledDate            *string               `json:"disable_date,omitempty"`
+	DisabledReason          *string               `json:"disable_reason,omitempty"`
+	PostInstallDefined      bool                  `json:"post_install_defined,omitempty"`
+	Service                 *common.Service       `json:"service,omitempty"`
+	TapGitHead              string                `json:"tap_git_head,omitempty,intern"`
+	RubySourcePath          string                `json:"ruby_source_path,omitempty"`
+	RubySourceChecksum      map[string]string     `json:"ruby_source_checksum,omitempty"`
 	HeadDependencies        *HeadDependencies     `json:"head_dependencies,omitempty"`
 }
 
@@ -97,11 +99,11 @@ type InstalledInfo struct {
 
 // RuntimeDependency represents a required dependency.
 type RuntimeDependency struct {
-	FullName         string `json:"full_name"`
-	Version          string `json:"version"`
-	Revision         int    `json:"revision"`
-	PkgVersionValue  string `json:"pkg_version"`
-	DeclaredDirectly bool   `json:"declared_directly"`
+	FullName         string `json:"full_name,omitempty"`
+	Version          string `json:"version,omitempty"`
+	Revision         int    `json:"revision,omitempty"`
+	PkgVersionValue  string `json:"pkg_version,omitempty"`
+	DeclaredDirectly bool   `json:"declared_directly,omitempty"`
 }
 
 // Variation represents an entry in the variations map.
@@ -109,21 +111,21 @@ type Variation PlatformInfo
 
 // HeadDependencies represents the head_dependencies field.
 type HeadDependencies struct {
-	BuildDependencies       []string       `json:"build_dependencies"`
-	Dependencies            []string       `json:"dependencies"`
-	TestDependencies        []string       `json:"test_dependencies"`
-	RecommendedDependencies []string       `json:"recommended_dependencies"`
-	OptionalDependencies    []string       `json:"optional_dependencies"`
-	UsesFromMacOS           []any          `json:"uses_from_macos"`
-	UsesFromMacOSBounds     []*MacOSBounds `json:"uses_from_macos_bounds"`
+	BuildDependencies       []string       `json:"build_dependencies,omitempty"`
+	Dependencies            []string       `json:"dependencies,omitempty"`
+	TestDependencies        []string       `json:"test_dependencies,omitempty"`
+	RecommendedDependencies []string       `json:"recommended_dependencies,omitempty"`
+	OptionalDependencies    []string       `json:"optional_dependencies,omitempty"`
+	UsesFromMacOS           []any          `json:"uses_from_macos,omitempty"`
+	UsesFromMacOSBounds     []*MacOSBounds `json:"uses_from_macos_bounds,omitempty"`
 }
 
 // Versions represents the available versions.
 type Versions struct {
 	Others map[string]any `json:",inline"`
-	Stable string         `json:"stable"`
-	Head   *string        `json:"head"`
-	Bottle bool           `json:"bottle"`
+	Stable string         `json:"stable,omitempty"`
+	Head   *string        `json:"head,omitempty"`
+	Bottle bool           `json:"bottle,omitempty"`
 }
 
 const (
@@ -132,24 +134,24 @@ const (
 
 // Bottle represents the bottle section.
 type Bottle struct {
-	Rebuild int                               `json:"rebuild"`
-	RootURL string                            `json:"root_url"`
-	Files   map[platform.Platform]*BottleFile `json:"files"`
+	Rebuild int                               `json:"rebuild,omitempty"`
+	RootURL string                            `json:"root_url,omitempty,intern"`
+	Files   map[platform.Platform]*BottleFile `json:"files,omitempty"`
 }
 
 // MacOSBounds represents the uses_from_macos_bounds entries.
 type MacOSBounds struct {
-	Since string `json:"since"`
+	Since string `json:"since,omitempty"`
 }
 
 // Requirement represents a requirement.
 type Requirement struct {
-	Name     string   `json:"name"`
-	Cask     any      `json:"cask"`
-	Download any      `json:"download"`
-	Version  string   `json:"version"`
-	Contexts []string `json:"contexts"`
-	Specs    []string `json:"specs"`
+	Name     string   `json:"name,omitempty"`
+	Cask     any      `json:"cask,omitempty"`
+	Download any      `json:"download,omitempty"`
+	Version  string   `json:"version,omitempty"`
+	Contexts []string `json:"contexts,omitempty"`
+	Specs    []string `json:"specs,omitempty"`
 }
 
 // if requirement name is confirmed to be a static list, use the below type
@@ -166,9 +168,9 @@ type Requirement struct {
 
 // BottleFile defines a bottle.files entry.
 type BottleFile struct {
-	Cellar string `json:"cellar"`
-	URL    string `json:"url"`
-	Sha256 string `json:"sha256"`
+	Cellar string `json:"cellar,omitempty,intern"`
+	URL    string `json:"url,omitempty"`
+	Sha256 string `json:"sha256,omitempty"`
 }
 
 // Relocatable reports if the bottle is relocatable.

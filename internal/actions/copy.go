@@ -2,13 +2,13 @@ package actions
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
 	"path/filepath"
 	"strings"
 
+	"github.com/mailru/easyjson"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/sourcegraph/conc/pool"
 	"oras.land/oras-go/v2"
@@ -337,7 +337,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 			return ocispec.Descriptor{}, err
 		}
 
-		platformMetadataJSON, err := json.Marshal(platformInfo)
+		platformMetadataJSON, err := easyjson.Marshal(platformInfo)
 		if err != nil {
 			return ocispec.Descriptor{}, err
 		}
@@ -355,7 +355,7 @@ func pushMetadata(ctx context.Context, dst oras.Target, manifestDesc ocispec.Des
 		l = l.With(slog.String("bottle", f.FullName))
 
 		// Marshal formula API information to JSON
-		infoJSON, err := json.Marshal(f)
+		infoJSON, err := easyjson.Marshal(f)
 		if err != nil {
 			return ocispec.Descriptor{}, err
 		}

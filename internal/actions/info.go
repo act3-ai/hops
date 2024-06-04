@@ -2,9 +2,10 @@ package actions
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
+
+	"github.com/mailru/easyjson"
 
 	"github.com/act3-ai/hops/internal/formula"
 	"github.com/act3-ai/hops/internal/platform"
@@ -53,7 +54,7 @@ func jsonV1(ctx context.Context, fmlry formula.Formulary, names []string) error 
 	for _, f := range formulae {
 		switch f := f.(type) {
 		case *formula.V1:
-			content, err := json.Marshal(f.SourceV1())
+			content, err := easyjson.Marshal(f.SourceV1())
 			if err != nil {
 				return err
 			}

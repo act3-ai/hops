@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/mailru/easyjson"
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content"
 	"oras.land/oras-go/v2/errdef"
@@ -37,6 +38,27 @@ func FetchDecode[T any](ctx context.Context, fetcher content.Fetcher, desc ocisp
 		// decoder.DisallowUnknownFields()
 
 		if err := decoder.Decode(obj); err != nil {
+			return fmt.Errorf("decoding JSON failed: %w", err)
+		}
+
+		return nil
+	})
+	return obj, err
+}
+
+// FetchEasyUnmarshal safely fetches the content described by the descriptor and decodes JSON into T.
+// The fetched content is verified against the size and the digest.
+func FetchEasyUnmarshal[T easyjson.Unmarshaler](ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) (T, error) {
+	var obj T
+	err := fetchRead(ctx, fetcher, desc, func(r io.Reader) error {
+		// decoder := json.NewDecoder(r)
+		// // decoder.DisallowUnknownFields()
+
+		// if err := decoder.Decode(obj); err != nil {
+		// 	return fmt.Errorf("decoding JSON failed: %w", err)
+		// }
+
+		if err := easyjson.UnmarshalFromReader(r, obj); err != nil {
 			return fmt.Errorf("decoding JSON failed: %w", err)
 		}
 

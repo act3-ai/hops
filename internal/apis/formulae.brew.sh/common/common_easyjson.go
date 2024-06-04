@@ -66,7 +66,7 @@ func easyjsonC803d3e7DecodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(i
 				out.Run = in.Interface()
 			}
 		case "run_type":
-			out.RunType = ServiceRunType(in.String())
+			out.RunType = ServiceRunType(in.StringIntern())
 		case "environment_variables":
 			if in.IsNull() {
 				in.Skip()
@@ -159,7 +159,7 @@ func easyjsonC803d3e7EncodeGithubComAct3AiHopsInternalApisFormulaeBrewShCommon(o
 			out.Raw(json.Marshal(in.Run))
 		}
 	}
-	{
+	if in.RunType != "" {
 		const prefix string = ",\"run_type\":"
 		out.RawString(prefix)
 		out.String(string(in.RunType))

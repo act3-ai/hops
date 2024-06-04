@@ -23,8 +23,8 @@ type ProcessType string
 
 // Known process types.
 const (
-	ProcessTypeInteractive = "interactive" // value for interactive process
-	ProcessTypeBackground  = "background"  // value for background process
+	ProcessTypeInteractive ProcessType = "interactive" // value for interactive process
+	ProcessTypeBackground  ProcessType = "background"  // value for background process
 )
 
 // Service represents the service block.
@@ -46,7 +46,7 @@ type Service struct {
 	// Parse as any, require furthing parsing if needed
 	Run any `json:"run"`
 
-	RunType              ServiceRunType    `json:"run_type"`
+	RunType              ServiceRunType    `json:"run_type,omitempty,intern"`
 	EnvironmentVariables map[string]string `json:"environment_variables,omitempty"`
 	Interval             time.Duration     `json:"interval,omitempty"`
 	Cron                 string            `json:"cron,omitempty"`
