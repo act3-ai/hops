@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] (2024-06-05)
+
+### Bug Fixes
+
+- **goreleaser**: update goreleaser configuration for goreleaser v2 and improve Homebrew Tap deployments ([0334471](https://github.com/act3-ai/hops/commit/0334471b3ff45369940ad42fb946dcad24103d04))
+
+### Dependencies
+
+- **go.mod**: Bump golang.org/x/term from 0.20.0 to 0.21.0 ([1c9f699](https://github.com/act3-ai/hops/commit/1c9f6996bada58798d05a198ba01241685534920))
+- **github-actions**: Bump goreleaser/goreleaser-action from 5 to 6 ([98846d1](https://github.com/act3-ai/hops/commit/98846d184fce9f19091850ac37ee1f31c41bec47))
+- **go.mod**: Bump golang.org/x/mod from 0.17.0 to 0.18.0 ([36d8b55](https://github.com/act3-ai/hops/commit/36d8b556d299c44dc0302ed55f20c1d1dee7019f))
+
 ## [0.2.1] (2024-06-05)
 
 ### Bug Fixes
@@ -117,6 +129,7 @@ All notable changes to this project will be documented in this file.
 - **release**: fix flag ([6b71969](https://github.com/act3-ai/hops/commit/6b7196947ace70c8872e678c7070e5f615adf167))
 - **docs**: generate docs ([bf3fe7d](https://github.com/act3-ai/hops/commit/bf3fe7de1c3cf7f955d9e94386964ea6d966eca2))
 
+[0.2.2]: https://github.com/act3-ai/hops/compare/v0.2.1..v0.2.2
 [0.2.1]: https://github.com/act3-ai/hops/compare/v0.2.0..v0.2.1
 [0.2.0]: https://github.com/act3-ai/hops/compare/v0.1.3..v0.2.0
 [0.1.3]: https://github.com/act3-ai/hops/compare/v0.1.2..v0.1.3
