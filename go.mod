@@ -20,7 +20,7 @@ require (
 	github.com/xlab/treeprint v1.2.0
 	gitlab.com/act3-ai/asce/go-common v0.0.0-20240515134838-75dff81e3d47
 	golang.org/x/mod v0.17.0
-	golang.org/x/term v0.20.0
+	golang.org/x/term v0.21.0
 	gopkg.in/yaml.v3 v3.0.1
 	oras.land/oras-go/v2 v2.5.0
 )
@@ -46,6 +46,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
 	howett.net/plist v0.0.0-20181124034731-591f970eefbb // indirect
 )
