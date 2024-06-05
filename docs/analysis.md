@@ -113,7 +113,7 @@ By listing all tags and identifying the latest tags:
 | 4/12 | `hops xinstall gh` | cold  | 1.37s   | 27.86% | 24668kb | 36    |
 | 4/12 | `hops xinstall gh` | warm  | 0.62s   | 45%    | 22686kb | 30    |
 
-This test surprised me, I thought it would be quicker for the cold cache. I tried it again but instead with the tag hard-coded, here are those results:
+This test surprised me, I thought it would be quicker for the cold cache. I tried it again but instead with the tag hardcoded, here are those results:
 
 | Command            | Cache | Elapsed | User  | System | CPU%   | Tests |
 | ------------------ | ----- | ------- | ----- | ------ | ------ | ----- |

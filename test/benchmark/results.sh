@@ -24,7 +24,7 @@ for file in "${dir}"/tests/*.json; do
 	system=$(jq 'length as $l | reduce .[] as $item (0; . + $item.system) / $l | .*100|round/100' "$file")
 	cpu=$(jq 'length as $l | reduce .[] as $item (0; . + ($item.cpu|rtrimstr("%")|tonumber)) / $l | .*100|round/100' "$file")
 	maxrss=$(jq 'length as $l | reduce .[] as $item (0; . + $item.maxrss) / $l | .|round' "$file")
-	if (( maxrss == 0 )); then
+	if ((maxrss == 0)); then
 		maxrss="no data"
 	else
 		maxrss="${maxrss}kb"
