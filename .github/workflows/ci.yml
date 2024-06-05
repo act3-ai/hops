@@ -32,12 +32,12 @@ jobs:
           fetch-depth: 0
 
       - name: Super-linter
-        uses: super-linter/super-linter@v6.6.0  # x-release-please-version
+        uses: super-linter/super-linter@v6.6.0 # x-release-please-version
         env:
+          VALIDATE_NATURAL_LANGUAGE: false
           # VALIDATE_MARKDOWN: false # disable markdownlint if markdownlint-cli v2 is desired
           # To report GitHub Actions status checks
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
   lint:
     name: Lint
@@ -107,7 +107,7 @@ jobs:
           output: both
 
       - name: Set job summary
-        run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
+        run: cat code-coverage-results.md >>"$GITHUB_STEP_SUMMARY"
 
       - name: Upload test artifacts
         id: upload
@@ -153,7 +153,7 @@ jobs:
             -trimpath -ldflags="-s -w -X 'main.version=${{env.VERSION}}'" \
             -o bin/hops \
             ./cmd/hops
-          echo "executable-path=bin/hops" >> $GITHUB_OUTPUT
+          echo "executable-path=bin/hops" >>"$GITHUB_OUTPUT"
 
       - name: Create archive
         id: archive
@@ -165,8 +165,8 @@ jobs:
           mkdir -p ${{env.ARCHIVE_DIR}}/bin/
           mv bin/hops ${{env.ARCHIVE_DIR}}/bin/
           tar -czvf ${{env.ARCHIVE_PATH}} ${{env.ARCHIVE_DIR}}/
-          echo "archive-path=${{env.ARCHIVE_PATH}}" >> $GITHUB_OUTPUT
-          echo "executable-path=${{env.ARCHIVE_DIR}}/bin/hops" >> $GITHUB_OUTPUT
+          echo "archive-path=${{env.ARCHIVE_PATH}}" >>"$GITHUB_OUTPUT"
+          echo "executable-path=${{env.ARCHIVE_DIR}}/bin/hops" >>"$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         id: upload
@@ -245,7 +245,7 @@ jobs:
           tar -xvf hops_linux_amd64.tar.gz
       - name: Add Hops to PATH
         run: |
-          echo "hops/${{env.VERSION}}/bin" >> $GITHUB_PATH
+          echo "hops/${{env.VERSION}}/bin" >>"$GITHUB_PATH"
 
       # Test Homebrew API mode
       - name: hops install (api, cold)
@@ -259,8 +259,8 @@ jobs:
       # Test standalone registry mode
       - run: |
           hops copy node --to "${{ github.workspace }}/bottles" --to-oci-layout
-          echo "HOPS_REGISTRY=${{ github.workspace }}/bottles" >> "$GITHUB_ENV"
-          echo "HOPS_REGISTRY_OCI_LAYOUT=true" >> "$GITHUB_ENV"
+          echo "HOPS_REGISTRY=${{ github.workspace }}/bottles" >>"$GITHUB_ENV"
+          echo "HOPS_REGISTRY_OCI_LAYOUT=true" >>"$GITHUB_ENV"
       - run: |
           cat ${{ github.workspace }}/bottles/node/index.json
       - uses: actions/upload-artifact@v4
