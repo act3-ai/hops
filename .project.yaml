@@ -4,12 +4,12 @@ apiVersion: project.act3-ace.io/v1beta1
 
 # List of Blueprints configured for this project
 blueprints:
-    - ref: https://git.act3-ace.com/devsecops/project-templates/go-cli.git@v2.0.3
-      inputs:
-        envPrefix: HOPS # Prefix for configuration environment variables
-        executableName: hops # Name of the CLI's executable
-        groupName: hops.act3-ace.ai # API group name for your project
-        modulePath: github.com/act3-ai/hops.git # Go module path for the project
+  - ref: https://git.act3-ace.com/devsecops/project-templates/go-cli.git@v2.0.3
+    inputs:
+      envPrefix: HOPS # Prefix for configuration environment variables
+      executableName: hops # Name of the CLI's executable
+      groupName: hops.act3-ace.ai # API group name for your project
+      modulePath: github.com/act3-ai/hops.git # Go module path for the project
 
 # Edit configuration interactively:
 #   Edit metadata:         act3-pt edit
