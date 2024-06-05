@@ -392,9 +392,6 @@ func ensureAllSuccessors(dst oras.Target) preCopyFunc {
 
 func ensurePlatformSuccessors(dst oras.Target, plat platform.Platform) preCopyFunc {
 	return func(ctx context.Context, node ocispec.Descriptor) error {
-		if node.Digest.Encoded() == "2a9f7c8f62d45593810a0fc926f6eec6e71a027774424240485c7d89bce15270" {
-			fmt.Println("FOUND IT!!!")
-		}
 		// Check if manifest exists in dst
 		nodeExists, err := dst.Exists(ctx, node)
 		switch {

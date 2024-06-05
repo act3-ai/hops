@@ -2,13 +2,11 @@ package regbottle
 
 import (
 	"context"
-	"fmt"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"oras.land/oras-go/v2/content"
 
 	"github.com/act3-ai/hops/internal/platform"
-	"github.com/act3-ai/hops/internal/utils/debugutil"
 	"github.com/act3-ai/hops/internal/utils/orasutil"
 )
 
@@ -19,8 +17,6 @@ func successorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 	}
 
 	return func(ctx context.Context, fetcher content.Fetcher, desc ocispec.Descriptor) ([]ocispec.Descriptor, error) {
-		// fmt.Println(debugutil.DebugMarshalJSON(desc))
-		fmt.Printf("desc.MediaType: %v\n", desc.MediaType)
 		switch desc.MediaType {
 		case ocispec.MediaTypeImageIndex,
 			"application/vnd.docker.distribution.manifest.list.v2+json":
@@ -29,7 +25,6 @@ func successorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 			if err != nil {
 				return nil, err
 			}
-			fmt.Println(debugutil.DebugMarshalJSON(index))
 
 			// Return nodes for platform and subject
 			sel, err := platform.SelectManifest(index, plat)
@@ -60,8 +55,6 @@ func successorsForPlatform(plat platform.Platform) findSuccessorsFunc {
 			if manifest.Config.MediaType == "application/vnd.brew.formula.metadata.v1+json" {
 				nodes = append(nodes, manifest.Config)
 			}
-
-			fmt.Println(debugutil.DebugMarshalJSON(manifest.Layers))
 
 			// Copy layers
 			return append(nodes, manifest.Layers...), nil
