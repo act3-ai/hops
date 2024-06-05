@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] (2024-06-05)
+
+### Bug Fixes
+
+- **search**: rule was disabling search command ([af693a5](https://github.com/act3-ai/hops/commit/af693a5684d80d4a4cc8233d1a13528daca213f5))
+
 ## [0.2.0] (2024-05-29)
 
 ### Features
@@ -111,6 +117,7 @@ All notable changes to this project will be documented in this file.
 - **release**: fix flag ([6b71969](https://github.com/act3-ai/hops/commit/6b7196947ace70c8872e678c7070e5f615adf167))
 - **docs**: generate docs ([bf3fe7d](https://github.com/act3-ai/hops/commit/bf3fe7de1c3cf7f955d9e94386964ea6d966eca2))
 
+[0.2.1]: https://github.com/act3-ai/hops/compare/v0.2.0..v0.2.1
 [0.2.0]: https://github.com/act3-ai/hops/compare/v0.1.3..v0.2.0
 [0.1.3]: https://github.com/act3-ai/hops/compare/v0.1.2..v0.1.3
 [0.1.2]: https://github.com/act3-ai/hops/compare/v0.1.1..v0.1.2
