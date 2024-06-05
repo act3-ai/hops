@@ -33,7 +33,7 @@ tasks:
     desc: "Build from source with -race flag"
     deps: [generate]
     env:
-      CGO_ENABLED: 0
+      CGO_ENABLED: 1
     cmds:
       - mkdir -p ./bin
       - go build -race -o bin/hops ./cmd/hops

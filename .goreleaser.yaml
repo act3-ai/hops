@@ -1,5 +1,5 @@
-# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-version: 1
+# yaml-language-server: $schema=tool/goreleaser.schema.json
+version: 2
 
 builds:
   - id: default
@@ -132,14 +132,15 @@ brews:
   - name: hops
     ids: [default]
     commit_author:
-      name: buildbot
-      email: buildbot@act3-ace.com
+      name: goreleaser[bot]
+      email: bot@goreleaser.com
     commit_msg_template: |
       fix(hops): updated to {{.Tag}}
     directory: Formula
     homepage: https://github.com/act3-ai/hops
     description: "Homebrew Bottle installer with a focus on performance and mobility."
     license: "MIT"
+    skip_upload: auto
     test: |
       system "#{bin}/hops --version"
     extra_install: |
@@ -154,13 +155,7 @@ brews:
     repository:
       owner: act3-ai
       name: homebrew-tap
-      branch: update-hops-{{.Tag}}
-      pull_request:
-        enabled: true
-        base:
-          owner: act3-ai
-          name: homebrew-tap
-          branch: main
+      branch: bump-hops-{{.Tag}}
       git:
         url: git@github.com:act3-ai/homebrew-tap.git
         private_key: "{{.Env.TAP_DEPLOY_KEY}}"

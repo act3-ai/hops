@@ -22,15 +22,20 @@ hops info [formula]... [flags]
 ## Options
 
 ```plaintext
-  -h, --help                 help for info
-      --json string[="v1"]   Print a JSON representation
-  -p, --platform platform    View dependencies on platform
+      --header stringArray       Add custom headers to requests
+  -h, --help                     help for info
+      --json string[="v1"]       Print a JSON representation
+      --oci-layout               Set target as an OCI image layout
+      --plain-http               Allow insecure connections to registry without SSL check
+  -p, --platform platform        View dependencies on platform
+      --registry string          Registry prefix for bottles (overrides config)
+      --registry-config string   Path of the authentication file for registry
 ```
 
 ## Options inherited from parent commands
 
 ```plaintext
-      --concurrency int   Concurrency level (default 8)
+      --concurrency int   Concurrency level (default 12)
       --config strings    Set config file search paths (default `hops-config.yaml`,`$XDG_CONFIG_HOME/hops/config.yaml`,`/etc/hops/config.yaml`)
   -d, --debug count       Display more debugging information
       --log-fmt string    Set format for log messages. Options: text, json (default "text")
