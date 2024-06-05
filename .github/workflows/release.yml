@@ -40,7 +40,7 @@ jobs:
       - name: Set up GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
-          version: "~> v1"
+          version: "~> v2"
           install-only: true
 
       # Authenticate to registry
@@ -54,9 +54,9 @@ jobs:
       # Do the release stuff
       - name: Generate release notes
         run: |
-          git-cliff --current --strip header >> $GITHUB_STEP_SUMMARY
+          git-cliff --current --strip header >>"$GITHUB_STEP_SUMMARY"
           # RELEASE_NOTES=$(git-cliff --current --strip header)
-          # echo "release-notes=\"$RELEASE_NOTES\"" >> $GITHUB_OUTPUT
+          # echo "release-notes=\"$RELEASE_NOTES\"" >>"$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run GoReleaser
