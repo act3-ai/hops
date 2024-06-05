@@ -2,6 +2,7 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/act3-ai/hops)
 ![GitHub License](https://img.shields.io/github/license/act3-ai/hops)
+![GitHub Actions CI Workflow](https://github.com/act3-ai/hops/actions/workflows/ci.yml/badge.svg)
 
 Hops is an experimental Homebrew Bottle installer written in Go with a focus on performance and mobility.
 
