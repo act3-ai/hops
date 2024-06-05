@@ -7,12 +7,20 @@ All notable changes to this project will be documented in this file.
 ### Bug Fixes
 
 - **goreleaser**: update goreleaser configuration for goreleaser v2 and improve Homebrew Tap deployments ([0334471](https://github.com/act3-ai/hops/commit/0334471b3ff45369940ad42fb946dcad24103d04))
+- **logs**: remove some debug logs ([5830700](https://github.com/act3-ai/hops/commit/5830700572eb117a719194c4006febf0f874f5bf))
 
 ### Dependencies
 
 - **go.mod**: Bump golang.org/x/term from 0.20.0 to 0.21.0 ([1c9f699](https://github.com/act3-ai/hops/commit/1c9f6996bada58798d05a198ba01241685534920))
 - **github-actions**: Bump goreleaser/goreleaser-action from 5 to 6 ([98846d1](https://github.com/act3-ai/hops/commit/98846d184fce9f19091850ac37ee1f31c41bec47))
 - **go.mod**: Bump golang.org/x/mod from 0.17.0 to 0.18.0 ([36d8b55](https://github.com/act3-ai/hops/commit/36d8b556d299c44dc0302ed55f20c1d1dee7019f))
+- **go**: update to go v1.22.4 ([90b49ef](https://github.com/act3-ai/hops/commit/90b49efbe817c390f2e585d165d6f139b74beded))
+
+### Miscellaneous Tasks
+
+- **lint**: add super linter action ([00a102c](https://github.com/act3-ai/hops/commit/00a102c98de59a44a7977cbf1612c5246df54fd8))
+- **README**: add CI workflow status badge ([7ed4a8c](https://github.com/act3-ai/hops/commit/7ed4a8c05ffb285467da07c463056f0483c1f68a))
+- **CodeQL**: enable CodeQL scanning ([bf29bfc](https://github.com/act3-ai/hops/commit/bf29bfcf00d7e2a706416c49f4eb95036625690f))
 
 ## [0.2.1] (2024-06-05)
 
