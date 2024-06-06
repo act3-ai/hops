@@ -116,11 +116,23 @@ func untar(r io.Reader, dst string) error {
 		// check the file type
 		switch header.Typeflag {
 		case tar.TypeDir:
-			// if its a dir and it doesn't exist create it
-			if _, err := os.Stat(target); err != nil {
+			info, err := os.Stat(target)
+			switch {
+			// path does not exist
+			case errors.Is(err, os.ErrNotExist):
+				// create dir
 				if err := os.MkdirAll(target, 0o775); err != nil {
 					return err
 				}
+			// unknown path error
+			case err != nil:
+				return fmt.Errorf("checking destination: %w", err)
+			// path exists but is a file
+			case !info.IsDir():
+				return fmt.Errorf("creating directory %s: destination is a file", target)
+			// directory exists
+			default:
+				return nil
 			}
 		case tar.TypeReg:
 			// if it's a file create it
@@ -141,8 +153,22 @@ func untar(r io.Reader, dst string) error {
 				return fmt.Errorf("closing copied file: %w", err)
 			}
 		case tar.TypeSymlink:
-			// if it's a symlink and it doesn't exist create it
-			if _, err := os.Stat(target); err != nil {
+			_, err := os.Stat(target)
+			switch {
+			// path already exists
+			case err == nil:
+				return nil
+			// unknown path error
+			case !errors.Is(err, os.ErrNotExist):
+				return fmt.Errorf("checking destination: %w", err)
+			// cwe-22: the created symlink can point outside of the archive directory.
+			// creating the symlink itself is not the concern, but subsequent files
+			// could be created in the symlinked location, overwriting system files.
+			// evaluate locality from the symlink file's directory
+			case !filepath.IsLocal(filepath.Join(filepath.Dir(header.Name), header.Linkname)):
+				return errors.New("archive contains path traversal, cannot create symlink " + target + " -> " + header.Linkname)
+			// create symlink
+			default:
 				err = os.Symlink(header.Linkname, target)
 				if err != nil {
 					return fmt.Errorf("creating symlink: %w", err)
