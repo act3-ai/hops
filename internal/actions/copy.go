@@ -167,7 +167,7 @@ func (action *Copy) resolve(ctx context.Context, formulary formula.Formulary, na
 	for _, base := range bases {
 		base, ok := base.(*formula.V1)
 		if !ok {
-			return nil, fmt.Errorf("no v1 metadata for formula %s", base.Name())
+			return nil, errors.New("no v1 metadata for formula " + base.Name())
 		}
 		metadata = append(metadata, base)
 	}

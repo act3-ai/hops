@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/MakeNowJust/heredoc/v2"
@@ -73,7 +74,7 @@ func (action *Search) Run(ctx context.Context, terms ...string) error {
 	}
 
 	if len(hits) == 0 {
-		return fmt.Errorf("no matches found for %q", strings.Join(terms, " "))
+		return errors.New("no matches found for " + strconv.Quote(strings.Join(terms, " ")))
 	}
 
 	slog.Info("Formulae")

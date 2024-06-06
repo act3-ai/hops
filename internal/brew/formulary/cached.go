@@ -31,7 +31,7 @@ type V1Cache struct {
 func (index *V1Cache) FetchFormula(_ context.Context, name string) (formula.MultiPlatformFormula, error) {
 	data := index.Find(name)
 	if data == nil {
-		return nil, errdef.NewErrFormulaNotFound(name)
+		return nil, errdef.NewFormulaNotFoundError(name)
 	}
 	return formula.FromV1(data), nil
 }
