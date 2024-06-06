@@ -102,6 +102,7 @@ func untar(r io.Reader, dst string) error {
 		case header == nil:
 			continue
 		// cwe-22: validate that the path does not contain ".."
+		// already handled by the error returned from tr.Next(), but here for redundancy.
 		case !filepath.IsLocal(header.Name):
 			return errors.New("archive contains path traversal, cannot write to path " + header.Name)
 		}
