@@ -42,7 +42,7 @@ func (deps *DependencyGraph) Roots() []formula.PlatformFormula {
 func (deps *DependencyGraph) Tree(root string) (treeprint.Tree, error) {
 	tree, ok := deps.trees[root]
 	if !ok {
-		return nil, errdef.NewErrFormulaNotFound(root)
+		return nil, errdef.NewFormulaNotFoundError(root)
 	}
 	return tree, nil
 }

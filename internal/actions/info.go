@@ -3,6 +3,7 @@ package actions
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -59,7 +60,7 @@ func jsonV1(ctx context.Context, fmlry formula.Formulary, names []string) error 
 			}
 			fmt.Println(string(content))
 		default:
-			return fmt.Errorf("could not get v1 API data for formula %s", f.Name())
+			return errors.New("could not get v1 API data for formula " + f.Name())
 		}
 	}
 
@@ -77,7 +78,7 @@ func (action *Info) pretty(ctx context.Context, fmlry formula.Formulary, names [
 		case formula.PlatformFormula:
 			pretty.Info(f, action.Prefix())
 		default:
-			return fmt.Errorf("missing metadata for formula %s", f.Name())
+			return errors.New("missing metadata for formula " + f.Name())
 		}
 	}
 

@@ -148,7 +148,7 @@ func (action *Install) resolveInstalls(ctx context.Context, names []string) ([]f
 			%s
 			To reinstall %s, run:
 			  hops reinstall %s`,
-			errdef.NewErrFormulaUpToDate(f.Name(), version).Error(),
+			errdef.NewFormulaUpToDateError(f.Name(), version).Error(),
 			version,
 			f.Name()))
 	}

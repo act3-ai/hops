@@ -1,22 +1,39 @@
 package errdef
 
 import (
-	"errors"
-	"fmt"
+	"strconv"
 )
 
-// ErrFormulaNotFound represents a formula search error.
-var ErrFormulaNotFound = errors.New("formula not found")
-
-// NewErrFormulaNotFound wraps ErrFormulaNotFound with the formula name.
-func NewErrFormulaNotFound(formula string) error {
-	return fmt.Errorf("%q: %w", formula, ErrFormulaNotFound)
+// FormulaNotFoundError is emitted when a a formula could not be found.
+type FormulaNotFoundError struct {
+	name string
 }
 
-// ErrFormulaUpToDate reports a formula already installed.
-var ErrFormulaUpToDate = errors.New("already installed and up-to-date")
+// Error implements error.
+func (err FormulaNotFoundError) Error() string {
+	return "no available formula with the name " + strconv.Quote(err.name)
+}
 
-// NewErrFormulaUpToDate wraps ErrFormulaUpToDate with the formula name.
-func NewErrFormulaUpToDate(name, version string) error {
-	return fmt.Errorf("%s %s is %w", name, version, ErrFormulaUpToDate)
+// NewFormulaNotFoundError produces a FormulaNotFoundError.
+func NewFormulaNotFoundError(name string) error {
+	return FormulaNotFoundError{name: name}
+}
+
+// FormulaUpToDateError reports a formula already installed.
+type FormulaUpToDateError struct {
+	name    string
+	version string
+}
+
+// Error implements error.
+func (err FormulaUpToDateError) Error() string {
+	return err.name + " " + err.version + " is already installed and up-to-date"
+}
+
+// NewFormulaUpToDateError produces a FormulaUpToDateError.
+func NewFormulaUpToDateError(name, version string) error {
+	return FormulaUpToDateError{
+		name:    name,
+		version: version,
+	}
 }

@@ -2,6 +2,7 @@ package actions
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -49,7 +50,7 @@ func (action *Link) Run(ctx context.Context, args []string) error {
 			return action.Prefix().NewErrNoSuchKeg(f.Name())
 		}
 		if f.IsKegOnly() && !action.Force {
-			return fmt.Errorf("%s is keg-only and must be linked with %s", f.Name(), o.StyleBold("--force"))
+			return errors.New(f.Name() + " is keg-only and must be linked with " + o.StyleBold("--force"))
 		}
 	}
 
