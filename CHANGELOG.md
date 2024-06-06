@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3-beta.2] (2024-06-06)
+
+### Miscellaneous Tasks
+
+- **ko**: set bare=true ([aa84ff8](https://github.com/act3-ai/hops/commit/aa84ff8b11f5bbf6dcef212c567ec8204780778f))
+
 ## [0.2.3-beta.1] (2024-06-06)
 
 ### Miscellaneous Tasks
@@ -143,6 +149,7 @@ All notable changes to this project will be documented in this file.
 - **release**: fix flag ([6b71969](https://github.com/act3-ai/hops/commit/6b7196947ace70c8872e678c7070e5f615adf167))
 - **docs**: generate docs ([bf3fe7d](https://github.com/act3-ai/hops/commit/bf3fe7de1c3cf7f955d9e94386964ea6d966eca2))
 
+[0.2.3-beta.2]: https://github.com/act3-ai/hops/compare/v0.2.3-beta.1..v0.2.3-beta.2
 [0.2.3-beta.1]: https://github.com/act3-ai/hops/compare/v0.2.2..v0.2.3-beta.1
 [0.2.2]: https://github.com/act3-ai/hops/compare/v0.2.1..v0.2.2
 [0.2.1]: https://github.com/act3-ai/hops/compare/v0.2.0..v0.2.1
