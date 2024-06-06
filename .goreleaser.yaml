@@ -110,7 +110,7 @@ kos:
     ko_data_creation_time: "{{.CommitTimestamp}}"
     sbom: spdx
     labels:
-      org.opencontainers.image.title: "hops"
+      org.opencontainers.image.title: "hops-slim"
       org.opencontainers.image.description: "Hops is a Homebrew Bottle installer with a focus on performance and mobility."
       org.opencontainers.image.revision: "{{.FullCommit}}"
       org.opencontainers.image.version: "{{.Tag}}"
