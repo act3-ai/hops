@@ -23,7 +23,7 @@ Hops is an experimental client for installing Homebrew bottles.
 ## Options
 
 ```plaintext
-      --concurrency int   Concurrency level (default 12)
+      --concurrency int   Concurrency level (default 8)
       --config strings    Set config file search paths (default `hops-config.yaml`,`$XDG_CONFIG_HOME/hops/config.yaml`,`/etc/hops/config.yaml`)
   -d, --debug count       Display more debugging information
   -h, --help              help for hops
