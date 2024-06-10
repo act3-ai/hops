@@ -89,8 +89,8 @@ github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsT
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
-gitlab.com/act3-ai/asce/go-common v0.0.0-20240515134838-75dff81e3d47 h1:krrjg5MtriP457uBFHBBmd+X34rZH9ELreyswJ4OZUA=
-gitlab.com/act3-ai/asce/go-common v0.0.0-20240515134838-75dff81e3d47/go.mod h1:LDmEwGP6Hfxv0IiSa5IvHhSyUCW1vryI7qSniKB09IA=
+gitlab.com/act3-ai/asce/go-common v0.0.0-20240610130717-493568c01e50 h1:R8IWQjh9trnJU0xm4S+02TmLcyHw8C1jw+qw3nVuMmY=
+gitlab.com/act3-ai/asce/go-common v0.0.0-20240610130717-493568c01e50/go.mod h1:KndlmpQ3y9xjlgLLFmn5eytV8/fME+16p8w7gT+SZtg=
 golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 h1:aAcj0Da7eBAtrTp03QXWvm88pSyOt+UgdZw2BFZ+lEw=
 golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8/go.mod h1:CQ1k9gNrJ50XIzaKCRR2hssIjF07kZFEiieALBM/ARQ=
 golang.org/x/mod v0.18.0 h1:5+9lSbEzPSdWkH32vYPBwEpX8KwDbM52Ud9xBUvNlb0=

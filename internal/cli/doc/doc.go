@@ -7,9 +7,15 @@ import (
 	"github.com/muesli/termenv"
 )
 
+// noColor reports whether color output is enabled.
+func noColor() bool {
+	return termenv.DefaultOutput().Profile == termenv.Ascii ||
+		termenv.EnvNoColor()
+}
+
 // Header renders a header as a Markdown h3 if color output is disabled.
 func Header(s string) string {
-	if termenv.DefaultOutput().EnvNoColor() {
+	if noColor() {
 		// Return Markdown-formatted
 		return "### " + strings.TrimSuffix(s, ":") + "\n"
 	}
@@ -18,7 +24,7 @@ func Header(s string) string {
 
 // Code renders an inline Code block as Markdown if color output is disabled.
 func Code(s string) string {
-	if termenv.DefaultOutput().EnvNoColor() {
+	if noColor() {
 		// Return Markdown-formatted
 		return "`" + s + "`"
 	}
@@ -27,7 +33,7 @@ func Code(s string) string {
 
 // CodeBlock renders a code block as Markdown if color output is disabled.
 func CodeBlock(language, s string) string {
-	if termenv.DefaultOutput().EnvNoColor() {
+	if noColor() {
 		// Return Markdown-formatted
 		return "\n```" + language + "\n" + strings.TrimSuffix(s, "\n") + "\n```"
 	}
@@ -36,7 +42,7 @@ func CodeBlock(language, s string) string {
 
 // Footer renders a footer as Markdown if color output is disabled.
 func Footer(s string) string {
-	if termenv.DefaultOutput().EnvNoColor() {
+	if noColor() {
 		// Return Markdown-formatted
 		lines := []string{}
 		for _, line := range strings.Split(strings.TrimSpace(s), "\n") {
@@ -53,7 +59,7 @@ func Footer(s string) string {
 
 // UList renders an unordered list as Markdown if color output is disabled.
 func UList(defaultPrefix string, items ...string) string {
-	if termenv.DefaultOutput().EnvNoColor() {
+	if noColor() {
 		// Return Markdown-formatted with starting newline
 		result := "\n"
 		for _, item := range items {
@@ -72,7 +78,7 @@ func UList(defaultPrefix string, items ...string) string {
 
 // OList renders an ordered list as Markdown if color output is disabled.
 func OList(items ...string) string {
-	if termenv.DefaultOutput().EnvNoColor() {
+	if noColor() {
 		// Return Markdown-formatted with starting newline
 		result := "\n"
 		for i, item := range items {
