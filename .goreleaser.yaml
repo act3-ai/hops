@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=tool/goreleaser.schema.json
 version: 2
 
 builds:

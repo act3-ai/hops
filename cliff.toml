@@ -108,7 +108,7 @@ filter_commits = false
 # regex for skipping tags
 # skip_tags = ""
 # regex for ignoring tags
-ignore_tags = '^v0\.1\.0-beta'
+ignore_tags = '^v0\.1\.0-beta|^v0\.2\.3-beta'
 # sort the tags topologically
 topo_order = false
 # sort the commits inside sections by oldest/newest order
