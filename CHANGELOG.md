@@ -2,17 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.3-beta.2] (2024-06-06)
+## [0.2.3] (2024-06-11)
 
-### Miscellaneous Tasks
+### Bug Fixes
 
-- **ko**: set bare=true ([aa84ff8](https://github.com/act3-ai/hops/commit/aa84ff8b11f5bbf6dcef212c567ec8204780778f))
+- color output edge case ([d1594c5](https://github.com/act3-ai/hops/commit/d1594c521b9301a61565fc48b825134febb516a7))
 
-## [0.2.3-beta.1] (2024-06-06)
+### Documentation
+
+- **cli**: set default concurrency for consistency ([6f31819](https://github.com/act3-ai/hops/commit/6f31819ed4c617b241680ffcbaa3faf232ecca0f))
 
 ### Miscellaneous Tasks
 
 - **ko**: fix publish path for ko image ([b921db2](https://github.com/act3-ai/hops/commit/b921db26ddb1406510fd61f38a56608dc959aef3))
+- **ko**: set bare=true ([aa84ff8](https://github.com/act3-ai/hops/commit/aa84ff8b11f5bbf6dcef212c567ec8204780778f))
+- **ko**: change image title ([fb0c970](https://github.com/act3-ai/hops/commit/fb0c970263eb3823f6041bceed33fc91c491e6fd))
+- **changelog**: parse CWE links ([e5921fc](https://github.com/act3-ai/hops/commit/e5921fcb417adbe1947e8984a6720e397bad394a))
+
+### Security
+
+- address CWE-22 risk when pouring bottle archives ([6bb5fc8](https://github.com/act3-ai/hops/commit/6bb5fc864e581b0eab250d7f2def80423906637e))
+- address CWE-22 vulnerability in symlink destinations ([57837ee](https://github.com/act3-ai/hops/commit/57837eefa6abf63c6ab7126cc5d12219369165ed))
 
 ## [0.2.2] (2024-06-05)
 
@@ -149,8 +159,7 @@ All notable changes to this project will be documented in this file.
 - **release**: fix flag ([6b71969](https://github.com/act3-ai/hops/commit/6b7196947ace70c8872e678c7070e5f615adf167))
 - **docs**: generate docs ([bf3fe7d](https://github.com/act3-ai/hops/commit/bf3fe7de1c3cf7f955d9e94386964ea6d966eca2))
 
-[0.2.3-beta.2]: https://github.com/act3-ai/hops/compare/v0.2.3-beta.1..v0.2.3-beta.2
-[0.2.3-beta.1]: https://github.com/act3-ai/hops/compare/v0.2.2..v0.2.3-beta.1
+[0.2.3]: https://github.com/act3-ai/hops/compare/v0.2.2..v0.2.3
 [0.2.2]: https://github.com/act3-ai/hops/compare/v0.2.1..v0.2.2
 [0.2.1]: https://github.com/act3-ai/hops/compare/v0.2.0..v0.2.1
 [0.2.0]: https://github.com/act3-ai/hops/compare/v0.1.3..v0.2.0
