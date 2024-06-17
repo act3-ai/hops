@@ -16,7 +16,7 @@ require (
 	github.com/muesli/termenv v0.15.2
 	github.com/opencontainers/image-spec v1.1.0
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/xlab/treeprint v1.2.0
 	gitlab.com/act3-ai/asce/go-common v0.0.0-20240610130717-493568c01e50
 	golang.org/x/mod v0.18.0
