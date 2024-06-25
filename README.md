@@ -19,7 +19,13 @@ See the [implementation tracker](./docs/implementation.md) for the latest progre
 
 ## Get Started
 
-The Hops CLI is currently only installable using the Go toolchain:
+Install the Hops CLI with [Homebrew](https://brew.sh):
+
+```sh
+brew install act3-ai/tap/hops
+```
+
+Or install using the Go toolchain:
 
 ```sh
 go install github.com/act3-ai/hops/cmd/hops@latest
