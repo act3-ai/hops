@@ -102,6 +102,7 @@ graph LR
   hops -->|push all| dst
 ```
 
+<!-- TODO: hops xinstall has been integrated into hops install -->
 ### Solution, part 2: `hops xinstall`
 
 `hops xinstall`: Install Bottles copied by `hops copy`
