@@ -10,13 +10,6 @@ Hops is an experimental Homebrew Bottle installer written in Go with a focus on 
 
 See the [implementation tracker](./docs/implementation.md) for the latest progress.
 
-## Plans
-
-- **Phase 1**: ✅ Implement the Hops CLI with support for basic Homebrew Bottle usage
-- **Phase 2**: ✅ Implement Hops CLI commands to move Bottles between registries and support installation from alternative registries
-- **Phase 3**: Implement search functionality using alternative registries
-- **Phase 4**: Implement an extended version of Homebrew Bottles to allow Hops to be used on more platforms than Homebrew
-
 ## Get Started
 
 Install the Hops CLI with [Homebrew](https://brew.sh):
