@@ -19,7 +19,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/xlab/treeprint v1.2.0
 	gitlab.com/act3-ai/asce/go-common v0.0.0-20240610130717-493568c01e50
-	golang.org/x/mod v0.18.0
+	golang.org/x/mod v0.19.0
 	golang.org/x/term v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
 	oras.land/oras-go/v2 v2.5.0
