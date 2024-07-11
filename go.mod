@@ -5,9 +5,9 @@ go 1.22.5
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Netflix/go-env v0.0.0-20220526054621-78278af1949d
-	github.com/adrg/xdg v0.4.0
+	github.com/adrg/xdg v0.5.0
 	github.com/bmatcuk/doublestar/v4 v4.6.1
-	github.com/charmbracelet/lipgloss v0.11.0
+	github.com/charmbracelet/lipgloss v0.11.1
 	github.com/charmbracelet/log v0.4.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/elastic/go-sysinfo v1.14.0
@@ -19,15 +19,15 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/xlab/treeprint v1.2.0
 	gitlab.com/act3-ai/asce/go-common v0.0.0-20240610130717-493568c01e50
-	golang.org/x/mod v0.18.0
-	golang.org/x/term v0.21.0
+	golang.org/x/mod v0.19.0
+	golang.org/x/term v0.22.0
 	gopkg.in/yaml.v3 v3.0.1
 	oras.land/oras-go/v2 v2.5.0
 )
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/x/ansi v0.1.2 // indirect
+	github.com/charmbracelet/x/ansi v0.1.3 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
@@ -45,6 +45,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	howett.net/plist v1.0.1 // indirect
 )
