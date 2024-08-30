@@ -1,7 +1,7 @@
 github.com/MakeNowJust/heredoc/v2 v2.0.1 h1:rlCHh70XXXv7toz95ajQWOWQnN4WNLt0TdpZYIR/J6A=
 github.com/MakeNowJust/heredoc/v2 v2.0.1/go.mod h1:6/2Abh5s+hc3g9nbWLe9ObDIOhaRrqsyY9MWy+4JdRM=
-github.com/Netflix/go-env v0.0.1 h1:8qIjVK5eR54CmAvRiS4VXy/tkhi/KeOKjpAHO0990oM=
-github.com/Netflix/go-env v0.0.1/go.mod h1:XTo6a/MzolfKW0be/DjOtzUpNvmmc72g2I7dso3OjUk=
+github.com/Netflix/go-env v0.1.0 h1:qSMk2A4D6urE/YqOKpLeOkaATGmFmMLo56E7kNNKypk=
+github.com/Netflix/go-env v0.1.0/go.mod h1:9IRTAm+pQDPMpUtMLR26JOrjHnAWz3KUbhaegqTdhfY=
 github.com/adrg/xdg v0.5.0 h1:dDaZvhMXatArP1NPHhnfaQUqWBLBsmx1h1HXQdMoFCY=
 github.com/adrg/xdg v0.5.0/go.mod h1:dDdY4M4DF9Rjy4kHPeNL+ilVF+p2lK8IdM9/rTSGcI4=
 github.com/aymanbagabas/go-osc52/v2 v2.0.1 h1:HwpRHbFMcZLEVr42D4p7XBqjyuxQH5SMiErDT4WkJ2k=
