@@ -10,7 +10,7 @@ require (
 	github.com/charmbracelet/lipgloss v0.13.0
 	github.com/charmbracelet/log v0.4.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/elastic/go-sysinfo v1.14.1
+	github.com/elastic/go-sysinfo v1.14.2
 	github.com/evanphx/json-patch/v5 v5.9.0
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/termenv v0.15.2
