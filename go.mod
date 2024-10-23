@@ -7,7 +7,7 @@ require (
 	github.com/Netflix/go-env v0.1.0
 	github.com/adrg/xdg v0.5.1
 	github.com/bmatcuk/doublestar/v4 v4.7.1
-	github.com/charmbracelet/lipgloss v0.13.0
+	github.com/charmbracelet/lipgloss v0.13.1
 	github.com/charmbracelet/log v0.4.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/elastic/go-sysinfo v1.14.2
@@ -27,7 +27,7 @@ require (
 
 require (
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/x/ansi v0.1.4 // indirect
+	github.com/charmbracelet/x/ansi v0.3.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
 	github.com/elastic/go-windows v1.0.1 // indirect
 	github.com/go-logfmt/logfmt v0.6.0 // indirect
