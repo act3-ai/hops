@@ -2,23 +2,31 @@ package platform
 
 import (
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	ocispec "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
+var macSymbols = map[Platform]string{
+	Sequoia:    "15",
+	Sonoma:     "14",
+	Ventura:    "13",
+	Monterey:   "12",
+	BigSur:     "11",
+	Catalina:   "10.15",
+	Mojave:     "10.14",
+	HighSierra: "10.13",
+	Sierra:     "10.12",
+	ElCapitan:  "10.11",
+}
+
 // Prefixes for the OCI platform.os.version field.
 const (
-	linuxVersion      = "Ubuntu 22.04"
-	sonomaVersion     = "macOS 14"
-	venturaVersion    = "macOS 13"
-	montereyVersion   = "macOS 12"
-	bigSurVersion     = "macOS 11"
-	catalinaVersion   = "macOS 10.15"
-	mojaveVersion     = "macOS 10.14"
-	highSierraVersion = "macOS 10.13"
+	linuxVersion = "Ubuntu 22.04"
 )
 
-// Converts platform to OCI platform.
+// Converts OCI platform object to Homebrew platform.
 func FromOCI(r *ocispec.Platform) Platform {
 	p := Unsupported
 
@@ -44,26 +52,24 @@ func FromOCI(r *ocispec.Platform) Platform {
 			p = Unsupported
 		}
 	case "darwin":
-		switch {
-		case matchVersion(sonomaVersion):
-			p = Sonoma
-		case matchVersion(venturaVersion):
-			p = Ventura
-		case matchVersion(montereyVersion):
-			p = Monterey
-		case matchVersion(bigSurVersion):
-			p = BigSur
-		case matchVersion(catalinaVersion):
-			p = Catalina
-		case matchVersion(mojaveVersion):
-			p = Mojave
-		case matchVersion(highSierraVersion):
-			p = HighSierra
-		// Default to Sonoma if OSVersion is empty
-		case r.OSVersion == "":
-			p = Sonoma
-		default:
-			p = Unsupported
+		// Default to Seqoia if OSVersion is empty.
+		if r.OSVersion == "" {
+			p = Sequoia
+		} else {
+			// Iterate over all Mac platforms
+			found := false
+			for _, checkPlatform := range MacOSPlatforms {
+				if version, ok := macSymbols[checkPlatform]; ok {
+					if matchVersion("macOS " + version) {
+						p = checkPlatform
+						found = true
+						break
+					}
+				}
+			}
+			if !found {
+				p = Unsupported
+			}
 		}
 
 		switch r.Architecture {
@@ -90,71 +96,95 @@ func FromOCI(r *ocispec.Platform) Platform {
 func (p Platform) ociPlatform() *ocispec.Platform { //nolint:unused
 	var r *ocispec.Platform
 	switch p {
+	case Arm64Sequoia:
+		r = &ocispec.Platform{
+			OS:           "darwin",
+			Architecture: "arm64",
+			OSVersion:    macSymbols[Sequoia],
+		}
 	case Arm64Sonoma:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			OSVersion:    sonomaVersion,
+			OSVersion:    macSymbols[Sonoma],
 		}
 	case Arm64Ventura:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			OSVersion:    venturaVersion,
+			OSVersion:    macSymbols[Ventura],
 		}
 	case Arm64Monterey:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			OSVersion:    montereyVersion,
+			OSVersion:    macSymbols[Monterey],
 		}
 	case Arm64BigSur:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "arm64",
-			OSVersion:    bigSurVersion,
+			OSVersion:    macSymbols[BigSur],
+		}
+	case Sequoia:
+		r = &ocispec.Platform{
+			OS:           "darwin",
+			Architecture: "amd64",
+			OSVersion:    macSymbols[Sequoia],
 		}
 	case Sonoma:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    sonomaVersion,
+			OSVersion:    macSymbols[Sonoma],
 		}
 	case Ventura:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    venturaVersion,
+			OSVersion:    macSymbols[Ventura],
 		}
 	case Monterey:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    montereyVersion,
+			OSVersion:    macSymbols[Monterey],
 		}
 	case BigSur:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    bigSurVersion,
+			OSVersion:    macSymbols[BigSur],
 		}
 	case Catalina:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    catalinaVersion,
+			OSVersion:    macSymbols[Catalina],
 		}
 	case Mojave:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    mojaveVersion,
+			OSVersion:    macSymbols[Mojave],
 		}
 	case HighSierra:
 		r = &ocispec.Platform{
 			OS:           "darwin",
 			Architecture: "amd64",
-			OSVersion:    highSierraVersion,
+			OSVersion:    macSymbols[HighSierra],
+		}
+	case Sierra:
+		r = &ocispec.Platform{
+			OS:           "darwin",
+			Architecture: "amd64",
+			OSVersion:    macSymbols[Sierra],
+		}
+	case ElCapitan:
+		r = &ocispec.Platform{
+			OS:           "darwin",
+			Architecture: "amd64",
+			OSVersion:    macSymbols[ElCapitan],
 		}
 	case X8664Linux:
 		r = &ocispec.Platform{
@@ -183,5 +213,8 @@ func matchOSVersion(versionPrefix, osVersion string) bool {
 	// ex: versionPrefix := "macOS 14"
 	// 	"macOS 14.4.1" ==> true
 	// 	"macOS 14.40"  ==> false
-	return !strings.ContainsAny(after[:1], "1234567890")
+
+	nextRune, _ := utf8.DecodeRuneInString(after)
+	return !unicode.IsDigit(nextRune)
+	// return !strings.ContainsAny(after[:1], "1234567890")
 }
