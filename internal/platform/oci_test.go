@@ -16,6 +16,17 @@ func TestFromOCI(t *testing.T) {
 		want Platform
 	}{
 		{
+			name: "Arm64Sequoia",
+			args: args{
+				r: &ocispec.Platform{
+					Architecture: "arm64",
+					OS:           "darwin",
+					OSVersion:    "macOS 15.1",
+				},
+			},
+			want: Arm64Sequoia,
+		},
+		{
 			name: "Arm64Sonoma",
 			args: args{
 				r: &ocispec.Platform{
@@ -58,6 +69,17 @@ func TestFromOCI(t *testing.T) {
 				},
 			},
 			want: Arm64BigSur,
+		},
+		{
+			name: "Sequoia",
+			args: args{
+				r: &ocispec.Platform{
+					Architecture: "arm64",
+					OS:           "darwin",
+					OSVersion:    "macOS 15.1",
+				},
+			},
+			want: Sequoia,
 		},
 		{
 			name: "Sonoma",

@@ -168,6 +168,7 @@ var darwinVersionToPlatform = map[string]Platform{
 	"v21": Monterey,
 	"v22": Ventura,
 	"v23": Sonoma,
+	"v24": Sequoia,
 }
 
 var (
@@ -178,6 +179,7 @@ var (
 		Arm64Monterey,
 		Arm64Ventura,
 		Arm64Sonoma,
+		Arm64Sequoia,
 	}
 
 	// priority order for macOS versions.
@@ -190,6 +192,7 @@ var (
 		Monterey,
 		Ventura,
 		Sonoma,
+		Sequoia,
 	}
 
 	// priority order for orderAmd64Linux versions.
