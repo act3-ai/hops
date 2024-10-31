@@ -1,0 +1,60 @@
+{
+	"extends": [
+		"config:recommended",
+		":semanticCommitTypeAll(fix)",
+		":prHourlyLimitNone",
+		":prConcurrentLimit20",
+		":disableDependencyDashboard",
+		"regexManagers:dockerfileVersions",
+		"regexManagers:gitlabPipelineVersions",
+		"regexManagers:helmChartYamlAppVersions"
+	],
+	"autodiscover": false,
+	"branchPrefix": "test-renovate/",
+	"dryRun": "full",
+	"username": "renovate-release",
+	"gitAuthor": "Renovate Bot <bot@renovateapp.com>",
+	"onboarding": false,
+	"platform": "github",
+	"forkProcessing": "enabled",
+	"repositories": [
+		"act3-ai/hops"
+	],
+	"packageRules": [
+		{
+			"description": "lockFileMaintenance",
+			"matchUpdateTypes": [
+				"pin",
+				"digest",
+				"patch",
+				"minor",
+				"major",
+				"lockFileMaintenance"
+			],
+			"dependencyDashboardApproval": false,
+			"minimumReleaseAge": 0
+		}
+	],
+	"customManagers": [
+		{
+			"customType": "regex",
+			"description": "Update *_VERSION fields in YAML files",
+			"fileMatch": [
+				"\\.ya?ml$"
+			],
+			"matchStrings": [
+				"# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\s*:\\s*[\"']?(?<currentValue>.+?)[\"']?\\s"
+			]
+		},
+		{
+			"customType": "regex",
+			"description": "Update *_VERSION variables in Makefiles",
+			"fileMatch": [
+				"(^|/)(GNUm|m|M)akefile$"
+			],
+			"matchStrings": [
+				"# renovate: datasource=(?<datasource>[a-z-.]+?) depName=(?<depName>[^\\s]+?)(?: (?:lookupName|packageName)=(?<packageName>[^\\s]+?))?(?: versioning=(?<versioning>[^\\s]+?))?(?: extractVersion=(?<extractVersion>[^\\s]+?))?\\s+[A-Za-z0-9_]+?_VERSION\\??=(?<currentValue>.+?)\\s"
+			]
+		}
+	]
+}

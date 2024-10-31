@@ -1,0 +1,42 @@
+name: Renovate
+on:
+  # This lets you dispatch a renovate job with different cache options if you want to reset or disable the cache manually.
+  workflow_dispatch:
+    inputs:
+      repoCache:
+        description: "Reset or disable the cache?"
+        type: choice
+        default: enabled
+        options:
+          - enabled
+          - disabled
+          - reset
+  schedule:
+    # Run every 30 minutes:
+    - cron: "0,30 * * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  renovate:
+    name: Renovate dependency check
+    runs-on: ubuntu-latest
+    permissions:
+      # required for all workflows
+      security-events: write
+      # required to fetch internal or private CodeQL packs
+      packages: read
+      # only required for workflows in private repositories
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Renovate Bot GitHub Action
+        uses: renovatebot/github-action@v40.3.4
+        with:
+          configurationFile: .github/renovate-config.json
+          token: ${{ secrets.RENOVATE_TOKEN }}
+          renovate-version: 38.133.0
