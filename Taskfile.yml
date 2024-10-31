@@ -51,7 +51,7 @@ tasks:
     generates:
       - bin/hops
 
-  build:prod:
+  build-trimmed:
     desc: "Build from source (stripped/trimmed)"
     deps: [generate]
     env:
@@ -62,7 +62,7 @@ tasks:
     generates:
       - bin/hops
 
-  build:linux:
+  build-linux:
     desc: "Build from source for linux/amd64"
     aliases: [build-linux]
     env:
@@ -88,10 +88,10 @@ tasks:
       - go generate ./...
     sources:
       - gen.go
-      - internal/cli/**/*
-      - cmd/hops/**/*
+      - internal/cli/
+      - cmd/hops/
     generates:
-      - docs/cli/**/*
+      - docs/cli/
 
   lint:
     desc: "Lint project"
@@ -143,7 +143,7 @@ tasks:
       - rm -rf HOMEBREW_PREFIX
       - direnv reload
 
-  image:build:
+  image:
     desc: "Build container image with Docker"
     deps: [build-linux]
     cmds:
@@ -152,18 +152,18 @@ tasks:
         --build-arg HOPS_EXECUTABLE=bin/hops--linux-amd64 \
         -t {{.IMAGE_REPO}} .
 
-  image:run:
+  image-run:
     desc: "Run latest docker container"
     cmds:
       - docker run -it {{.IMAGE_REPO}}:latest
 
-  image:scan:
+  image-scan:
     desc: "Scan latest container image with grype"
     aliases: [grype]
     cmds:
       - grype {{.IMAGE_REPO}}:latest
 
-  build:ko:
+  ko:
     desc: "Build multiplatform distroless image with ko"
     deps: [tool:ko]
     env:
