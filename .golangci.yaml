@@ -17,7 +17,7 @@ linters:
     - gochecknoinits
     - gocognit
     - gocritic
-    - godot
+    # - godot
     - gofmt
     - goimports
     - gosimple

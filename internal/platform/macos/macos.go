@@ -39,6 +39,7 @@ const (
 	Monterey                        // macOS Monterey
 	Ventura                         // macOS Ventura
 	Sonoma                          // macOS Sonoma
+	Sequoia                         // macOS Sequoia
 	//revive:enable:exported
 )
 
@@ -78,6 +79,7 @@ var names = []string{
 	"Monterey",
 	"Ventura",
 	"Sonoma",
+	"Sequoia",
 }
 
 // Name produces the short name of the version.
@@ -123,6 +125,7 @@ var osVersions = []string{
 	"12",
 	"13",
 	"14", // Sonoma
+	"15", // Sequoia
 }
 
 // OSVersion produces the OS version.
