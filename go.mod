@@ -6,7 +6,7 @@ require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Netflix/go-env v0.1.2
 	github.com/adrg/xdg v0.5.2
-	github.com/bmatcuk/doublestar/v4 v4.7.1
+	github.com/bmatcuk/doublestar/v4 v4.8.1
 	github.com/charmbracelet/lipgloss v1.0.0
 	github.com/charmbracelet/log v0.4.0
 	github.com/dustin/go-humanize v1.0.1
