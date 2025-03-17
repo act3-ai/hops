@@ -33,11 +33,14 @@ func (Platform) Type() string {
 	return "platform"
 }
 
+// Known platforms.
 const (
+	Arm64Sequoia  Platform = "arm64_sequoia"  // macOS Sequoia ARM 64-bit
 	Arm64Sonoma   Platform = "arm64_sonoma"   // macOS Sonoma ARM 64-bit
-	Arm64Ventura  Platform = "arm64_ventura"  // macOS Sonoma ARM 64-bit
-	Arm64Monterey Platform = "arm64_monterey" // macOS Sonoma ARM 64-bit
-	Arm64BigSur   Platform = "arm64_big_sur"  // macOS Sonoma ARM 64-bit
+	Arm64Ventura  Platform = "arm64_ventura"  // macOS Ventura ARM 64-bit
+	Arm64Monterey Platform = "arm64_monterey" // macOS Monterey ARM 64-bit
+	Arm64BigSur   Platform = "arm64_big_sur"  // macOS Big Sur ARM 64-bit
+	Sequoia       Platform = "sequoia"        // macOS Sequoia x86 64-bit
 	Sonoma        Platform = "sonoma"         // macOS Sonoma x86 64-bit
 	Ventura       Platform = "ventura"        // macOS Ventura x86 64-bit
 	Monterey      Platform = "monterey"       // macOS Monterey x86 64-bit
@@ -45,6 +48,8 @@ const (
 	Catalina      Platform = "catalina"       // macOS Catalina x86 64-bit
 	Mojave        Platform = "mojave"         // macOS Mojave x86 64-bit
 	HighSierra    Platform = "high_sierra"    // macOS High Sierra x86 64-bit
+	Sierra        Platform = "sierra"         // macOS Sierra x86 64-bit
+	ElCapitan     Platform = "el_capitan"     // macOS El Capitan x86 64-bit
 	X8664Linux    Platform = "x86_64_linux"   // Linux x86 64-bit
 	All           Platform = "all"            // All platforms
 	Unsupported   Platform = ""               // Unsupported platform (hops defined)
@@ -121,27 +126,22 @@ var MacOSPlatforms = []Platform{
 // ARM produces the corresponding ARM version of the platform.
 func (p Platform) ARM() Platform {
 	switch p {
-	case Arm64Sonoma:
+	case Sequoia, Arm64Sequoia:
+		return Arm64Sequoia
+	case Sonoma, Arm64Sonoma:
 		return Arm64Sonoma
-	case Arm64Ventura:
+	case Ventura, Arm64Ventura:
 		return Arm64Ventura
-	case Arm64Monterey:
+	case Monterey, Arm64Monterey:
 		return Arm64Monterey
-	case Arm64BigSur:
+	case BigSur, Arm64BigSur:
 		return Arm64BigSur
-	case Sonoma:
-		return Arm64Sonoma
-	case Ventura:
-		return Arm64Ventura
-	case Monterey:
-		return Arm64Monterey
-	case BigSur:
-		return Arm64BigSur
-	case Catalina:
-		return Unsupported
-	case Mojave:
-		return Unsupported
-	case HighSierra:
+	case
+		Catalina,
+		Mojave,
+		HighSierra,
+		Sierra,
+		ElCapitan:
 		return Unsupported
 	case X8664Linux:
 		return Unsupported
@@ -168,6 +168,7 @@ var darwinVersionToPlatform = map[string]Platform{
 	"v21": Monterey,
 	"v22": Ventura,
 	"v23": Sonoma,
+	"v24": Sequoia,
 }
 
 var (
@@ -178,6 +179,7 @@ var (
 		Arm64Monterey,
 		Arm64Ventura,
 		Arm64Sonoma,
+		Arm64Sequoia,
 	}
 
 	// priority order for macOS versions.
@@ -190,6 +192,7 @@ var (
 		Monterey,
 		Ventura,
 		Sonoma,
+		Sequoia,
 	}
 
 	// priority order for orderAmd64Linux versions.
@@ -248,7 +251,7 @@ func SelectIndex(candidates []Platform, constraint Platform) int {
 		return i
 	}
 
-	var max int
+	var limit int
 	var order []Platform
 
 	m := slices.Index(orderAmd64MacOS, constraint)
@@ -259,17 +262,17 @@ func SelectIndex(candidates []Platform, constraint Platform) int {
 	// Constrain matches to amd64 macOS versions
 	case m != -1:
 		order = orderAmd64MacOS
-		max = m
+		limit = m
 	case am != -1:
 		order = orderArm64MacOS
-		max = am
+		limit = am
 	case l != -1:
 		order = orderAmd64Linux
-		max = l
+		limit = l
 	// Unknown platform, only match "all"
 	default:
 		order = []Platform{All}
-		max = 0
+		limit = 0
 	}
 
 	// Store index of selected platform
@@ -287,7 +290,7 @@ func SelectIndex(candidates []Platform, constraint Platform) int {
 		case corder == -1:
 			continue
 		// candidate platform is outside of the constraint, cannot use
-		case corder > max:
+		case corder > limit:
 			continue
 		// candidate platform is less satisfactory than current selection
 		case corder <= sorder:
