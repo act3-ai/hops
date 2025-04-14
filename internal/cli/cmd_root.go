@@ -38,7 +38,7 @@ func NewCLI(version string) *cobra.Command {
 	cobra.EnableTraverseRunHooks = true
 
 	// Concurrency flag
-	cmd.PersistentFlags().IntVar(&hops.Concurrency, "concurrency", runtime.NumCPU(), "Concurrency level")
+	cmd.PersistentFlags().IntVar(&hops.Concurrency, "concurrency", GOMAXPROCS, "Concurrency level")
 
 	// Style the error prefix red
 	cmd.SetErrPrefix(o.StyleRed(cmd.ErrPrefix()))
@@ -118,3 +118,6 @@ func withConfigOverrides(action *actions.Hops, cmd *cobra.Command) {
 	// Add environment variable overrides
 	action.AddConfigOverride(hopsv1.ConfigurationEnvOverrides)
 }
+
+// get current value of GOMAXPROCS for use as concurrency flag's default value.
+var GOMAXPROCS = runtime.GOMAXPROCS(-1)

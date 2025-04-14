@@ -13,6 +13,9 @@
 ## Ignore logfiles
 /log
 
+# Taskfile checksums
+.task
+
 # Test outputs
 /HOMEBREW_PREFIX
 /HOMEBREW_CACHE
