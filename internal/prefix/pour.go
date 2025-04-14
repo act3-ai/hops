@@ -18,6 +18,10 @@ import (
 
 // CanPourBottle verifies that the PlatformFormula's bottle can be poured.
 func (p Prefix) CanPourBottle(ctx context.Context, f formula.PlatformFormula) error {
+	if f == nil || f.Bottle() == nil {
+		slog.Debug("No bottle")
+		return nil
+	}
 	switch f.Bottle().PourOnlyIf {
 	// Bottle can always be poured
 	case "":
