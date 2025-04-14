@@ -47,9 +47,8 @@ func Default() Prefix {
 	case "darwin":
 		if runtime.GOARCH == "arm64" {
 			return DarwinArm64Default
-		} else {
-			return DarwinAmd64Default
 		}
+		return DarwinAmd64Default
 	case "linux":
 		return LinuxDefault
 	default:

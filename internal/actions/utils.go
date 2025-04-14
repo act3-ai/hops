@@ -113,9 +113,7 @@ func authClient(log *slog.Logger, cfg *hopsv1.RegistryConfig, userAgent string) 
 }
 
 func brewRegistry(log *slog.Logger, cfg *brewenv.Configuration, maxGoroutines int) brewreg.Registry {
-	log.Debug("using Homebrew registry", //nolint:sloglint
-		slog.String("HOMEBREW_BOTTLE_DOMAIN", cfg.BottleDomain),
-		slog.String("HOMEBREW_ARTIFACT_DOMAIN", cfg.ArtifactDomain))
+	log.Debug("using Homebrew registry", slog.String("HOMEBREW_BOTTLE_DOMAIN", cfg.BottleDomain), slog.String("HOMEBREW_ARTIFACT_DOMAIN", cfg.ArtifactDomain)) //nolint:sloglint
 
 	return brewreg.NewBottleRegistry(
 		cfg.GitHubPackagesHeaders(),

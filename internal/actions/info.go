@@ -34,10 +34,10 @@ func (action *Info) Run(ctx context.Context, args ...string) error {
 		return err
 	}
 
-	switch {
-	case action.JSON == "v1":
+	switch action.JSON {
+	case "v1":
 		return jsonV1(ctx, formulary, names)
-	case action.JSON == "v2":
+	case "v2":
 		slog.Error("v2 JSON not supported")
 		return nil
 	default:

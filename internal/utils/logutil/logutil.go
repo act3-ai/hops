@@ -81,7 +81,7 @@ func descriptorAttrs(desc ocispec.Descriptor) []slog.Attr {
 // WithLogging adds logging at level for the OnCopySkipped, PostCopy, and OnMounted functions.
 func WithLogging(logger *slog.Logger, level slog.Level, opts *oras.CopyGraphOptions) oras.CopyGraphOptions {
 	dolog := func(ctx context.Context, msg string, desc ocispec.Descriptor) {
-		logger.Log(ctx, level, msg, //nolint:sloglint
+		logger.Log(ctx, level, msg,
 			DescriptorAttrs(desc)...,
 		)
 	}

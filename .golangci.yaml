@@ -2,6 +2,8 @@
 #
 # Available linters and settings:
 # https://golangci-lint.run/usage/linters
+version: "2"
+
 linters:
   enable:
     - bodyclose
@@ -13,17 +15,11 @@ linters:
     - errname
     - errorlint
     - exhaustive
-    # - exportloopref
     - gochecknoinits
     - gocognit
     - gocritic
     - godot
-    - gofmt
-    - goimports
-    - gosimple
-    - govet
     - importas
-    - ineffassign
     - misspell
     - nilnil
     - noctx
@@ -35,138 +31,155 @@ linters:
     - reassign
     - revive
     - sloglint
-    - staticcheck
     # - tagalign
-    - tenv
     - thelper
-    - typecheck
-    - unparam
-    - unused
-    - usestdlibvars
     - unconvert
+    - unparam
+    - usestdlibvars
     # - wrapcheck
 
-linters-settings:
-  goimports:
-    # Put imports beginning with prefix after 3rd-party packages.
-    # It's a comma-separated list of prefixes.
-    # Default: ""
-    local-prefixes: >-
-      github.com/act3-ai, gitlab.com/act3-ai
+  settings:
+    importas:
+      alias:
+        - pkg: github.com/opencontainers/image-spec/specs-go/v1
+          alias: ocispec
+        - pkg: github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1
+          alias: hopsv1
+        - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1
+          alias: brewv1
+        - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v2
+          alias: brewv2
+        - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v3
+          alias: brewv3
+      no-unaliased: true
 
-  importas:
-    # if set to `true`, force to use alias.
-    no-unaliased: true
-    # List of aliases
-    alias:
-      - pkg: github.com/opencontainers/image-spec/specs-go/v1
-        alias: ocispec
-      - pkg: github.com/act3-ai/hops/internal/apis/config.hops.io/v1beta1
-        alias: hopsv1
-      - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v1
-        alias: brewv1
-      - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v2
-        alias: brewv2
-      - pkg: github.com/act3-ai/hops/internal/apis/formulae.brew.sh/v3
-        alias: brewv3
+    nilnil:
+      checked-types:
+        - func
+        - iface
+        - map
+        - chan
 
-  nilnil:
-    checked-types:
-      # - ptr
-      - func
-      - iface
-      - map
-      - chan
+    perfsprint:
+      err-error: true
 
-  perfsprint:
-    err-error: true
+    revive:
+      enable-all-rules: true
+      rules:
+        - name: add-constant
+          disabled: true
+        - name: atomic
+        - name: blank-imports
+        - name: cognitive-complexity
+          arguments:
+            - 30
+        - name: confusing-naming
+          disabled: true
+        - name: context-as-argument
+        - name: context-keys-type
+        - name: cyclomatic
+          disabled: true
+        - name: defer
+        - name: dot-imports
+        - name: empty-block
+        - name: error-naming
+        - name: error-return
+        - name: error-strings
+        - name: errorf
+        - name: exported
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: if-return
+        - name: increment-decrement
+        - name: indent-error-flow
+        - name: line-length-limit
+          disabled: true
+        - name: max-public-structs
+          disabled: true
+        - name: package-comments
+          disabled: true
+        - name: range-val-address
+          disabled: true
+        - name: range-val-in-closure
+          disabled: true
+        - name: range
+        - name: receiver-naming
+        - name: redefines-builtin-id
+        - name: redundant-import-alias
+          disabled: true
+        - name: struct-tag
+          disabled: true
+        - name: superfluous-else
+        - name: time-naming
+        - name: unexported-naming
+        - name: unexported-return
+        - name: unhandled-error
+          arguments:
+            - fmt.Printf
+            - fmt.Println
+            - fmt.Print
+        - name: unreachable-code
+        - name: unused-parameter
+        - name: use-any
+        - name: useless-break
+        - name: var-declaration
+        - name: var-naming
 
-  revive:
-    ignore-generated-header: true
-    enable-all-rules: true
+    sloglint:
+      # Enforce using attributes only (overrides no-mixed-args, incompatible with kv-only).
+      # Default: false
+      attr-only: true
+      # Enforce using static values for log messages.
+      # Default: false
+      # static-msg: true
+      # Enforce a single key naming convention.
+      # Values: snake, kebab, camel, pascal
+      # Default: ""
+      key-naming-case: camel
+
+    staticcheck:
+      # SAxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
+      # Default: ["*"]
+      checks:
+        - all
+        - -ST1000 # at least one file in a package should have a package comment
+        - -ST1020 # comment on exported function _ should be of the form _
+        - -ST1020 # comment on exported method _ should be of the form _
+        - -ST1021 # comment on exported type _ should be of the form _
+        - -ST1022 # comment on exported var _ should be of the form _
+        - -QF1008 # could remove embedded field _ from selector
+
+    unparam:
+      check-exported: true
+
+  exclusions:
+    generated: lax
+    presets:
+      - common-false-positives
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
     rules:
-      - name: add-constant
-        disabled: true
-      - name: atomic
-      - name: blank-imports
-      - name: cognitive-complexity
-        arguments: [30]
-      - name: confusing-naming
-        disabled: true
-      - name: context-as-argument
-      - name: context-keys-type
-      - name: cyclomatic
-        disabled: true
-      - name: defer
-      - name: dot-imports
-      - name: empty-block
-      - name: error-naming
-      - name: error-return
-      - name: error-strings
-      - name: errorf
-      - name: exported
-      - name: function-length
-        disabled: true
-      - name: if-return
-      - name: increment-decrement
-      - name: indent-error-flow
-      - name: line-length-limit
-        disabled: true
-      - name: max-public-structs
-        disabled: true
-      - name: package-comments
-      - name: range-val-address
-        disabled: true
-      - name: range-val-in-closure
-        disabled: true
-      - name: range
-      - name: receiver-naming
-      - name: redefines-builtin-id
-      - name: redundant-import-alias
-        disabled: true
-      - name: struct-tag
-        disabled: true
-      - name: superfluous-else
-      - name: time-naming
-      - name: unexported-naming
-      - name: unexported-return
-      - name: unhandled-error
-        arguments:
-          - "fmt.Printf"
-          - "fmt.Println"
-          - "fmt.Print"
-      - name: unreachable-code
-      - name: unused-parameter
-      - name: use-any
-      - name: useless-break
-      - name: var-declaration
-      - name: var-naming
+      - linters:
+          - dupl
+        path: _test\.go
 
-  sloglint:
-    # Enforce using attributes only (overrides no-mixed-args, incompatible with kv-only).
-    # Default: false
-    attr-only: true
-    # Enforce using static values for log messages.
-    # Default: false
-    # static-msg: true
-    # Enforce a single key naming convention.
-    # Values: snake, kebab, camel, pascal
-    # Default: ""
-    key-naming-case: camel
-
-  staticcheck:
-    # SAxxxx checks in https://staticcheck.io/docs/configuration/options/#checks
-    # Default: ["*"]
-    checks: ["all"]
-
-  unparam:
-    check-exported: true
-
-issues:
-  # uncomment to enable more linting
-  # exclude-use-default: false
-  include:
-    - EXC0005
-    - EXC0012
-    - EXC0009
-    - EXC0002
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      # Put imports beginning with prefix after 3rd-party packages.
+      local-prefixes:
+        - github.com/act3-ai
+        - gitlab.com/act3-ai
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
