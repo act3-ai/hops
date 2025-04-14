@@ -12,21 +12,6 @@ vars:
   # Use port 5001 because the default podman machine uses port 5000
   TEST_REGISTRY_PORT: 5001
   TEST_REGISTRY_NAME: testreg
-  ############################################################
-  # Tool versions
-  ############################################################
-  # renovate: datasource=go depName=github.com/elastic/crd-ref-docs
-  CRD_REF_DOCS_VERSION: v0.0.12
-  # renovate: datasource=go depName=github.com/caarlos0/svu
-  SVU_VERSION: main
-  # renovate: datasource=go depName=github.com/google/ko
-  KO_VERSION: v0.15.2
-  # renovate: datasource=go depName=github.com/golangci/golangci-lint
-  GOLANGCILINT_VERSION: v1.58.2
-  # renovate: datasource=go depName=golang.org/x/vuln/cmd/govulncheck
-  GOVULNCHECK_VERSION: latest
-  # renovate: datasource=go depName=go.abhg.dev/doc2go
-  DOC2GO_VERSION: v0.8.1
 
 tasks:
   default:
@@ -101,9 +86,15 @@ tasks:
 
   govulncheck:
     desc: "Check Go package vulnerabilities"
-    deps: [tool:govulncheck]
+    vars:
+      # renovate: datasource=go depName=golang.org/x/vuln/cmd/govulncheck
+      GOVULNCHECK_VERSION: latest
     cmds:
-      - tool/govulncheck ./...
+      - >-
+        go run
+        golang.org/x/vuln/cmd/govulncheck@
+        {{- .GOVULNCHECK_VERSION | default "latest" }}
+        ./...
 
   test:
     desc: "Run unit tests"
@@ -166,11 +157,18 @@ tasks:
   ko:
     desc: "Build multiplatform distroless image with ko"
     deps: [tool:ko]
+    vars:
+      # renovate: datasource=go depName=github.com/google/ko
+      KO_VERSION: v0.17.1
     env:
-      VERSION: "{{.REV}}"
-      KO_DOCKER_REPO: "{{.IMAGE_REPO}}/distroless"
+      VERSION: "{{ .VERSION | default .REV }}"
+      KO_DOCKER_REPO: '{{ .KO_DOCKER_REPO | default (printf "%s/distroless" .IMAGE_REPO) }}'
     cmds:
-      - tool/ko build -B --image-label version="{{.REV}}" ./cmd/hops
+      - >-
+        go run
+        github.com/google/ko@
+        {{- .KO_VERSION | default "latest" }}
+        build -B --image-label version="{{.REV}}" ./cmd/hops
 
   startreg:
     desc: Start a local registry for testing purposes
@@ -263,78 +261,3 @@ tasks:
       vars: [TAG]
     cmds:
       - git cliff --tag "{{.TAG}}" --output CHANGELOG.md
-
-  # crd-ref-docs: Generates markdown documentation for CRDs
-  tool:crd-ref-docs:
-    desc: "Install crd-ref-docs CRD documentation generator"
-    cmds:
-      - task: versioned-go-pkg
-        vars:
-          VERSION: "{{.CRD_REF_DOCS_VERSION}}"
-          PKG: github.com/elastic/crd-ref-docs
-
-  # svu: manage semantic versions based on git log
-  tool:svu:
-    desc: "Install svu versioning tool"
-    cmds:
-      - task: versioned-go-pkg
-        vars:
-          VERSION: "{{.SVU_VERSION}}"
-          PKG: github.com/caarlos0/svu
-
-  # ko: builds application images for Go projects
-  tool:ko:
-    desc: "Install ko builder"
-    cmds:
-      - task: versioned-go-pkg
-        vars:
-          VERSION: "{{.KO_VERSION}}"
-          PKG: github.com/google/ko
-
-  # golangci-lint: lints Go code
-  tool:golangci-lint:
-    desc: "Install golangci-lint linter"
-    cmds:
-      - task: versioned-go-pkg
-        vars:
-          VERSION: "{{.GOLANGCILINT_VERSION}}"
-          PKG: github.com/golangci/golangci-lint/cmd/golangci-lint
-
-  # govulncheck: checks Go package vulnerabilities
-  tool:govulncheck:
-    desc: "Install govulncheck linter"
-    cmds:
-      - task: versioned-go-pkg
-        vars:
-          VERSION: "{{.GOVULNCHECK_VERSION}}"
-          PKG: golang.org/x/vuln/cmd/govulncheck
-
-  # doc2go: renders static Go package docs
-  tool:doc2go:
-    desc: "Install doc2go documentation generator"
-    cmds:
-      - task: versioned-go-pkg
-        vars:
-          VERSION: "{{.DOC2GO_VERSION}}"
-          PKG: go.abhg.dev/doc2go
-
-  # Generalized task for installing Go tools
-  versioned-go-pkg:
-    desc: "Installs a versioned Go tool"
-    internal: true
-    requires:
-      vars:
-        - PKG
-        - VERSION
-    vars:
-      NAME: "{{base .PKG}}"
-      MARKER: tool/.{{.NAME}}@{{.VERSION}}
-      TOOL: tool/{{.NAME}}
-    status:
-      - test -f {{.MARKER}}
-      - test -f {{.TOOL}}
-    cmds:
-      - rm -f tool/.{{.NAME}}@*
-      - mkdir -p tool
-      - GOBIN=$PWD/tool go install {{.PKG}}@{{.VERSION}}
-      - touch {{.MARKER}}
