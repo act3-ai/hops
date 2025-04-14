@@ -1,6 +1,9 @@
 module github.com/act3-ai/hops
 
-go 1.23
+go 1.23.0
+
+toolchain go1.24.2
+
 require (
 	github.com/MakeNowJust/heredoc/v2 v2.0.1
 	github.com/Netflix/go-env v0.1.2
