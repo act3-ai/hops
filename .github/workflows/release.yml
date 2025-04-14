@@ -11,7 +11,7 @@ permissions:
   # issues: write # close milestones
 
 env:
-  GO_VERSION: "1.22"
+  GO_VERSION: "1.24"
 
 jobs:
   goreleaser:
@@ -32,7 +32,7 @@ jobs:
         with:
           go-version-file: "go.mod"
       - name: Set up ko
-        uses: ko-build/setup-ko@v0.7
+        uses: ko-build/setup-ko@v0.9
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
