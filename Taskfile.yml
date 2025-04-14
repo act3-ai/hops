@@ -80,9 +80,42 @@ tasks:
 
   lint:
     desc: "Lint project"
-    deps: [tool:golangci-lint]
+    deps:
+      - golangci-lint
+      - markdownlint
+      - yamllint
+
+  golangci-lint:
+    desc: "Lint Go code with golangci-lint"
+    preconditions:
+      - sh: command -v golangci-lint
+        msg: "golangci-lint is required. Install golangci-lint: https://golangci-lint.run/welcome/install/"
     cmds:
-      - tool/golangci-lint run
+      - golangci-lint run
+
+  markdownlint:
+    desc: "Lint markdown with markdownlint-cli2"
+    preconditions:
+      - sh: command -v markdownlint-cli2
+        msg: |
+          markdownlint-cli2 is required.
+          Install markdownlint-cli2:
+            - Homebrew: brew install markdownlint-cli2
+            - Docs: https://github.com/DavidAnson/markdownlint-cli2#install
+    cmds:
+      - markdownlint-cli2 .
+
+  yamllint:
+    desc: "Lint YAML with yamllint"
+    preconditions:
+      - sh: command -v yamllint
+        msg: |
+          yamllint is required.
+          Install yamllint:
+            - Homebrew: brew install yamllint
+            - Docs: https://yamllint.readthedocs.io/en/stable/quickstart.html
+    cmds:
+      - yamllint .
 
   govulncheck:
     desc: "Check Go package vulnerabilities"

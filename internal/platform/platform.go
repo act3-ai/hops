@@ -248,7 +248,7 @@ func SelectIndex(candidates []Platform, constraint Platform) int {
 		return i
 	}
 
-	var max int
+	var maxValue int
 	var order []Platform
 
 	m := slices.Index(orderAmd64MacOS, constraint)
@@ -259,17 +259,17 @@ func SelectIndex(candidates []Platform, constraint Platform) int {
 	// Constrain matches to amd64 macOS versions
 	case m != -1:
 		order = orderAmd64MacOS
-		max = m
+		maxValue = m
 	case am != -1:
 		order = orderArm64MacOS
-		max = am
+		maxValue = am
 	case l != -1:
 		order = orderAmd64Linux
-		max = l
+		maxValue = l
 	// Unknown platform, only match "all"
 	default:
 		order = []Platform{All}
-		max = 0
+		maxValue = 0
 	}
 
 	// Store index of selected platform
@@ -287,7 +287,7 @@ func SelectIndex(candidates []Platform, constraint Platform) int {
 		case corder == -1:
 			continue
 		// candidate platform is outside of the constraint, cannot use
-		case corder > max:
+		case corder > maxValue:
 			continue
 		// candidate platform is less satisfactory than current selection
 		case corder <= sorder:

@@ -203,8 +203,8 @@ func (action *Hops) brewFormulary(ctx context.Context) (brewformulary.PreloadedF
 }
 
 func brewFormulary(ctx context.Context, domain string, cfg *brewenv.AutoUpdateConfig, cache string) (brewformulary.PreloadedFormulary, error) {
-	slog.Debug("using Homebrew API formulary", //nolint:sloglint
-		slog.String("HOMEBREW_API_DOMAIN", domain))
+	slog.Debug("using Homebrew API formulary",
+		slog.String("HOMEBREW_API_DOMAIN", domain)) //nolint:sloglint
 	// Load the index
 	return brewformulary.FetchV1(ctx,
 		brewapi.NewClient(domain),
