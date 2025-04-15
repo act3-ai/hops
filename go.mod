@@ -13,7 +13,7 @@ require (
 	github.com/elastic/go-sysinfo v1.15.0
 	github.com/evanphx/json-patch/v5 v5.9.11
 	github.com/muesli/reflow v0.3.0
-	github.com/muesli/termenv v0.15.2
+	github.com/muesli/termenv v0.16.0
 	github.com/opencontainers/image-spec v1.1.1
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
 	github.com/spf13/cobra v1.8.1
