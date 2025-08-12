@@ -18,7 +18,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
@@ -35,7 +35,7 @@ jobs:
     name: Scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
@@ -48,7 +48,7 @@ jobs:
     name: Unit test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
@@ -115,7 +115,7 @@ jobs:
           # - arm64
       fail-fast: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-go@v5
         with:
           go-version-file: "go.mod"
@@ -158,7 +158,7 @@ jobs:
     permissions:
       packages: write # to push image to ghcr.io
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # Set up tools
       - name: Set up QEMU
